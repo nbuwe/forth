@@ -86,20 +86,37 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 1:	.ascii	name		; \
 2:	.p2align 2, 0
 
+
 #define CODE_ASM(label)		  \
 	.align	2		; \
   label:			; \
 	.long	asm_exec	; \
   label/**/_code:
 
+
 #define CODE_4TH(label)		  \
 	.align	2		; \
   label:			; \
 	.long	call_code
 
+
 #define EXIT_4TH		  \
 	.long	exit_4th	; \
 	.long	0xdeadbeef	/* sentinel */
+
+
+#define VARIABLE(label)		  \
+	.align	2		; \
+  label:			; \
+	.long	next_code	; \
+  label/**/_data:
+
+
+#define CONSTANT(label)		  \
+	.align	2		; \
+  label:			; \
+	.long	next_code	; \
+  label/**/_data:
 
 
 !!! ====================================================================
@@ -111,11 +128,13 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 heap:
 	.long	0xdeadbeef	! dummy
 
+
 	!! This should eventually become the DOES> part of CODE
 	.align	2
 asm_exec:			! code field of asm words points here
 	jmp	@TOS		! consume TOS
 	 mov.l	@PSP+, TOS	! fill TOS
+
 
 	!! This should eventually become the DOES> part of ":"
 	.align	2
@@ -140,6 +159,10 @@ next_code:
 	jmp	@r1		! execute word's code
 	 add	r0, TOS		! TOS = PFA (for code to consume)
 
+
+create_exec:
+	jmp	@NEXT
+	 nop
 
 CODE_ASM(return_to_c)
 	mov.l	@RSP+, r0
@@ -208,6 +231,19 @@ CODE_ASM(swap)			! "swap" - CORE 6.1.2260
 
 */
 
+
+CODE_ASM(fetch)			! "@" - CORE 6.1.0650
+	jmp	@NEXT
+	 mov.l	@TOS, TOS
+
+
+CODE_ASM(store)			! "!" - CORE 6.1.0010
+	mov.l	@PSP+, r0
+	mov.l	TOS, @r0
+	jmp	@NEXT
+	 mov.l	@PSP+, TOS
+
+
 CODE_ASM(lit)			! aux for "literal" - CORE 6.1.1780
 	mov.l	TOS, @-PSP
 	jmp	@NEXT
@@ -223,11 +259,9 @@ CODE_ASM(question_branch)	! "?branch"
 	tst	TOS, TOS
 	bf/s	1f		! branch is taken when TOS is false(!)
 	 mov.l	@PSP+, TOS
-
 	jmp	@NEXT
 	 mov.l	@IP+, IP	! take branch
-1:
-	jmp	@NEXT
+1:	jmp	@NEXT
 	 add	#4, IP		! skip branch address
 
 
@@ -447,6 +481,9 @@ CODE_ASM(xor)			! "xor" - CORE 6.1.2490
 
 !!! ====================================================================
 
+CONSTANT(c1) .long 0x00c0ffee
+VARIABLE(v1) .long 0x00c0ffee
+
 CODE_4TH(one_plus_two)
 	.long	lit, 9
 	.long	lit, 3
@@ -457,7 +494,7 @@ CODE_4TH(one_plus_two)
 CODE_4TH(plus_three)
 	.long	one_plus_two
 	.long	plus
-	.long	false
+	.long	true
 	.long	question_branch, 1f
 	.long	lit, 1000
 	.long	star
@@ -465,6 +502,11 @@ CODE_4TH(plus_three)
 	.long	lit, 100
 	.long	lit, 10
 	.long	not_equals
+	.long	v1
+	.long   lit, 0xdeadbeef
+	.long	store
+	.long	v1
+	.long   dup, fetch
 	EXIT_4TH
 
 
