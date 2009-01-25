@@ -77,14 +77,19 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 !!! ====================================================================
 
+#define NAME_FIELD(flags, name)   \
+	.p2align 2, 0		; \
+	.byte	flags | (2f-1f)	; \
+1:	.ascii	name		; \
+2:	.p2align 2, 0
 
-#define WORD_ASM(label)		  \
+#define CODE_ASM(label)		  \
 	.align	2		; \
   label:			; \
 	.long	asm_exec	; \
   label/**/_code:
 
-#define WORD_4TH(label)		  \
+#define CODE_4TH(label)		  \
 	.align	2		; \
   label:			; \
 	.long	call_code
@@ -97,18 +102,19 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 !!! ====================================================================
 
 	.data			! XXX: need writable+executable
-.text
+
 	.align	2
 	.global	heap
 heap:
 	.long	0xdeadbeef	! dummy
 
+	!! This should eventually become the DOES> part of CODE
 	.align	2
 asm_exec:			! code field of asm words points here
 	jmp	@TOS		! consume TOS
 	 mov.l	@PSP+, TOS	! fill TOS
 
-
+	!! This should eventually become the DOES> part of ":"
 	.align	2
 call_code:
 	mov.l	IP, @-RSP	! save caller's IP
@@ -118,7 +124,7 @@ call_code:
 	!! and let next_code set vacant TOS to next word PFA
 
 
-WORD_ASM(exit_4th)
+CODE_ASM(exit_4th)
 	mov.l	@RSP+, IP	! pop return address
 	!! FALLTHROUGH to "NEXT"
 next_code:
@@ -132,39 +138,45 @@ next_code:
 	 add	r0, TOS		! TOS = PFA (for code to consume)
 
 
-WORD_ASM(return_to_c)
+CODE_ASM(return_to_c)
 	mov.l	@RSP+, r0
 	jmp	@r0
 	 nop
 
-WORD_ASM(one)
+
+CODE_ASM(one)
 	mov.l	TOS, @-PSP
 	jmp	@NEXT
 	 mov	#1, TOS
 
-WORD_ASM(two)
+
+CODE_ASM(two)
 	mov.l	TOS, @-PSP
 	jmp	@NEXT
 	 mov	#2, TOS
 
-WORD_ASM(plus)
+
+CODE_ASM(plus)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 add	r0, TOS
 
-WORD_ASM(minus)
+
+CODE_ASM(minus)
 	mov.l	@PSP+, r0
 	sub	TOS, r0
 	jmp	@NEXT
 	 mov	r0, TOS
 
-WORD_ASM(mul)
+
+CODE_ASM(mul)
 	mov.l	@PSP+, r0
 	mul.l	r0, TOS
 	jmp	@NEXT
 	 sts	macl, TOS
 
-WORD_ASM(div)
+
+CODE_ASM(div)
 	!! sdivsi3 tweaked to return result in in TOS
 	tst	TOS, TOS
 	mov	TOS, r1
@@ -193,12 +205,14 @@ WORD_ASM(div)
 	jmp	@NEXT
 	 mov	#0, TOS
 
-WORD_ASM(literal)
+
+CODE_ASM(literal)
 	mov.l	TOS, @-PSP
 	jmp	@NEXT
 	 mov.l	@IP+, TOS	! push literal compiled after us
 
-WORD_4TH(one_plus_two)
+
+CODE_4TH(one_plus_two)
 	.long	literal
 	.long	9
 	.long	literal
@@ -206,13 +220,15 @@ WORD_4TH(one_plus_two)
 	.long	div
 	EXIT_4TH
 
-WORD_4TH(plus_three)
+
+CODE_4TH(plus_three)
 	.long	one_plus_two
 	.long	plus
 	.long	literal
 	.long	1000
 	.long	mul
 	EXIT_4TH
+
 
 	.align	2
 ALTENTRY(entry_point)		! call me via NEXT !!!
