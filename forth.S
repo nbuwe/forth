@@ -94,7 +94,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define CODE_ASM(label)		  \
 	.align	2		; \
   label:			; \
-	.long	asm_exec	; \
+	.long	asm_does	; \
   label/**/_code:
 
 
@@ -162,13 +162,6 @@ heap:
 	.long	0xdeadbeef	! dummy
 
 
-	!! This should eventually become the DOES> part of CODE
-	.align	2
-asm_exec:			! code field of asm words points here
-	jmp	@TOS		! consume TOS
-	 FILL_TOS
-
-
 	!! This should eventually become the DOES> part of ":"
 	.align	2
 call_code:
@@ -202,17 +195,25 @@ CODE_ASM(return_to_c)
 !!! ====================================================================
 
 
+	!! This should eventually become the DOES> part of CODE
+DOES_ASM(asm_does)		! code field of asm words points here
+	jmp	@TOS		! consume TOS
+	 FILL_TOS
+
 
 	!! This should eventually become the DOES> part of "constant"
 DOES_ASM(const_does)
 	jmp	@NEXT
 	 mov.l	@TOS, TOS
 
+
+#if 0
 	!! Example only - this is how the DOES> part of "constant"
 	!! would look like if it was defined as forth code
 DOES_4TH(const_does_4th_example)
 	.long	fetch
 	EXIT_4TH
+#endif
 
 
 /**
