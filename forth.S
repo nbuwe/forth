@@ -277,8 +277,25 @@ CODE_ASM(fetch)			! "@" - CORE 6.1.0650
 
 
 CODE_ASM(store)			! "!" - CORE 6.1.0010
-	mov.l	@PSP+, r0
-	mov.l	TOS, @r0
+	mov.l	@PSP+, r0	! address
+	mov.l	TOS, @r0	! store value
+	jmp	@NEXT
+	 mov.l	@PSP+, TOS
+
+
+CODE_ASM(plus_store)		! "+!" - CORE 6.1.0130
+	mov.l	@PSP+, r0	! address
+	mov.l	@r0, r1		! fetch current value
+	add	r1, TOS		! add
+	mov.l	TOS, @r0	! store sum
+	jmp	@NEXT
+	 mov.l	@PSP+, TOS
+
+
+CODE_ASM(one_plus_store)	! "1+!"
+	mov.l	@TOS, r1	! fetch current value
+	add	#1, r1		! increment
+	mov.l	r1, @TOS	! store sum
 	jmp	@NEXT
 	 mov.l	@PSP+, TOS
 
@@ -532,6 +549,7 @@ CODE_4TH(test_word)
 	.long	v1
 	.long	v1, fetch
 	.long	v1, c1, store
+	.long	v1, one_plus_store
 	.long	v1, fetch
 	EXIT_4TH
 
