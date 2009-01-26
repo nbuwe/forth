@@ -146,12 +146,6 @@ asm_exec:			! code field of asm words points here
 	 mov.l	@PSP+, TOS	! fill TOS
 
 
-	.align	2
-does_exec:
-	!!mov.l	TOS, @-PSP	! used to fill callers delay slot
-	bra	call_code
-	 sts	pr, TOS
-
 	!! This should eventually become the DOES> part of ":"
 	.align	2
 call_code:
@@ -188,9 +182,14 @@ DOES_ASM(const_does_asm)
 
 
 DOES_ASM(const_does_4th)	! XXX: experiment with DOES_4TH implementation
-	bsr	does_exec
-	 mov.l	TOS, @-PSP	! does_exec
-	.long	fetch
+	!! -- must be 4 bytes aligned
+	!! like calling call_code with 1f at TOS, but inlined/optimized
+	mova	1f, r0		! our IP (is @(4, pc) for pc == (. + 4)&~0x3)
+	mov.l	IP, @-RSP	! save caller's IP
+	jmp	@NEXT
+	 mov	r0, IP
+	!! -- remains 4 bytes aligned
+1:	.long	fetch
 	EXIT_4TH
 
 
