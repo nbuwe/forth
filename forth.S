@@ -97,7 +97,8 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define CODE_4TH(label)		  \
 	.align	2		; \
   label:			; \
-	.long	call_code
+	.long	call_code	; \
+  label/**/_body:
 
 
 #define EXIT_4TH		  \
@@ -105,28 +106,46 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 	.long	0xdeadbeef	/* sentinel */
 
 
+/*
+ * Address of this code will be written into the code field
+ * This code will be directly called by the interpreter
+ * PFA of the defined word will be in TOS
+ */
 #define DOES_ASM(label)		  \
 	.align	2		; \
   label:			; \
 
 
+/*
+ * For words with DOES> part (that contains forth code by definition)
+ * the address of the following asm code will be compiled into the
+ * code field of the defined word.
+ *
+ * This code does an equivalent of jumping to "CALL" with 1f in TOS,
+ * but inlined and since we jump to "NEXT" directly we can avoid
+ * messing with TOS at all.
+ */
 #define DOES_4TH(label)		  \
-	.align	2		; \
-  label:			; \
+  DOES_ASM(label)		; \
+	mova	1f, r0		; \
+	mov.l	IP, @-RSP	; \
+	jmp	@NEXT		; \
+	 mov	r0, IP		; \
+  1:	/* threaded code follows */
 
 
 #define VARIABLE(label)		  \
 	.align	2		; \
   label:			; \
 	.long	next_code	; \
-  label/**/_data:
+  label/**/_var:
 
 
 #define CONSTANT(label)		  \
 	.align	2		; \
   label:			; \
-	.long	const_does_4th	; \
-  label/**/_data:
+	.long	const_does	; \
+  label/**/_const:
 
 
 !!! ====================================================================
@@ -176,24 +195,20 @@ CODE_ASM(return_to_c)
 	 nop
 
 
-DOES_ASM(const_does_asm)
+!!! ====================================================================
+
+
+
+	!! This should eventually become the DOES> part of "constant"
+DOES_ASM(const_does)
 	jmp	@NEXT
 	 mov.l	@TOS, TOS
 
-
-DOES_ASM(const_does_4th)	! XXX: experiment with DOES_4TH implementation
-	!! -- must be 4 bytes aligned
-	!! like calling call_code with 1f at TOS, but inlined/optimized
-	mova	1f, r0		! our IP (is @(4, pc) for pc == (. + 4)&~0x3)
-	mov.l	IP, @-RSP	! save caller's IP
-	jmp	@NEXT
-	 mov	r0, IP
-	!! -- remains 4 bytes aligned
-1:	.long	fetch
+	!! Example only - this is how the DOES> part of "constant"
+	!! would look like if it was defined as forth code
+DOES_4TH(const_does_4th_example)
+	.long	fetch
 	EXIT_4TH
-
-
-!!! ====================================================================
 
 
 /**
@@ -526,15 +541,10 @@ CODE_4TH(plus_three)
 	.long	lit, 100
 	.long	lit, 10
 	.long	not_equals
-	.long	c1
-	.long	dup
-#if 0
 	.long	v1
-	.long   lit, 0xdeadbeef
-	.long	store
-	.long	v1
-	.long   dup, fetch
-#endif
+	.long	v1, fetch
+	.long	v1, c1, store
+	.long	v1, fetch
 	EXIT_4TH
 
 
