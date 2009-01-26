@@ -360,8 +360,8 @@ CODE_ASM(star)			! "*" - CORE 6.1.0090
 	 sts	macl, TOS
 
 
-CODE_ASM(slash)		    	! "/" - CORE 6.1.0230
 	!! sdivsi3 tweaked to return result in TOS
+CODE_ASM(slash)		    	! "/" - CORE 6.1.0230
 	tst	TOS, TOS
 	mov	TOS, r1
 	bt/s	.L_divide_by_zero
@@ -372,20 +372,15 @@ CODE_ASM(slash)		    	! "/" - CORE 6.1.0230
 	subc	r3, r3
 	subc	r2, TOS
 	div0s	r1, r3
-#define DIVSTEP		\
-	rotcl	TOS;	\
+	.rept /* DIVSTEP */ 32 /* times { */
+	rotcl	TOS
 	div1	r1, r3
-	/* repeat 32 times */
-	DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP;
-	DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP;
-	DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP;
-	DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP; DIVSTEP;
-#undef DIVSTEP
+	.endr /* } */
 	rotcl	TOS
 	jmp	@NEXT
 	 addc	r2, TOS
 
-.L_divide_by_zero:
+  .L_divide_by_zero:
 	jmp	@NEXT
 	 mov	#0, TOS
 
@@ -524,7 +519,7 @@ CONSTANT(c1) .long 0x00c0ffee
 VARIABLE(v1) .long 0x0000beef
 
 CODE_4TH(three)
-	.long	lit, 9, lit, 3, slash
+	.long	lit, 11, lit, 3, slash
 	EXIT_4TH
 
 
