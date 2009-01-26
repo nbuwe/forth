@@ -523,24 +523,17 @@ CODE_ASM(xor)			! "xor" - CORE 6.1.2490
 CONSTANT(c1) .long 0x00c0ffee
 VARIABLE(v1) .long 0x0000beef
 
-CODE_4TH(one_plus_two)
-	.long	lit, 9
-	.long	lit, 3
-	.long	slash
+CODE_4TH(three)
+	.long	lit, 9, lit, 3, slash
 	EXIT_4TH
 
 
-CODE_4TH(plus_three)
-	.long	one_plus_two
-	.long	plus
-	.long	true
-	.long	question_branch, 1f
-	.long	lit, 1000
-	.long	star
-1:	
-	.long	lit, 100
-	.long	lit, 10
-	.long	not_equals
+CODE_4TH(test_word)
+	.long	three, plus
+	.long	lit, 100, lit, 10, not_equals
+	.long	question_branch, 1f ! if
+	.long	   lit, 1000, star
+1:	!       then
 	.long	v1
 	.long	v1, fetch
 	.long	v1, c1, store
@@ -550,6 +543,6 @@ CODE_4TH(plus_three)
 
 	.align	2
 ALTENTRY(entry_point)		! call me via NEXT !!!
-	.long	plus_three
+	.long	test_word
 	.long	return_to_c
 	.long	0xdeadbeef
