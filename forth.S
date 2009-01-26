@@ -84,13 +84,6 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 !!! ====================================================================
 
-#define NAME_FIELD(flags, name)   \
-	.p2align 2, 0		; \
-	.byte	flags | (2f-1f)	; \
-1:	.ascii	name		; \
-2:	.p2align 2, 0
-
-
 #define CODE_ASM(label)		  \
 	.align	2		; \
   label:			; \
@@ -103,6 +96,20 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
   label:			; \
 	.long	call_code	; \
   label/**/_body:
+
+
+#define CODE_VAR(label)		  \
+	.align	2		; \
+  label:			; \
+	.long	next_code	; \
+  label/**/_var:
+
+
+#define CODE_CONST(label)	  \
+	.align	2		; \
+  label:			; \
+	.long	const_does	; \
+  label/**/_const:
 
 
 #define EXIT_4TH		  \
@@ -138,19 +145,24 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
   1:	/* threaded code follows */
 
 
-#define VARIABLE(label)		  \
-	.align	2		; \
-  label:			; \
-	.long	next_code	; \
-  label/**/_var:
+
+#define NAME_FIELD(name, flags)   \
+	.align	2, 0		; \
+	.byte	flags | (2f-1f)	; \
+1:	.ascii	name		; \
+2:	.align	2, 0
 
 
-#define CONSTANT(label)		  \
-	.align	2		; \
-  label:			; \
-	.long	const_does	; \
-  label/**/_const:
+#define DEFWORD(name, flags, defcode, label)	  \
+	NAME_FIELD(name, flags)			; \
+	.long	0 /* XXX: link field */		; \
+	defcode(label)
 
+#define WORD(name, label)	DEFWORD(name, 0, CODE_4TH, label)
+#define IMMWORD(name, label)	DEFWORD(name, 0x80, CODE_4TH, label)
+#define ASMWORD(name, label)	DEFWORD(name, 0, CODE_ASM, label)
+#define CONSTANT(name, label)	DEFWORD(name, 0, CODE_CONST, label)
+#define VARIABLE(name, label)	DEFWORD(name, 0, CODE_VAR, label)
 
 !!! ====================================================================
 
@@ -160,6 +172,12 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 	.global	heap
 heap:
 	.long	0xdeadbeef	! dummy
+
+
+CODE_ASM(return_to_c)
+	mov.l	@RSP+, r0
+	jmp	@r0
+	 nop
 
 
 	!! This should eventually become the DOES> part of ":"
@@ -172,7 +190,8 @@ call_code:
 	!! and let next_code set vacant TOS to next word PFA
 
 
-CODE_ASM(exit_4th)
+!!! "exit" - CORE 6.1.1380
+ASMWORD("exit", exit_4th)
 	mov.l	@RSP+, IP	! pop return address
 	!! FALLTHROUGH to "NEXT"
 next_code:
@@ -184,12 +203,6 @@ next_code:
 	mov	#4, TOS		!
 	jmp	@r1		! execute word's code
 	 add	r0, TOS		! TOS = PFA (for code to consume)
-
-
-CODE_ASM(return_to_c)
-	mov.l	@RSP+, r0
-	jmp	@r0
-	 nop
 
 
 !!! ====================================================================
@@ -220,17 +233,21 @@ DOES_4TH(const_does_4th_example)
  * Stack manipualtion
  */
 
-CODE_ASM(drop)			! "drop" - CORE 6.1.1260
+
+!!! "drop" - CORE 6.1.1260
+ASMWORD("drop", drop)
 	jmp	@NEXT
 	 FILL_TOS
 
 
-CODE_ASM(dup)			! "dup - CORE 6.1.1290
+!!! "dup - CORE 6.1.1290
+ASMWORD("dup", dup)
 	jmp	@NEXT
 	 SPILL_TOS
 
 
-CODE_ASM(question_dup)		! "?dup" - CORE 6.1.0630
+!!! "?dup" - CORE 6.1.0630
+ASMWORD("?dup", question_dup)
 	tst	TOS, TOS
 	bt	1f
 	jmp	@NEXT
@@ -239,21 +256,24 @@ CODE_ASM(question_dup)		! "?dup" - CORE 6.1.0630
 	 nop			! do nothing if zero
 
 
-CODE_ASM(over)			! "over" - CORE 6.1.1990
+!!! "over" - CORE 6.1.1990
+ASMWORD("over", over)
 	mov.l	@PSP, r0
 	SPILL_TOS
 	jmp 	@NEXT
 	 mov	r0, TOS
 
 
-CODE_ASM(swap)			! "swap" - CORE 6.1.2260
+!!! "swap" - CORE 6.1.2260
+ASMWORD("swap", swap)
 	mov.l	@PSP, r0
 	mov.l	TOS, @PSP
 	jmp 	@NEXT
 	 mov	r0, TOS
 
 
-CODE_ASM(rot)			! "rot" - CORE 6.1.2160
+!!! "rot" - CORE 6.1.2160
+ASMWORD("rot", rot)
 	mov.l	@PSP+, r0
 	mov.l	@PSP+, r1
 	mov.l	r0, @-PSP
@@ -282,19 +302,23 @@ CODE_ASM(rot)			! "rot" - CORE 6.1.2160
 */
 
 
-CODE_ASM(fetch)			! "@" - CORE 6.1.0650
+
+!!! "@" - CORE 6.1.0650
+ASMWORD("@", fetch)
 	jmp	@NEXT
 	 mov.l	@TOS, TOS
 
 
-CODE_ASM(store)			! "!" - CORE 6.1.0010
+!!! "!" - CORE 6.1.0010
+ASMWORD("!", store)
 	mov.l	@PSP+, r0	! address
 	mov.l	TOS, @r0	! store value
 	jmp	@NEXT
 	 FILL_TOS
 
 
-CODE_ASM(plus_store)		! "+!" - CORE 6.1.0130
+!!! "+!" - CORE 6.1.0130
+ASMWORD("+!", plus_store)
 	mov.l	@PSP+, r0	! address
 	mov.l	@r0, r1		! fetch current value
 	add	r1, TOS		! add
@@ -303,7 +327,8 @@ CODE_ASM(plus_store)		! "+!" - CORE 6.1.0130
 	 FILL_TOS
 
 
-CODE_ASM(one_plus_store)	! "1+!"
+!!! "1+!" - nonstandard
+ASMWORD("1+!", one_plus_store)
 	mov.l	@TOS, r1	! fetch current value
 	add	#1, r1		! increment
 	mov.l	r1, @TOS	! store sum
@@ -311,18 +336,21 @@ CODE_ASM(one_plus_store)	! "1+!"
 	 FILL_TOS
 
 
-CODE_ASM(lit)			! aux for "literal" - CORE 6.1.1780
+!!! "lit" - auxiliary for "literal" (CORE 6.1.1780)
+ASMWORD("lit", lit)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	@IP+, TOS
 
 
-CODE_ASM(branch)		! "branch"
+!!! "branch" - auxiliary for "else" &co
+ASMWORD("branch", branch)
 	jmp	@NEXT
 	 mov.l	@IP+, IP
 
 
-CODE_ASM(question_branch)	! "?branch"
+!!! "?branch" - auxiliary for "if" &co
+ASMWORD("?branch", question_branch)
 	tst	TOS, TOS
 	bf/s	1f		! branch is taken when TOS is false(!)
 	 FILL_TOS
@@ -332,64 +360,75 @@ CODE_ASM(question_branch)	! "?branch"
 	 add	#4, IP		! skip branch address
 
 
-CODE_ASM(false)			! "false" - CORE-EXT 6.2.1485
+!!! "false" - CORE-EXT 6.2.1485
+ASMWORD("false", false)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	#0, TOS
 
 
-CODE_ASM(true)			! "true" - CORE-EXT 6.2.2298
+!!! "true" - CORE-EXT 6.2.2298
+ASMWORD("true", true)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	#-1, TOS
 
 
-CODE_ASM(one)			! "1" XXX
+!!! "1" - nonstandard
+ASMWORD("1", one)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	#1, TOS
 
 
-CODE_ASM(two)			! "2" XXX
+!!! "2" - nonstandard
+ASMWORD("2", two)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	#2, TOS
 
 
-CODE_ASM(abs)			! "abs" - CORE 6.1.0690
+!!! "abs" - CORE 6.1.0690
+ASMWORD("abs", abs)
 	cmp/pz	TOS
 	bt	1f
 	neg	TOS, TOS
 1:	jmp	@NEXT
 	 nop
 
-CODE_ASM(negate)		! "negate" - CORE 6.1.1910
+
+!!! "negate" - CORE 6.1.1910
+ASMWORD("negate", negate)
 	jmp	@NEXT
 	 neg	TOS, TOS
 
 
-CODE_ASM(plus)			! "+" - CORE 6.1.0120
+!!! "+" - CORE 6.1.0120
+ASMWORD("+", plus)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 add	r0, TOS
 
 
-CODE_ASM(minus)			! "-" - CORE 6.1.0160
+!!! "-" - CORE 6.1.0160
+ASMWORD("-", minus)
 	mov.l	@PSP+, r0
 	sub	TOS, r0
 	jmp	@NEXT
 	 mov	r0, TOS
 
 
-CODE_ASM(star)			! "*" - CORE 6.1.0090
+!!! "*" - CORE 6.1.0090
+ASMWORD("*", star)
 	mov.l	@PSP+, r0
 	mul.l	r0, TOS
 	jmp	@NEXT
 	 sts	macl, TOS
 
 
-	!! sdivsi3 tweaked to return result in TOS
-CODE_ASM(slash)		    	! "/" - CORE 6.1.0230
+!!! "/" - CORE 6.1.0230
+!!!	sdivsi3 tweaked to return result in TOS
+ASMWORD("/", slash)
 	tst	TOS, TOS
 	mov	TOS, r1
 	bt/s	.L_divide_by_zero
@@ -413,27 +452,32 @@ CODE_ASM(slash)		    	! "/" - CORE 6.1.0230
 	 mov	#0, TOS
 
 
-CODE_ASM(one_plus)		! "1+" - CORE 6.1.0290
+!!! "1+" - CORE 6.1.0290
+ASMWORD("1+", one_plus)
 	jmp	@NEXT
 	 add	#1, TOS
 
 
-CODE_ASM(one_minus)		! "1-" - CORE 6.1.0300
+!!! "1-" - CORE 6.1.0300
+ASMWORD("1-", one_minus)
 	jmp	@NEXT
 	 add	#-1, TOS
 
 
-CODE_ASM(two_star)		! "2*" - CORE 6.1.0320
+!!! "2*" - CORE 6.1.0320
+ASMWORD("2*", two_star)
 	jmp	@NEXT
 	 shal	TOS
 
 
-CODE_ASM(two_slash)		! "2/" - CORE 6.1.0330
+!!! "2/" - CORE 6.1.0330
+ASMWORD("2/", two_slash)
 	jmp	@NEXT
 	 shar	TOS
 
 
-CODE_ASM(zero_less)		! "0<" - CORE 6.1.0250
+!!! "0<" - CORE 6.1.0250
+ASMWORD("0<", zero_less)
 	mov	#0, r0
 	cmp/gt	TOS, r0
 	movt	TOS
@@ -441,21 +485,24 @@ CODE_ASM(zero_less)		! "0<" - CORE 6.1.0250
 	 neg	TOS, TOS
 
 
-CODE_ASM(zero_greater)		! "0>" - CORE-EXT 6.2.0280
+!!! "0>" - CORE-EXT 6.2.0280
+ASMWORD("0>", zero_greater)
 	cmp/pl	TOS
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
 
 
-CODE_ASM(zero_equals)		! "0=" - CORE 6.1.0270
+!!! "0=" - CORE 6.1.0270
+ASMWORD("0=", zero_equals)
 	tst	TOS, TOS
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
 
 
-CODE_ASM(zero_not_equals)	! "0<>" - CORE-EXT 6.2.0260
+!!! "0<>" - CORE-EXT 6.2.0260
+ASMWORD("0<>", zero_not_equals)
 	tst	TOS, TOS
 	movt	TOS
 	neg	TOS, TOS
@@ -463,7 +510,8 @@ CODE_ASM(zero_not_equals)	! "0<>" - CORE-EXT 6.2.0260
 	 not	TOS, TOS
 
 
-CODE_ASM(less_than)		! "<" - CORE 6.1.0480
+!!! "<" - CORE 6.1.0480
+ASMWORD("<", less_than)
 	mov.l	@PSP+, r0
 	cmp/gt	r0, TOS
 	movt	TOS
@@ -471,7 +519,8 @@ CODE_ASM(less_than)		! "<" - CORE 6.1.0480
 	 neg	TOS, TOS
 
 
-CODE_ASM(greater_than)		! ">" - CORE 6.1.0540
+!!! ">" - CORE 6.1.0540
+ASMWORD(">", greater_than)
 	mov.l	@PSP+, r0
 	cmp/gt	TOS, r0
 	movt	TOS
@@ -479,7 +528,8 @@ CODE_ASM(greater_than)		! ">" - CORE 6.1.0540
 	 neg	TOS, TOS
 
 
-CODE_ASM(equals)		! "=" - CORE 6.1.0530
+!!! "=" - CORE 6.1.0530
+ASMWORD("=", equals)
 	mov.l	@PSP+, r0
 	cmp/eq	TOS, r0
 	movt	TOS
@@ -487,7 +537,8 @@ CODE_ASM(equals)		! "=" - CORE 6.1.0530
 	 neg	TOS, TOS
 
 
-CODE_ASM(not_equals)		! "<>" - CORE-EXT 6.2.0500
+!!! "<>" - CORE-EXT 6.2.0500
+ASMWORD("<>", not_equals)
 	mov.l	@PSP+, r0
 	cmp/eq	TOS, r0
 	movt	TOS
@@ -496,7 +547,8 @@ CODE_ASM(not_equals)		! "<>" - CORE-EXT 6.2.0500
 	 not	TOS, TOS
 
 
-CODE_ASM(u_less_than)		! "u<" - CORE 6.1.2340
+!!! "u<" - CORE 6.1.2340
+ASMWORD("u<", u_less_than)
 	mov.l	@PSP+, r0
 	cmp/hi	r0, TOS
 	movt	TOS
@@ -504,7 +556,8 @@ CODE_ASM(u_less_than)		! "u<" - CORE 6.1.2340
 	 neg	TOS, TOS
 
 
-CODE_ASM(u_greater_than)	! "u>" - CORE-EXT 6.2.2350
+!!! "u>" - CORE-EXT 6.2.2350
+ASMWORD("u>", u_greater_than)
 	mov.l	@PSP+, r0
 	cmp/hi	TOS, r0
 	movt	TOS
@@ -512,24 +565,28 @@ CODE_ASM(u_greater_than)	! "u>" - CORE-EXT 6.2.2350
 	 neg	TOS, TOS
 
 
-CODE_ASM(invert)		! "invert" - CORE 6.1.1720
+!!! "invert" - CORE 6.1.1720
+ASMWORD("invert", invert)
 	jmp	@NEXT
 	 not	TOS, TOS
 
 
-CODE_ASM(and)			! "and" - CORE 6.1.0720
+!!! "and" - CORE 6.1.0720
+ASMWORD("and", and)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 and	r0, TOS
-	
 
-CODE_ASM(or)			! "or" - CORE 6.1.1980
+
+!!! "or" - CORE 6.1.1980
+ASMWORD("or", or)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 or	r0, TOS
-	
 
-CODE_ASM(xor)			! "xor" - CORE 6.1.2490
+
+!!! "xor" - CORE 6.1.2490
+ASMWORD("xor", xor)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 xor	r0, TOS
@@ -543,15 +600,15 @@ CODE_ASM(xor)			! "xor" - CORE 6.1.2490
 
 !!! ====================================================================
 
-CONSTANT(c1) .long 0x00c0ffee
-VARIABLE(v1) .long 0x0000beef
+CONSTANT("c1", c1) .long 0x00c0ffee
+VARIABLE("v1", v1) .long 0x0000beef
 
-CODE_4TH(three)
+WORD("three", three)
 	.long	lit, 11, lit, 3, slash
 	EXIT_4TH
 
 
-CODE_4TH(test_word)
+WORD("test-word", test_word)
 	.long	three, plus
 	.long	lit, 100, lit, 10, not_equals
 	.long	question_branch, 1f ! if
