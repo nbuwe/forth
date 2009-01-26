@@ -8,6 +8,10 @@
 #define IP	r11		/* instruction pointer */
 #define NEXT	r13		/* "next" address to avoid memory loads */
 
+#define SPILL_TOS	mov.l	TOS, @-PSP
+#define FILL_TOS	mov.l	@PSP+, TOS
+
+
 	.section ".bss"
 	.balign	4096
 
@@ -57,7 +61,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 	.align	2		! mova target
 1:
-	mov.l	TOS, @-PSP
+	SPILL_TOS
 	mov	PSP, r0		! return value from the top of forth stack
 
 	!! epilogue
@@ -162,7 +166,7 @@ heap:
 	.align	2
 asm_exec:			! code field of asm words points here
 	jmp	@TOS		! consume TOS
-	 mov.l	@PSP+, TOS	! fill TOS
+	 FILL_TOS
 
 
 	!! This should eventually become the DOES> part of ":"
@@ -179,8 +183,8 @@ CODE_ASM(exit_4th)
 	mov.l	@RSP+, IP	! pop return address
 	!! FALLTHROUGH to "NEXT"
 next_code:
-	mov.l	TOS, @-PSP	! spill TOS
-.L_next_code_no_spill:		! -- entry point for call_code to jump to
+	SPILL_TOS
+  .L_next_code_no_spill:	! -- entry point for call_code to jump to
 	mov.l	@IP+, r0	! r0 = CFA of the next word to execute
 				!  and advance IP
 	mov.l	@r0, r1		! r1 = *CFA (acctual code)
@@ -217,26 +221,26 @@ DOES_4TH(const_does_4th_example)
 
 CODE_ASM(drop)			! "drop" - CORE 6.1.1260
 	jmp	@NEXT
-	 mov.l	@PSP+, TOS
+	 FILL_TOS
 
 
 CODE_ASM(dup)			! "dup - CORE 6.1.1290
 	jmp	@NEXT
-	 mov.l	TOS, @-PSP
+	 SPILL_TOS
 
 
 CODE_ASM(question_dup)		! "?dup" - CORE 6.1.0630
 	tst	TOS, TOS
 	bt	1f
 	jmp	@NEXT
-	 mov.l	TOS, @-PSP
+	 SPILL_TOS		! dup if non-zero
 1:	jmp	@NEXT
-	 nop
+	 nop			! do nothing if zero
 
 
 CODE_ASM(over)			! "over" - CORE 6.1.1990
 	mov.l	@PSP, r0
-	mov.l	TOS, @-PSP
+	SPILL_TOS
 	jmp 	@NEXT
 	 mov	r0, TOS
 
@@ -246,12 +250,18 @@ CODE_ASM(swap)			! "swap" - CORE 6.1.2260
 	mov.l	TOS, @PSP
 	jmp 	@NEXT
 	 mov	r0, TOS
-	
+
+
+CODE_ASM(rot)			! "rot" - CORE 6.1.2160
+	mov.l	@PSP+, r0
+	mov.l	@PSP+, r1
+	mov.l	r0, @-PSP
+	mov.l	TOS, @-PSP
+	jmp	@NEXT
+	 mov	r1, TOS
+
 
 /*
-
- ROT - CORE 6.1.2160
- SWAP - CORE 6.1.2260
 
 6.2.1930 NIP
 6.2.2030 PICK
@@ -280,7 +290,7 @@ CODE_ASM(store)			! "!" - CORE 6.1.0010
 	mov.l	@PSP+, r0	! address
 	mov.l	TOS, @r0	! store value
 	jmp	@NEXT
-	 mov.l	@PSP+, TOS
+	 FILL_TOS
 
 
 CODE_ASM(plus_store)		! "+!" - CORE 6.1.0130
@@ -289,7 +299,7 @@ CODE_ASM(plus_store)		! "+!" - CORE 6.1.0130
 	add	r1, TOS		! add
 	mov.l	TOS, @r0	! store sum
 	jmp	@NEXT
-	 mov.l	@PSP+, TOS
+	 FILL_TOS
 
 
 CODE_ASM(one_plus_store)	! "1+!"
@@ -297,11 +307,11 @@ CODE_ASM(one_plus_store)	! "1+!"
 	add	#1, r1		! increment
 	mov.l	r1, @TOS	! store sum
 	jmp	@NEXT
-	 mov.l	@PSP+, TOS
+	 FILL_TOS
 
 
 CODE_ASM(lit)			! aux for "literal" - CORE 6.1.1780
-	mov.l	TOS, @-PSP
+	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	@IP+, TOS
 
@@ -314,7 +324,7 @@ CODE_ASM(branch)		! "branch"
 CODE_ASM(question_branch)	! "?branch"
 	tst	TOS, TOS
 	bf/s	1f		! branch is taken when TOS is false(!)
-	 mov.l	@PSP+, TOS
+	 FILL_TOS
 	jmp	@NEXT
 	 mov.l	@IP+, IP	! take branch
 1:	jmp	@NEXT
@@ -322,25 +332,25 @@ CODE_ASM(question_branch)	! "?branch"
 
 
 CODE_ASM(false)			! "false" - CORE-EXT 6.2.1485
-	mov.l	TOS, @-PSP
+	SPILL_TOS
 	jmp	@NEXT
 	 mov	#0, TOS
 
 
 CODE_ASM(true)			! "true" - CORE-EXT 6.2.2298
-	mov.l	TOS, @-PSP
+	SPILL_TOS
 	jmp	@NEXT
 	 mov	#-1, TOS
 
 
 CODE_ASM(one)			! "1" XXX
-	mov.l	TOS, @-PSP
+	SPILL_TOS
 	jmp	@NEXT
 	 mov	#1, TOS
 
 
 CODE_ASM(two)			! "2" XXX
-	mov.l	TOS, @-PSP
+	SPILL_TOS
 	jmp	@NEXT
 	 mov	#2, TOS
 
@@ -382,7 +392,7 @@ CODE_ASM(slash)		    	! "/" - CORE 6.1.0230
 	tst	TOS, TOS
 	mov	TOS, r1
 	bt/s	.L_divide_by_zero
-	 mov.l	@PSP+, TOS
+	 FILL_TOS
 
 	mov	#0, r2
 	div0s	r2, TOS
