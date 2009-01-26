@@ -105,6 +105,16 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 	.long	0xdeadbeef	/* sentinel */
 
 
+#define DOES_ASM(label)		  \
+	.align	2		; \
+  label:			; \
+
+
+#define DOES_4TH(label)		  \
+	.align	2		; \
+  label:			; \
+
+
 #define VARIABLE(label)		  \
 	.align	2		; \
   label:			; \
@@ -115,7 +125,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define CONSTANT(label)		  \
 	.align	2		; \
   label:			; \
-	.long	next_code	; \
+	.long	const_does_4th	; \
   label/**/_data:
 
 
@@ -135,6 +145,12 @@ asm_exec:			! code field of asm words points here
 	jmp	@TOS		! consume TOS
 	 mov.l	@PSP+, TOS	! fill TOS
 
+
+	.align	2
+does_exec:
+	!!mov.l	TOS, @-PSP	! used to fill callers delay slot
+	bra	call_code
+	 sts	pr, TOS
 
 	!! This should eventually become the DOES> part of ":"
 	.align	2
@@ -160,14 +176,23 @@ next_code:
 	 add	r0, TOS		! TOS = PFA (for code to consume)
 
 
-create_exec:
-	jmp	@NEXT
-	 nop
-
 CODE_ASM(return_to_c)
 	mov.l	@RSP+, r0
 	jmp	@r0
 	 nop
+
+
+DOES_ASM(const_does_asm)
+	jmp	@NEXT
+	 mov.l	@TOS, TOS
+
+
+DOES_ASM(const_does_4th)	! XXX: experiment with DOES_4TH implementation
+	bsr	does_exec
+	 mov.l	TOS, @-PSP	! does_exec
+	.long	fetch
+	EXIT_4TH
+
 
 !!! ====================================================================
 
@@ -482,7 +507,7 @@ CODE_ASM(xor)			! "xor" - CORE 6.1.2490
 !!! ====================================================================
 
 CONSTANT(c1) .long 0x00c0ffee
-VARIABLE(v1) .long 0x00c0ffee
+VARIABLE(v1) .long 0x0000beef
 
 CODE_4TH(one_plus_two)
 	.long	lit, 9
@@ -502,11 +527,15 @@ CODE_4TH(plus_three)
 	.long	lit, 100
 	.long	lit, 10
 	.long	not_equals
+	.long	c1
+	.long	dup
+#if 0
 	.long	v1
 	.long   lit, 0xdeadbeef
 	.long	store
 	.long	v1
 	.long   dup, fetch
+#endif
 	EXIT_4TH
 
 
