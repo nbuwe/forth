@@ -600,6 +600,54 @@ ASMWORD("xor", xor)
 
 !!! ====================================================================
 
+
+!!! "bl" - CORE 6.1.0770
+CONSTANT("bl", bl) .long 0x20
+
+
+!!! "cr" - CORE 6.1.0990
+WORD("cr", cr)
+	.long	lit, '\n, emit
+	EXIT_4TH
+
+
+!!! "emit" - CORE 6.1.1320
+ASMWORD("emit", emit)
+	mov.l	1f, r0
+	mov	TOS, r4
+	jsr	@r0
+	 FILL_TOS
+	jmp	@NEXT
+	 nop
+	.align	2
+1:	.long	_C_LABEL(emit_impl)
+
+
+!!! "space" - CORE 6.1.2220
+WORD("space", space)
+	.long	bl, emit
+	EXIT_4TH
+
+
+!!! "spaces" - CORE 6.1.2230
+!WORD("spaces", space)
+
+
+!!! "type" - CORE 6.1.2310
+ASMWORD("type", type)
+	mov.l	1f, r0
+	mov	TOS, r5
+	mov.l	@PSP+, r4
+	jsr	@r0
+	 FILL_TOS
+	jmp	@NEXT
+	 nop
+	.align	2
+1:	.long	_C_LABEL(type_impl)
+
+
+!!! ====================================================================
+
 CONSTANT("c1", c1) .long 0x00c0ffee
 VARIABLE("v1", v1) .long 0x0000beef
 
@@ -625,5 +673,18 @@ WORD("test-word", test_word)
 	.align	2
 ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
+	.long	lit, 'H, emit
+	.long	lit, 'e, emit
+	.long	lit, 'l, emit
+	.long	lit, 'l, emit
+	.long	lit, 'o, emit
+	.long	lit, ',, emit
+	.long	space
+	.long	lit, 'W, emit
+	.long	lit, 'o, emit
+	.long	lit, 'r, emit
+	.long	lit, 'l, emit
+	.long	lit, 'd, emit
+	.long	cr
 	.long	return_to_c
 	.long	0xdeadbeef
