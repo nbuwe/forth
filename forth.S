@@ -669,22 +669,12 @@ WORD("test-word", test_word)
 	.long	v1, fetch
 	EXIT_4TH
 
+99:	.ascii	"Hello, World!"
+100:
 
 	.align	2
 ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
-	.long	lit, 'H, emit
-	.long	lit, 'e, emit
-	.long	lit, 'l, emit
-	.long	lit, 'l, emit
-	.long	lit, 'o, emit
-	.long	lit, ',, emit
-	.long	space
-	.long	lit, 'W, emit
-	.long	lit, 'o, emit
-	.long	lit, 'r, emit
-	.long	lit, 'l, emit
-	.long	lit, 'd, emit
-	.long	cr
+	.long	lit, 99b, lit, (100b-99b), type, cr
 	.long	return_to_c
 	.long	0xdeadbeef
