@@ -1,6 +1,8 @@
 /* $Id$ */
 
+#include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 extern void *test(int);
@@ -39,4 +41,29 @@ type_impl(const char *data, int32_t size)
     fwrite(data, size, 1, stdout);
     fflush(stdout);
     return;
+}
+
+
+uint32_t
+accept_impl(char *buf, uint32_t buflen)
+{
+    char *cbuf;
+    char *ret;
+    size_t clen;
+
+    cbuf = malloc(buflen + 1); /* +1 for NUL added by fgets(3) */
+    if (cbuf == NULL) {
+	return 0;
+    }
+
+    ret = fgets(cbuf, buflen + 1, stdin);
+    if (ret == NULL) {
+	free(cbuf);
+	return 0;
+    }
+
+    clen = strlen(cbuf);
+    memcpy(buf, cbuf, clen);
+
+    return clen;
 }
