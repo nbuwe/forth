@@ -646,6 +646,24 @@ ASMWORD("type", type)
 1:	.long	_C_LABEL(type_impl)
 
 
+
+!!! ====================================================================
+
+
+!!! "accept" - CORE 6.1.0695
+ASMWORD("accept", accept_4th)	! XXX: avoid name clash with accept(2)
+	mov.l	1f, r0
+	mov	TOS, r5
+	mov.l	@PSP+, r4
+	jsr	@r0
+	 FILL_TOS
+	SPILL_TOS
+	jmp	@NEXT
+	 mov	r0, TOS		! push +n2 returned by the C code
+	.align	2
+1:	.long	_C_LABEL(accept_impl)
+
+
 !!! ====================================================================
 
 CONSTANT("c1", c1) .long 0x00c0ffee
@@ -669,12 +687,19 @@ WORD("test-word", test_word)
 	.long	v1, fetch
 	EXIT_4TH
 
-99:	.ascii	"Hello, World!"
-100:
+100:	.ascii	"Hello, World!"
+101:
+
+102:	.ascii	"> "
+103:
+
+104:	.skip	128
 
 	.align	2
 ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
-	.long	lit, 99b, lit, (100b-99b), type, cr
+	.long	lit, 100b, lit, (101b-100b), type, cr
+	.long	lit, 102b, lit, (103b-102b), type
+	.long	lit, 104b, dup, lit, 128, accept_4th, type
 	.long	return_to_c
 	.long	0xdeadbeef
