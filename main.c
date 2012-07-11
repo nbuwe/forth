@@ -13,6 +13,8 @@ main()
     int32_t *p;
 
     psp = test(10);
+
+    printf("-- STACK:\n");
     for (p = psp; p < stack_bottom; ++p) {
 	printf("0x%08x  %d\n", *p, *p);
     }
