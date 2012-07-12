@@ -82,34 +82,48 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 .L_entry: 	.long	entry_point
 .L_next:	.long	next_code
 
+
 !!! ====================================================================
 
+
+#define NAMED_CELL(label)	  \
+	.p2align 2		; \
+	.type	label@object	; \
+	.size	label, 4	; \
+  label:
+
+
 #define CODE_ASM(label)		  \
-	.align	2		; \
-  label:			; \
+	/* Code Field */	  \
+  NAMED_CELL(label)		; \
 	.long	asm_does	; \
+	/* Parameter Field */	  \
+	.type	label/**/_code@function ; \
   label/**/_code:
 
 
 #define CODE_4TH(label)		  \
-	.align	2		; \
-  label:			; \
+	/* Code Field */	  \
+  NAMED_CELL(label)		; \
 	.long	call_code	; \
+	/* Parameter Field */	  \
   label/**/_body:
 
 
 #define CODE_VAR(label)		  \
-	.align	2		; \
-  label:			; \
+	/* Code Field */	  \
+  NAMED_CELL(label)		; \
 	.long	next_code	; \
-  label/**/_var:
+	/* Parameter Field */	  \
+  NAMED_CELL(label/**/_var)
 
 
 #define CODE_CONST(label)	  \
-	.align	2		; \
-  label:			; \
+	/* Code Field */	  \
+  NAMED_CELL(label)		; \
 	.long	const_does	; \
-  label/**/_const:
+	/* Parameter Field */	  \
+  NAMED_CELL(label/**/_const)
 
 
 #define EXIT_4TH		  \
