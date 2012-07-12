@@ -12,6 +12,8 @@
 #define FILL_TOS	mov.l	@PSP+, TOS
 
 
+!!! ====================================================================
+
 	.section ".bss"
 	.balign	4096
 
@@ -25,6 +27,13 @@ rstack_limit:
 	.space	4096
 rstack_bottom:
 
+terminal_input_buffer:
+	.space	4096
+
+word_buf:	      ! buffer for the counted string returned by WORD
+	.space	256
+
+!!! ====================================================================
 
 	.text
 ENTRY(test)
@@ -346,6 +355,20 @@ ASMWORD("1+!", one_plus_store)
 	mov.l	@TOS, r1	! fetch current value
 	add	#1, r1		! increment
 	mov.l	r1, @TOS	! store sum
+	jmp	@NEXT
+	 FILL_TOS
+
+
+!!! C@ - CORE 6.1.0870
+ASMWORD("c@", c_fetch)
+	jmp	@NEXT
+	 mov.b	@TOS, TOS
+
+
+!!! C! - CORE 6.1.0850
+ASMWORD("c!", c_store)
+	mov.b	@PSP+, r0	! address
+	mov.b	TOS, @r0	! store value
 	jmp	@NEXT
 	 FILL_TOS
 
@@ -676,6 +699,27 @@ ASMWORD("accept", accept_4th)	! XXX: avoid name clash with accept(2)
 	 mov	r0, TOS		! push +n2 returned by the C code
 	.align	2
 1:	.long	_C_LABEL(accept_impl)
+
+
+!!! TIB - CORE EXT 6.2.2290
+VARIABLE("tib", tib)
+	.long	terminal_input_buffer
+
+
+!!! #TIB - CORE EXT 6.2.0060
+VARIABLE("#tib", number_tib)
+	.long	0
+
+
+!!! >IN - CORE 6.1.0560
+VARIABLE(">in", to_in)
+	.long	0
+
+
+!!! SOURCE - CORE 6.1.2216
+WORD("source", source)
+	.long	tib, number_tib
+	EXIT_4TH
 
 
 !!! ====================================================================
