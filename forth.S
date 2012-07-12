@@ -325,7 +325,6 @@ ASMWORD("rot", rot)
 */
 
 
-
 !!! "@" - CORE 6.1.0650
 ASMWORD("@", fetch)
 	jmp	@NEXT
@@ -361,8 +360,9 @@ ASMWORD("1+!", one_plus_store)
 
 !!! C@ - CORE 6.1.0870
 ASMWORD("c@", c_fetch)
+	mov.b	@TOS, TOS	! loaded byte is sign-extended
 	jmp	@NEXT
-	 mov.b	@TOS, TOS
+	 extu.b	TOS, TOS	! we want it zero-extended
 
 
 !!! C! - CORE 6.1.0850
@@ -371,6 +371,14 @@ ASMWORD("c!", c_store)
 	mov.b	TOS, @r0	! store value
 	jmp	@NEXT
 	 FILL_TOS
+
+
+!!! COUNT - CORE 6.1.0980
+ASMWORD("count", count)
+	mov.b	@TOS+, r0	! fetch count (sign-extended), advance ptr
+	SPILL_TOS		! string contents address
+	jmp	@NEXT
+	 extu.b	r0, TOS		! zero-extend the count
 
 
 !!! "lit" - auxiliary for "literal" (CORE 6.1.1780)
