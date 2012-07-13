@@ -13,6 +13,11 @@
 
 
 !!! ====================================================================
+/**
+ *
+ * Forth stacks and buffers in the BSS section.
+ *
+ */
 
 	.section ".bss"
 	.balign	4096
@@ -33,7 +38,14 @@ terminal_input_buffer:
 word_buf:	      ! buffer for the counted string returned by WORD
 	.space	256
 
+
 !!! ====================================================================
+/**
+ *
+ * Trampoline code callable from C that starts Forth executing a test
+ * entry point word.  Eventually it will start real Forth REPL.
+ *
+ */
 
 	.text
 ENTRY(test)
@@ -93,33 +105,38 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 
 !!! ====================================================================
+/**
+ *
+ * Macros for manually defining the core Forth system.
+ *
+ */
 
 
 #define NAMED_CELL(label)	  \
 	.p2align 2		; \
 	.type	label@object	; \
 	.size	label, 4	; \
-  label:
+  label:			;
 
 
-#define CODE_ASM(label)		  \
-	/* Code Field */	  \
-  NAMED_CELL(label)		; \
-	.long	asm_does	; \
-	/* Parameter Field */	  \
+#define DEFCODE_ASM(label)		  \
+	/* Code Field */		  \
+  NAMED_CELL(label)			; \
+	.long	asm_does		; \
+	/* Parameter Field */		  \
 	.type	label/**/_code@function ; \
-  label/**/_code:
+  label/**/_code:			;
 
 
-#define CODE_4TH(label)		  \
+#define DEFCODE_4TH(label)	  \
 	/* Code Field */	  \
   NAMED_CELL(label)		; \
 	.long	call_code	; \
 	/* Parameter Field */	  \
-  label/**/_body:
+  label/**/_body:		;
 
 
-#define CODE_VAR(label)		  \
+#define DEFCODE_VAR(label)	  \
 	/* Code Field */	  \
   NAMED_CELL(label)		; \
 	.long	next_code	; \
@@ -127,7 +144,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
   NAMED_CELL(label/**/_var)
 
 
-#define CODE_CONST(label)	  \
+#define DEFCODE_CONST(label)	  \
 	/* Code Field */	  \
   NAMED_CELL(label)		; \
 	.long	const_does	; \
@@ -147,10 +164,13 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
  */
 #define DOES_ASM(label)		  \
 	.align	2		; \
-  label:			; \
+	.type	label@function	; \
+  label:			;
 
 
 /*
+ * XXX: No longer used!!!
+ *
  * For words with DOES> part (that contains forth code by definition)
  * the address of the following asm code will be compiled into the
  * code field of the defined word.
@@ -178,16 +198,24 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 #define DEFWORD(name, flags, defcode, label)	  \
 	NAME_FIELD(name, flags)			; \
-	.long	0 /* XXX: link field */		; \
+	/* Link Field */			  \
+	.long	$PREVLFA			; \
+  $PREVLFA = . - 4				; \
 	defcode(label)
 
-#define WORD(name, label)	DEFWORD(name, 0, CODE_4TH, label)
-#define IMMWORD(name, label)	DEFWORD(name, 0x80, CODE_4TH, label)
-#define ASMWORD(name, label)	DEFWORD(name, 0, CODE_ASM, label)
-#define CONSTANT(name, label)	DEFWORD(name, 0, CODE_CONST, label)
-#define VARIABLE(name, label)	DEFWORD(name, 0, CODE_VAR, label)
+#define WORD(name, label)	DEFWORD(name,    0, DEFCODE_4TH,   label)
+#define IMMWORD(name, label)	DEFWORD(name, 0x80, DEFCODE_4TH,   label)
+#define ASMWORD(name, label)	DEFWORD(name,    0, DEFCODE_ASM,   label)
+#define CONSTANT(name, label)	DEFWORD(name,    0, DEFCODE_CONST, label)
+#define VARIABLE(name, label)	DEFWORD(name,    0, DEFCODE_VAR,   label)
+
 
 !!! ====================================================================
+/**
+ *
+ *				FORTH
+ *
+ */
 
 	.data			! XXX: need writable+executable
 
@@ -197,11 +225,40 @@ heap:
 	.long	0xdeadbeef	! dummy
 
 
-CODE_ASM(return_to_c)
+/*
+ * Headerless asm word to return back to C that called us.  Will not
+ * be necessary in a real system.  Used only by the test entry point
+ * instead of EXIT.
+ */
+DEFCODE_ASM(return_to_c)
 	mov.l	@RSP+, r0
 	jmp	@r0
 	 nop
 
+
+/*
+ * Fake sentinel word that starts the vocabulary.
+ */
+	.p2align 2, 0
+	!! Name Field
+	.byte	0x80	! empty name, immediate (just in case?)
+	!! Link Field 
+	.p2align 2, 0
+$PREVLFA = .		! init $PREVLFA for subsequent DEFWORDs
+	.long	0	! terminate the LFA-linked list
+	!! Code Field
+	.long	0	! XXX: use some sentinel code?  just crash for now
+	!! Parameter Field
+	.long	0	! there's no parameters, but provide a stub
+
+
+/*
+ * What follows is the very core of the threaded code interpreter.
+ *
+ * It might make sense to move the following few bits of asm code
+ * elsewhere so that it completely fits into a cache line or two
+ * without intervening word headers &c.
+ */
 
 	!! This should eventually become the DOES> part of ":"
 	.align	2
@@ -226,9 +283,6 @@ next_code:
 	mov	#4, TOS		!
 	jmp	@r1		! execute word's code
 	 add	r0, TOS		! TOS = PFA (for code to consume)
-
-
-!!! ====================================================================
 
 
 	!! This should eventually become the DOES> part of CODE
@@ -637,10 +691,10 @@ ASMWORD("xor", xor)
 	 xor	r0, TOS
 	
 
-!CODE_ASM(lshift)		! "lshift" - CORE 6.1.1805
-!CODE_ASM(rshift)		! "rshift" - CORE 6.1.2162
-!CODE_ASM(max)			! "max" - CORE 6.1.1870
-!CODE_ASM(min)			! "min" - CORE 6.1.1880
+! "lshift" - CORE 6.1.1805
+! "rshift" - CORE 6.1.2162
+! "max" - CORE 6.1.1870
+! "min" - CORE 6.1.1880
 
 
 !!! ====================================================================
@@ -731,6 +785,11 @@ WORD("source", source)
 
 
 !!! ====================================================================
+/**
+ *
+ * Test code to try out the Forth system we defined above.
+ *
+ */
 
 CONSTANT("c1", c1) .long 0x00c0ffee
 VARIABLE("v1", v1) .long 0x0000beef
