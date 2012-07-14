@@ -199,8 +199,8 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define DEFWORD(name, flags, defcode, label)	  \
 	NAME_FIELD(name, flags)			; \
 	/* Link Field */			  \
-	.long	$PREVLFA			; \
-  $PREVLFA = . - 4				; \
+	.long	.LASTLFA			; \
+  .LASTLFA = . - 4				; \
 	defcode(label)
 
 #define WORD(name, label)	DEFWORD(name,    0, DEFCODE_4TH,   label)
@@ -244,7 +244,7 @@ DEFCODE_ASM(return_to_c)
 	.byte	0x80	! empty name, immediate (just in case?)
 	!! Link Field 
 	.p2align 2, 0
-$PREVLFA = .		! init $PREVLFA for subsequent DEFWORDs
+.LASTLFA = .		! init .LASTLFA for subsequent DEFWORDs
 	.long	0	! terminate the LFA-linked list
 	!! Code Field
 	.long	0	! XXX: use some sentinel code?  just crash for now
