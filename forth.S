@@ -145,10 +145,15 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
   NAMED_CELL(label/**/_var)
 
 
+#if 0B
+#define _CONST_DOES	const_does_asm
+#else
+#define _CONST_DOES	const_does_4th
+#endif
 #define DEFCODE_CONST(label)	  \
 	/* Code Field */	  \
   NAMED_CELL(label)		; \
-	.long	const_does	; \
+	.long	_CONST_DOES	; \
 	/* Parameter Field */	  \
   NAMED_CELL(label/**/_const)
 
@@ -170,8 +175,6 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 
 /*
- * XXX: No longer used!!!
- *
  * For words with DOES> part (that contains forth code by definition)
  * the address of the following asm code will be compiled into the
  * code field of the defined word.
@@ -292,19 +295,21 @@ DOES_ASM(asm_does)		! code field of asm words points here
 	 FILL_TOS
 
 
-	!! This should eventually become the DOES> part of "constant"
-DOES_ASM(const_does)
+/*
+ * "does" code of CONSTANT
+ *
+ * For reference here are both asm and forth versions.
+ */
+
+	!! asm version is basically inlined "fetch"
+DOES_ASM(const_does_asm)
 	jmp	@NEXT
 	 mov.l	@TOS, TOS
 
-
-#if 0
-	!! Example only - this is how the DOES> part of "constant"
-	!! would look like if it was defined as forth code
-DOES_4TH(const_does_4th_example)
+	!! forth version: ... DOES> @ ;
+DOES_4TH(const_does_4th)
 	.long	fetch
 	EXIT_4TH
-#endif
 
 
 /**
