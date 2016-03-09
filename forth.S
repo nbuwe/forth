@@ -61,11 +61,14 @@ ENTRY(test)
 	mov	r15, r14
 	!! end prologue
 
-	mov	r4, TOS		! pass to forth our first argument
+	!! address of "next" lives in a dedicated global register
+	mov.l	.L_next, NEXT
 
 	!! stacks
 	mov.l	.L_psp, PSP
 	mov.l	.L_rsp, RSP
+
+	mov	r4, TOS		! pass our first argument to the test word
 
 	!! to return from forth
 	mova	1f, r0
@@ -73,7 +76,6 @@ ENTRY(test)
 
 	!! to enter forth
 	mov.l	.L_entry, IP
-	mov.l	.L_next, NEXT
 
 ALTENTRY(test_enter)		! for gdb breakpoing only
 	jmp	@NEXT
