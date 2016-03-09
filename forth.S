@@ -56,7 +56,6 @@ ENTRY(test)
 	mov.l	r11, @-r15
 	mov.l	r12, @-r15
 	mov.l	r13, @-r15
-	mov.l	r13, @-r15
 	mov.l	r14, @-r15
 	sts.l	pr, @-r15
 	mov	r15, r14
