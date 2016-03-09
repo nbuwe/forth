@@ -138,6 +138,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 
 #if 1
+/* see var_does_asm for why we can do this */
 #define _VAR_DOES	next_code
 #elif 1
 #define _VAR_DOES	var_does_asm
@@ -328,10 +329,13 @@ DOES_ASM(const_does_asm)
  */
 	!! forth version: ... DOES> ;
 DOES_4TH(var_does_4th)
-	!! -- do nothing; leave PFA (variable's address) on the stack
+	!! -- nop; leave PFA (variable's address) on the stack
 	EXIT_4TH
 
 	!! asm version is basically inlined "nop"
+	!!
+	!! NB: as you can see, we can remove the indirection and
+	!! instead use "next_code" directly as a further optimization!
 DOES_ASM(var_does_asm)
 	jmp	@NEXT
 	 nop
