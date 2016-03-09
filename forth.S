@@ -137,15 +137,22 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
   label/**/_body:		;
 
 
+#if 1
+#define _VAR_DOES	next_code
+#elif 1
+#define _VAR_DOES	var_does_asm
+#else
+#define _VAR_DOES	var_does_4th
+#endif
 #define DEFCODE_VAR(label)	  \
 	/* Code Field */	  \
   NAMED_CELL(label)		; \
-	.long	next_code	; \
+	.long	_VAR_DOES	; \
 	/* Parameter Field */	  \
   NAMED_CELL(label/**/_var)
 
 
-#if 0B
+#if 1
 #define _CONST_DOES	const_does_asm
 #else
 #define _CONST_DOES	const_does_4th
@@ -310,6 +317,25 @@ DOES_4TH(const_does_4th)
 DOES_ASM(const_does_asm)
 	jmp	@NEXT
 	 mov.l	@TOS, TOS
+
+
+
+/*
+ * "does" code of VARIABLE
+ *
+ * For reference here are both asm and forth versions.
+ * See DEFCODE_VAR above, where you can select which one is used.
+ */
+	!! forth version: ... DOES> ;
+DOES_4TH(var_does_4th)
+	!! -- do nothing; leave PFA (variable's address) on the stack
+	EXIT_4TH
+
+	!! asm version is basically inlined "nop"
+DOES_ASM(var_does_asm)
+	jmp	@NEXT
+	 nop
+
 
 
 /**
