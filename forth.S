@@ -299,17 +299,17 @@ DOES_ASM(asm_does)		! code field of asm words points here
  * "does" code of CONSTANT
  *
  * For reference here are both asm and forth versions.
+ * See DEFCODE_CONST above, where you can select which one is used.
  */
+	!! forth version: ... DOES> @ ;
+DOES_4TH(const_does_4th)
+	.long	fetch
+	EXIT_4TH
 
 	!! asm version is basically inlined "fetch"
 DOES_ASM(const_does_asm)
 	jmp	@NEXT
 	 mov.l	@TOS, TOS
-
-	!! forth version: ... DOES> @ ;
-DOES_4TH(const_does_4th)
-	.long	fetch
-	EXIT_4TH
 
 
 /**
