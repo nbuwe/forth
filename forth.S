@@ -402,11 +402,29 @@ ASMWORD("rot", rot)
 
 */
 
+
+!!! "s>d" - CORE 6.1.2170
+!!!     NB: double numbers are little-endian cell-wise
+ASMWORD("s>d", s2d)
+	SPILL_TOS
+	jmp	@NEXT
+	 mov	#0, TOS
+
+!!! "2drop" - CORE 6.1.0370
+ASMWORD("2drop", two_drop)
+	add	#4, PSP
+	jmp	@NEXT
+	 FILL_TOS
+
+!!! "2dup" - CORE 6.1.0380
+ASMWORD("dup", two_dup)
+	mov.l	@PSP, r0
+	SPILL_TOS
+	jmp	@NEXT
+	 mov.l	r0, @-PSP
+
 /*
 
-6.1.2170 S>D
-6.1.0370 2DROP
-6.1.0380 2DUP
 6.1.0400 2OVER
 6.1.0430 2SWAP
 
@@ -585,6 +603,16 @@ ASMWORD("/", slash)
 	 mov	#0, TOS
 
 
+
+!!! "mod" - CORE 6.1.1890
+WORD("mod", mod)
+	.long two_dup, slash, star, minus
+	EXIT_4TH
+
+
+!!! "/mod" - CORE 6.1.0240
+
+	
 !!! "1+" - CORE 6.1.0290
 ASMWORD("1+", one_plus)
 	jmp	@NEXT
@@ -846,6 +874,7 @@ WORD("test-word", test_word)
 	.long	lit, 100, lit, 10, not_equals
 	.long	question_branch, 1f ! if
 	.long	   lit, 1000, star
+	.long	   lit, 9, mod
 1:	!       then
 	.long	v1
 	.long	v1, fetch
