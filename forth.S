@@ -393,15 +393,49 @@ ASMWORD("rot", rot)
 	 mov	r1, TOS
 
 
-/*
+!!! NIP - CORE EXT 6.2.1930
+ASMWORD("nip", nip)
+	jmp	@NEXT
+	 add	#4, PSP
 
-6.2.1930 NIP
-6.2.2030 PICK
-6.2.2150 ROLL
-6.2.2300 TUCK
+!!! TUCK - CORE EXT 6.2.2300
+ASMWORD("tuck", tuck)
+	mov.l	@PSP+, r0
+	SPILL_TOS
+	jmp	@NEXT
+	 mov.l	r0, @-PSP
 
-*/
+!!! PICK - CORE EXT 6.2.2030
+ASMWORD("pick", pick)
+	mov	PSP, r0
+	shll2	TOS
+	jmp	@NEXT
+	 mov.l	@(r0, TOS), TOS
 
+!!! ROLL - CORE EXT 6.2.2150
+ASMWORD("roll", roll)
+#  define DST r2
+#  define SRC r3
+	mov	TOS, DST
+	shll2	DST
+	add	PSP, DST
+	mov	DST, SRC
+
+	mov.l	@DST, r0
+
+1:
+	add	#-4, SRC
+	mov.l	@SRC, r1
+	mov.l	r1, @DST
+	add	#-4, DST
+
+	dt	TOS
+	bf	1b
+
+	add	#4, PSP
+
+	jmp	@NEXT
+	 mov	r0, TOS
 
 !!! "s>d" - CORE 6.1.2170
 !!!     NB: double numbers are little-endian cell-wise
@@ -894,6 +928,10 @@ WORD("test-word", test_word)
 	.align	2
 ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
+
+	.long	lit, 13, lit, 12, lit, 11, lit, 10
+	.long	lit, 2, roll
+
 	.long	lit, 100b, lit, (101b-100b), type, cr
 	.long	lit, 102b, lit, (103b-102b), type
 	.long	lit, 104b, dup, lit, 128, accept_4th, type
