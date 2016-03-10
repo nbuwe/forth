@@ -732,7 +732,15 @@ ASMWORD("xor", xor)
 
 
 !!! ====================================================================
+!!! I/O - Common
 
+!!! "base" - CORE 6.1.0750
+VARIABLE("base", base)
+	.long 0x10
+
+
+!!! ====================================================================
+!!! I/O - Output
 
 !!! "bl" - CORE 6.1.0770
 CONSTANT("bl", bl) .long 0x20
@@ -781,7 +789,7 @@ ASMWORD("type", type)
 
 
 !!! ====================================================================
-
+!!! I/O - Input
 
 !!! "accept" - CORE 6.1.0695
 ASMWORD("accept", accept_4th)	! XXX: avoid name clash with accept(2)
