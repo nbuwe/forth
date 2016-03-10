@@ -645,6 +645,13 @@ WORD("mod", mod)
 
 
 !!! "/mod" - CORE 6.1.0240
+WORD("/mod", slash_mod)
+	.long two_dup, slash
+	.long tuck, star
+	.long lit, 2, roll
+	.long swap, minus
+	.long swap
+	EXIT_4TH
 
 	
 !!! "1+" - CORE 6.1.0290
@@ -929,8 +936,7 @@ WORD("test-word", test_word)
 ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
 
-	.long	lit, 13, lit, 12, lit, 11, lit, 10
-	.long	lit, 2, roll
+	.long	lit, 13, lit, 5, slash_mod
 
 	.long	lit, 100b, lit, (101b-100b), type, cr
 	.long	lit, 102b, lit, (103b-102b), type
