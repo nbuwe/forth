@@ -361,7 +361,7 @@ DOES_ASM(const_does_asm)
 	 * For now do this in pure forth to minimize asm code.
 	 */
 VARIABLE("dp", dp)
-	.long	.L_END
+	.long	.L_DATA_SPACE
 
 !!! HERE - CORE 6.1.1650
 WORD("here", here)
@@ -997,4 +997,6 @@ ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	return_to_c
 	.long	0xdeadbeef
 
-.L_END:	/* HERE is the end */
+	.section ".bss"
+.L_DATA_SPACE: /* begins HERE */
+	.space	8192
