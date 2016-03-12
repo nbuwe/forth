@@ -264,6 +264,12 @@ DEFCODE_ASM(return_to_c)
 	.long	0	! there's no parameters, but provide a stub
 
 
+!!! nop to use as a gdb breakpoint
+ASMWORD("breakpoint", breakpoint)
+	jmp	@NEXT
+	 nop
+
+
 /*
  * What follows is the very core of the threaded code interpreter.
  *

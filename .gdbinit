@@ -1,5 +1,7 @@
 # $Id$
 
+break *(&breakpoint_code)
+
 define pstack
   printf "\nParameter Stack:\n\n"
   printf "     TOS: %08x %11d\n", $r8, $r8
