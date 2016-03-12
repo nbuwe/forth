@@ -341,6 +341,53 @@ DOES_ASM(const_does_asm)
 
 
 /**
+ * Data-space words
+ */
+
+	/*
+	 * The value of HERE.  I'm not yet sure we need to keep this
+	 * in a register.  We can free r13 for it if we need to.  NEXT
+	 * that currently uses r13 can be stored in "pr", in which
+	 * case the "jmp @NEXT" becomes just "rts".  We will have to
+	 * resotre "pr" after calls to C, but that's not a very large
+	 * price to pay.
+	 *
+	 * For now do this in pure forth to minimize asm code.
+	 */
+VARIABLE("dp", dp)
+	.long	.L_END
+
+!!! HERE - CORE 6.1.1650
+WORD("here", here)
+	.long	dp, fetch
+	EXIT_4TH
+
+WORD("dp!", dp_store)
+	.long	dp, swap, store
+	EXIT_4TH
+
+!!! ALIGN - CORE 6.1.0705
+WORD("align", align)
+	.long	here, lit, 3, plus, lit, -4, and, dp_store
+	EXIT_4TH
+
+!!! ALLOT - CORE 6.1.0710
+WORD("allot", allot)
+	.long	here, plus, dp_store
+	EXIT_4TH
+
+!!! , - CORE 6.1.0150
+WORD(",", comma)
+	.long	here, lit, 4, allot, swap, store
+	EXIT_4TH
+
+!!! C, - CORE 6.1.0860
+WORD("c,", c_comma)
+	.long	here, lit, 1, allot, swap, c_store
+	EXIT_4TH
+
+
+/**
  * Stack manipualtion
  */
 
@@ -936,10 +983,12 @@ WORD("test-word", test_word)
 ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
 
-	.long	lit, 13, lit, 5, slash_mod
+	.long	here, dup, lit, 0xdeadbabe, comma, fetch, here
 
 	.long	lit, 100b, lit, (101b-100b), type, cr
 	.long	lit, 102b, lit, (103b-102b), type
 	.long	lit, 104b, dup, lit, 128, accept_4th, type
 	.long	return_to_c
 	.long	0xdeadbeef
+
+.L_END:	/* HERE is the end */
