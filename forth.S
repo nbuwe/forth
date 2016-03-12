@@ -363,7 +363,7 @@ WORD("here", here)
 	EXIT_4TH
 
 WORD("dp!", dp_store)
-	.long	dp, swap, store
+	.long	dp, store
 	EXIT_4TH
 
 !!! ALIGN - CORE 6.1.0705
@@ -378,12 +378,12 @@ WORD("allot", allot)
 
 !!! , - CORE 6.1.0150
 WORD(",", comma)
-	.long	here, lit, 4, allot, swap, store
+	.long	here, lit, 4, allot, store
 	EXIT_4TH
 
 !!! C, - CORE 6.1.0860
 WORD("c,", c_comma)
-	.long	here, lit, 1, allot, swap, c_store
+	.long	here, lit, 1, allot, c_store
 	EXIT_4TH
 
 
@@ -520,18 +520,18 @@ ASMWORD("@", fetch)
 
 !!! "!" - CORE 6.1.0010
 ASMWORD("!", store)
-	mov.l	@PSP+, r0	! address
-	mov.l	TOS, @r0	! store value
+	mov.l	@PSP+, r0	! value
+	mov.l	r0, @TOS	! store value
 	jmp	@NEXT
 	 FILL_TOS
 
 
 !!! "+!" - CORE 6.1.0130
 ASMWORD("+!", plus_store)
-	mov.l	@PSP+, r0	! address
-	mov.l	@r0, r1		! fetch current value
-	add	r1, TOS		! add
-	mov.l	TOS, @r0	! store sum
+	mov.l	@PSP+, r0	! value increment
+	mov.l	@TOS, r1	! fetch current value
+	add	r1, r0
+	mov.l	r0, @TOS	! store new value
 	jmp	@NEXT
 	 FILL_TOS
 
@@ -554,8 +554,8 @@ ASMWORD("c@", c_fetch)
 
 !!! C! - CORE 6.1.0850
 ASMWORD("c!", c_store)
-	mov.b	@PSP+, r0	! address
-	mov.b	TOS, @r0	! store value
+	mov.l	@PSP+, r0	! value
+	mov.b	r0, @TOS	! store value
 	jmp	@NEXT
 	 FILL_TOS
 
@@ -966,7 +966,7 @@ WORD("test-word", test_word)
 1:	!       then
 	.long	v1
 	.long	v1, fetch
-	.long	v1, c1, store
+	.long	c1, v1, store
 	.long	v1, one_plus_store
 	.long	v1, fetch
 	EXIT_4TH
