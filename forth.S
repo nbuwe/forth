@@ -937,8 +937,14 @@ WORD("#>", hash_greater)
 	.long	hld, fetch, pad, over, minus
 	EXIT_4TH
 
+!!! SIGN - CORE 6.1.2210
+WORD("sign", sign)
+	.long	zero_less, question_branch, 1f
+	.long	    lit, 45 /* '-' */, hold
+1:	EXIT_4TH
 
 !!! # - CORE 6.1.0030
+!!!     XXX: FIXME: single cell!
 WORD("#", hash)
 	.long	base, fetch, slash_mod, swap
 	.long	dup, lit, 9, greater_than, question_branch, 1f
@@ -951,10 +957,21 @@ WORD("#", hash)
 	EXIT_4TH
 
 !!! #S - CORE 6.1.0050
+!!!     XXX: FIXME: single cell!
 WORD("#s", hash_s)
 1:	.long	hash
 	.long	dup, zero_equals
 	.long	question_branch, 1b
+	EXIT_4TH
+
+!!!     XXX: FIXME: single cell!
+WORD("(.)", dot_parens)
+	.long	dup, abs, less_hash, hash_s, swap, sign, hash_greater
+	EXIT_4TH
+
+
+WORD(".", dot)
+	.long	dot_parens, type, space
 	EXIT_4TH
 
 
@@ -1037,8 +1054,7 @@ WORD("test-word", test_word)
 ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
 
-	.long	lit, 0x1337babe
-	.long	less_hash, hash_s, hash_greater, type, cr
+	.long	lit, 0x1337babe, dot, cr
 
 	.long	lit, 100b, lit, (101b-100b), type, cr
 	.long	lit, 102b, lit, (103b-102b), type
