@@ -392,6 +392,13 @@ WORD("c,", c_comma)
 	.long	here, lit, 1, allot, c_store
 	EXIT_4TH
 
+!!! PAD - CORE EXT 6.2.2000
+!!!     As far as I understand user can use memory below pad, while
+!!!     the system uses the area between DP and PAD as hold space.
+WORD("pad", pad)
+	.long	here, lit, 128, plus
+	EXIT_4TH
+
 
 /**
  * Stack manipualtion
@@ -909,6 +916,47 @@ ASMWORD("type", type)
 1:	.long	_C_LABEL(type_impl)
 
 
+VARIABLE("hld", hld)
+	.long	0
+
+!!! <# - CORE 6.1.0490
+WORD("<#", less_hash)
+	.long	pad, hld, store
+	EXIT_4TH
+
+!!! HOLD - CORE 6.1.1670
+WORD("hold", hold)
+	.long	lit, -1, hld, plus_store
+	.long	hld, fetch, breakpoint, c_store
+	EXIT_4TH
+
+
+!!! #> - CORE 6.1.0040
+WORD("#>", hash_greater)
+	.long	drop /* XXX: two_drop */
+	.long	hld, fetch, pad, over, minus
+	EXIT_4TH
+
+
+!!! # - CORE 6.1.0030
+WORD("#", hash)
+	.long	base, fetch, slash_mod, swap
+	.long	dup, lit, 9, greater_than, question_branch, 1f
+	.long		lit, 87 /* 'a' - 10 */
+	.long		branch, 2f
+1:		/* else */
+	.long		lit, 48 /* '0' */
+2:		/* then */
+	.long	plus, hold
+	EXIT_4TH
+
+!!! #S - CORE 6.1.0050
+WORD("#s", hash_s)
+1:	.long	hash
+	.long	dup, zero_equals
+	.long	question_branch, 1b
+	EXIT_4TH
+
 
 !!! ====================================================================
 !!! I/O - Input
@@ -989,7 +1037,8 @@ WORD("test-word", test_word)
 ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
 
-	.long	here, dup, lit, 0xdeadbabe, comma, fetch, here
+	.long	lit, 0x1337babe
+	.long	less_hash, hash_s, hash_greater, type, cr
 
 	.long	lit, 100b, lit, (101b-100b), type, cr
 	.long	lit, 102b, lit, (103b-102b), type
