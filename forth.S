@@ -270,6 +270,12 @@ ASMWORD("breakpoint", breakpoint)
 	 nop
 
 
+!!! EXECUTE - CORE 6.1.1370
+ASMWORD("execute", execute)
+	mov.l	@TOS+, r0	! fetch code address and advance to PFA
+	jmp	@r0
+	 nop
+
 /*
  * What follows is the very core of the threaded code interpreter.
  *
@@ -1054,7 +1060,7 @@ WORD("test-word", test_word)
 ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
 
-	.long	lit, 0x1337babe, dot, cr
+	.long	lit, 0x1337babe, lit, dot, execute, cr
 
 	.long	lit, 100b, lit, (101b-100b), type, cr
 	.long	lit, 102b, lit, (103b-102b), type
