@@ -209,10 +209,10 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 
 #define DEFWORD(name, flags, defcode, label)	  \
-	NAME_FIELD(name, flags)			; \
+  999:	NAME_FIELD(name, flags)			; \
 	/* Link Field */			  \
-	.long	.LASTLFA			; \
-  .LASTLFA = . - 4				; \
+	.long	.LASTNFA			; \
+  .LASTNFA = 999b				; \
 	defcode(label)
 
 #define WORD(name, label)	DEFWORD(name,    0, DEFCODE_4TH,   label)
@@ -253,10 +253,10 @@ DEFCODE_ASM(return_to_c)
  */
 	.p2align 2, 0
 	!! Name Field
+.LASTNFA = .		! init .LASTNFA for subsequent DEFWORDs
 	.byte	0x80	! empty name, immediate (just in case?)
 	!! Link Field 
 	.p2align 2, 0
-.LASTLFA = .		! init .LASTLFA for subsequent DEFWORDs
 	.long	0	! terminate the LFA-linked list
 	!! Code Field
 	.long	0	! XXX: use some sentinel code?  just crash for now
@@ -1019,6 +1019,17 @@ WORD("source", source)
 	EXIT_4TH
 
 
+!!! XXX: TODO: Vocabularies
+
+VARIABLE("current", current)
+	.long	. + 4
+	!! this will be part of a vocabulary
+	.long .LATEST
+
+WORD("latest", latest)
+	.long	current, fetch, fetch
+	EXIT_4TH
+
 !!! ====================================================================
 /**
  *
@@ -1061,12 +1072,16 @@ ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
 
 	.long	lit, 0x1337babe, lit, dot, execute, cr
+	.long	latest, breakpoint, dot
 
 	.long	lit, 100b, lit, (101b-100b), type, cr
 	.long	lit, 102b, lit, (103b-102b), type
 	.long	lit, 104b, dup, lit, 128, accept_4th, type
 	.long	return_to_c
 	.long	0xdeadbeef
+
+!!! 
+.LATEST = .LASTNFA
 
 	.section ".bss"
 .L_DATA_SPACE: /* begins HERE */
