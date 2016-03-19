@@ -933,7 +933,7 @@ WORD("<#", less_hash)
 !!! HOLD - CORE 6.1.1670
 WORD("hold", hold)
 	.long	lit, -1, hld, plus_store
-	.long	hld, fetch, breakpoint, c_store
+	.long	hld, fetch, c_store
 	EXIT_4TH
 
 
