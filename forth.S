@@ -910,6 +910,55 @@ ASMWORD("xor", xor)
 
 
 !!! ====================================================================
+!!! Strings
+
+!!! COMPARE - STRING 17.6.1.0935 
+ASMWORD("compare", compare)
+	!!	       TOS	! u2
+	mov.l	@PSP+, r7	! ca2
+	mov.l	@PSP+, r6	! u1
+	mov.l	@PSP+, r5	! ca1
+
+	tst	r6, r6		! u1 == 0?
+.Loop:
+	bf.s	.L_u1_pos
+	 tst	TOS, TOS	! u2 == 0?
+
+	movt	TOS		!  0 if u2 != 0; 1 if u2 == 0
+	jmp	@NEXT
+	 add	#-1, TOS	! -1 if u2 != 0; 0 if u2 == 0
+
+.L_u1_pos:
+	bf.s	.L_u1u2_pos
+	 nop
+	jmp	@NEXT
+	 mov	#1, TOS
+
+.L_u1u2_pos:
+	mov.b	@r5+, r0
+	add	#-1, r6
+
+	mov.b	@r7+, r1
+	add	#-1, TOS
+
+	extu.b	r0, r0
+	extu.b	r1, r1
+
+	cmp/eq	r0, r1
+	bt.s	.Loop
+	 tst	r6, r6
+
+	cmp/hi	r1, r0		! r0 > r1?
+	bt	1f
+
+	jmp	@NEXT
+	 mov	#-1, TOS	! *ca1 < *ca2
+
+1:	jmp	@NEXT
+	 mov	#1, TOS		! *ca1 > *ca2
+
+
+!!! ====================================================================
 !!! I/O - Common
 
 !!! "base" - CORE 6.1.0750
@@ -1102,11 +1151,20 @@ WORD("test-word", test_word)
 	.long	v1, fetch
 	EXIT_4TH
 
+
+#define STR(l1, l2) lit, (l1), lit, ((l2) - (l1))
+
 100:	.ascii	"Hello, World!"
 101:
 
 102:	.ascii	"> "
 103:
+
+200:	.ascii	"test"
+201:
+
+202:	.ascii	"test"
+203:
 
 104:	.skip	128
 
@@ -1115,11 +1173,13 @@ ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
 
 	.long	lit, 0x1337babe, lit, dot, execute, cr
-	.long	latest, breakpoint, dot
 
-	.long	lit, 100b, lit, (101b-100b), type, cr
-	.long	lit, 102b, lit, (103b-102b), type
+	.long	STR(200b, 201b), STR(202b, 203b), compare, dot, cr
+
+	.long	STR(100b, 101b), type, cr
+	.long	STR(102b, 103b), type
 	.long	lit, 104b, dup, lit, 128, accept_4th, type
+
 	.long	return_to_c
 	.long	0xdeadbeef
 
