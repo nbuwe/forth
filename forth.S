@@ -530,6 +530,49 @@ ASMWORD("dup", two_dup)
 
 */
 
+!!! >R - CORE 6.1.0580
+ASMWORD(">r", to_r)
+	mov.l	TOS, @-RSP
+	jmp	@NEXT
+	 FILL_TOS
+
+!!! R> - CORE 6.1.2060
+ASMWORD("r>", r_from)
+	SPILL_TOS
+	jmp	@NEXT
+	 mov.l	@RSP+, TOS
+
+
+!!! R@ - CORE 6.1.2070
+ASMWORD("r@", r_fetch)
+	SPILL_TOS
+	jmp	@NEXT
+	 mov.l	@RSP, TOS
+
+!!! 2>R CORE EXT 6.2.0340
+ASMWORD("2>r", two_to_r)
+	mov.l	@PSP+, r0
+	mov.l	r0, @-RSP
+	mov.l	TOS, @-RSP
+	jmp	@NEXT
+	 FILL_TOS
+
+!!! 2R> - CORE EXT 6.2.0410 
+ASMWORD("2r>", two_r_from)
+	SPILL_TOS
+	mov.l	@RSP+, TOS
+	mov.l	@RSP+, r0
+	jmp	@NEXT
+	 mov.l	r0, @-PSP
+
+!!! 2R@ - CORE EXT 6.2.0415
+ASMWORD("2r>", two_r_fetch)
+	SPILL_TOS
+	mov.l	@RSP, TOS
+	mov.l	@(4, RSP), r0
+	jmp	@NEXT
+	 mov.l	r0, @-PSP
+
 
 !!! "@" - CORE 6.1.0650
 ASMWORD("@", fetch)
