@@ -363,10 +363,32 @@ DOES_ASM(const_does_asm)
 
 
 /**
- * ...
+ * Address alignment
  */
+
+!!! ALIGNED - CORE 6.1.0706 
 WORD("aligned", aligned)
 	.long	lit, 3, plus, lit, -4, and
+	EXIT_4TH
+
+!!! CELL+ - CORE 6.1.0880
+WORD("cell+", cell_plus)
+	.long	lit, 4, plus
+	EXIT_4TH
+
+!!! CELLS - CORE 6.1.0890
+WORD("cells", cells)
+	.long	two_star, two_star
+	EXIT_4TH
+
+!!! CHAR+ - CORE 6.1.0897
+WORD("char+", char_plus)
+	.long	one_plus
+	EXIT_4TH
+
+!!! CHARS - CORE 6.1.0898
+WORD("chars", chars)
+	!! nop
 	EXIT_4TH
 
 
