@@ -353,6 +353,14 @@ DOES_ASM(const_does_asm)
 
 
 /**
+ * ...
+ */
+WORD("aligned", aligned)
+	.long	lit, 3, plus, lit, -4, and
+	EXIT_4TH
+
+
+/**
  * Data-space words
  */
 
@@ -380,7 +388,7 @@ WORD("dp!", dp_store)
 
 !!! ALIGN - CORE 6.1.0705
 WORD("align", align)
-	.long	here, lit, 3, plus, lit, -4, and, dp_store
+	.long	here, aligned, dp_store
 	EXIT_4TH
 
 !!! ALLOT - CORE 6.1.0710
@@ -1122,6 +1130,44 @@ WORD("latest", latest)
 	.long	current, fetch, fetch
 	EXIT_4TH
 
+!!! Traditional Forth's FIND takes counted string from traditional
+!!! WORD, but that requires temporary space to hold the counted
+!!! string, so ANS Forth suggests using PARSE instead.  The
+!!! corresponding word to search the <c-addr, u> string is
+!!! SEARCH-WORDLIST.
+
+!!! SEARCH-CURRENT is interim chimera until proper vocabularies are
+!!! provided.  For now we only have single wordlist, so.
+!!! 
+!!!     : search-current get-current search-wordlist ;
+!!! 
+WORD("search-current", search_current)
+	.long	latest
+1:
+	.long	to_r			! save current word
+	.long	two_dup			! - the word we search for
+	.long	r_fetch			! - get current word
+	.long	count			! XXX: ignore flags for now
+	.long	compare			! zero if equals
+	.long	r_from			! get back current word
+	.long	count, plus, aligned	! XXX: n>link
+	.long	swap
+	.long	question_branch, 2f	! break if found
+
+	.long	fetch			! previous word nfa
+	.long	dup, zero_equals, question_branch, 1b
+
+	!! we reached the end of the wordlist
+	.long	drop, two_drop, lit, 0
+	.long	exit_4th		! with zero nfa already on stack
+
+2:	!! we found the word
+	.long	lit, 4, plus		! XXX: link>  -- get cfa
+	.long	to_r, two_drop, r_from	! get rid of the search word
+	.long	lit, 1
+	EXIT_4TH
+
+
 !!! ====================================================================
 /**
  *
@@ -1160,10 +1206,10 @@ WORD("test-word", test_word)
 102:	.ascii	"> "
 103:
 
-200:	.ascii	"test"
+200:	.ascii	"."
 201:
 
-202:	.ascii	"test"
+202:	.ascii "not found"
 203:
 
 104:	.skip	128
@@ -1172,9 +1218,18 @@ WORD("test-word", test_word)
 ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
 
-	.long	lit, 0x1337babe, lit, dot, execute, cr
-
-	.long	STR(200b, 201b), STR(202b, 203b), compare, dot, cr
+	.long	lit, 0x1337babe
+#if 0
+	.long	lit, dot, execute
+#else
+	.long	STR(200b, 201b), search_current
+	.long	question_branch, 1f
+	.long	    execute
+	.long	branch, 2f
+1:	.long	    STR(202b, 203b), type, cr
+2:
+#endif
+	.long	cr
 
 	.long	STR(100b, 101b), type, cr
 	.long	STR(102b, 103b), type
