@@ -376,6 +376,11 @@ WORD("cell+", cell_plus)
 	.long	lit, 4, plus
 	EXIT_4TH
 
+!!! CELL- - nonstandard
+WORD("cell-", cell_minus)
+	.long	lit, 4, minus
+	EXIT_4TH
+
 !!! CELLS - CORE 6.1.0890
 WORD("cells", cells)
 	.long	two_star, two_star
@@ -389,6 +394,31 @@ WORD("char+", char_plus)
 !!! CHARS - CORE 6.1.0898
 WORD("chars", chars)
 	!! nop
+	EXIT_4TH
+
+
+/**
+ * Definition structure.
+ *
+ * A word is identified by its CFA (tick &c).  This is implicit source
+ * or destination of ">" if omitted.
+ */
+
+!!! >BODY - CORE 6.1.0550
+WORD(">body", to_body)
+	.long	cell_plus
+	EXIT_4TH
+
+WORD("body>", body_from)
+	.long	cell_minus
+	EXIT_4TH
+
+WORD(">link", to_link)
+	.long	cell_minus
+	EXIT_4TH
+
+WORD("link>", link_from)
+	.long	cell_plus
 	EXIT_4TH
 
 
