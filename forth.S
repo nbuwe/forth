@@ -254,7 +254,7 @@ DEFCODE_ASM(return_to_c)
 	.p2align 2, 0
 	!! Name Field
 .LASTNFA = .		! init .LASTNFA for subsequent DEFWORDs
-	.byte	0x80	! empty name, immediate (just in case?)
+	.byte	0	! empty name
 	!! Link Field 
 	.p2align 2, 0
 	.long	0	! terminate the LFA-linked list
@@ -1148,6 +1148,13 @@ WORD("search-current", search_current)
 	.long	two_dup			! - the word we search for
 	.long	r_fetch			! - get current word
 	.long	count			! XXX: ignore flags for now
+
+	!! debug print
+	.long	two_dup, swap, dot
+	.long	lit, 43, emit
+	.long	space, dot, space
+	.long	two_dup, type, cr
+
 	.long	compare			! zero if equals
 	.long	r_from			! get back current word
 	.long	count, plus, aligned	! XXX: n>link
@@ -1206,7 +1213,7 @@ WORD("test-word", test_word)
 102:	.ascii	"> "
 103:
 
-200:	.ascii	"."
+200:	.ascii	"%"
 201:
 
 202:	.ascii "not found"
