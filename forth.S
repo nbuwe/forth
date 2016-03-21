@@ -201,18 +201,28 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 
 
-#define NAME_FIELD(name, flags)   \
-	.align	2, 0		; \
-	.byte	flags | (2f-1f)	; \
-1:	.ascii	name		; \
+/*
+ * XXX: unfortunately with traditional cpp we cannot use .L prefix
+ * here, since we would also need to pass the label argument around
+ * without preceding space, which is very fragile.
+ */
+#define NFA_LABEL(label) label/**/$nfa
+
+#define NAME_FIELD(name, flags, label)    \
+	.align	2, 0			; \
+	.local	NFA_LABEL(label)	; \
+  NFA_LABEL(label):			  \
+	.byte	flags | (2f-1f)		; \
+1:	.ascii	name			; \
 2:	.align	2, 0
 
 
 #define DEFWORD(name, flags, defcode, label)	  \
-  999:	NAME_FIELD(name, flags)			; \
+  	NAME_FIELD(name, flags, label)		; \
 	/* Link Field */			  \
+  NAMED_CELL(label/**/_lnk)			; \
 	.long	.LASTNFA			; \
-  .LASTNFA = 999b				; \
+  .LASTNFA = NFA_LABEL(label)			; \
 	defcode(label)
 
 #define WORD(name, label)	DEFWORD(name,    0, DEFCODE_4TH,   label)
