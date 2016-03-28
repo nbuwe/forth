@@ -1223,12 +1223,13 @@ WORD("search-current", search_current)
 	.long	r_fetch			! - get current word
 	.long	name_count
 
+#if 0
 	!! debug print
 	.long	two_dup, swap, dot
 	.long	lit, 43, emit
 	.long	space, dot, space
 	.long	two_dup, type, cr
-
+#endif
 	.long	compare			! zero if equals
 	.long	r_from			! get back current word
 	.long	n_to_link
