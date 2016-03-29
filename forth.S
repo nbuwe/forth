@@ -1226,8 +1226,7 @@ WORD("skip-spaces", skip_spaces)
 
 #if 0
 WORD("parse-word", parse_word)
-	!! XXX: skip leading spaces
-	.long	bl, parse
+	.long	skip_spaces, bl, parse
 	EXIT_4TH
 #endif
 
