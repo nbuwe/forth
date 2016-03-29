@@ -233,6 +233,13 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define CONSTANT(name, label)	DEFWORD(name,    0, DEFCODE_CONST, label)
 #define VARIABLE(name, label)	DEFWORD(name,    0, DEFCODE_VAR,   label)
 
+#define SLITERAL(str)		  \
+     /* .long */ branch, 19f	; \
+11:	.ascii	str		; \
+12:	.align	2		; \
+19:	.long	lit, 11b, lit, (12b - 11b)
+
+
 
 !!! ====================================================================
 /**
@@ -1313,18 +1320,6 @@ WORD("test-word", test_word)
 
 #define STR(l1, l2) lit, (l1), lit, ((l2) - (l1))
 
-100:	.ascii	"Hello, World!"
-101:
-
-102:	.ascii	"> "
-103:
-
-200:	.ascii	"."
-201:
-
-202:	.ascii "not found"
-203:
-
 104:	.skip	128
 
 	.align	2
@@ -1336,17 +1331,18 @@ ALTENTRY(entry_point)		! call me via NEXT !!!
 #if 0
 	.long	lit, dot, execute
 #else
-	.long	STR(200b, 201b), search_current
+	.long	SLITERAL("."), search_current
 	.long	question_branch, 1f
 	.long	    execute
 	.long	branch, 2f
-1:	.long	    STR(202b, 203b), type, cr
+1:	.long	    SLITERAL("not found"), type
 2:
 #endif
 	.long	cr
 #endif /* 0 */
-	.long	STR(100b, 101b), type, cr ! hello, world
-	.long	STR(102b, 103b), type	  ! "> " prompt
+	.long	SLITERAL("Hello, World!"), type, cr
+	.long	SLITERAL("> "),	type
+
 	.long	refill, question_branch, 9f
 	.long	skip_spaces
 	.long	source, drop, to_in, fetch, plus, lit, 3, type
