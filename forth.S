@@ -34,6 +34,8 @@ rstack_bottom:
 
 terminal_input_buffer:
 	.space	4096
+	.type	terminal_input_buffer, @object
+	.size	terminal_input_buffer, 4096 ! XXX, compute
 
 word_buf:	      ! buffer for the counted string returned by WORD
 	.space	256
@@ -1173,7 +1175,7 @@ ASMWORD("accept", accept_4th)	! XXX: avoid name clash with accept(2)
 
 
 !!! TIB - CORE EXT 6.2.2290
-VARIABLE("tib", tib)
+CONSTANT("tib", tib)
 	.long	terminal_input_buffer
 
 
@@ -1186,12 +1188,41 @@ VARIABLE("#tib", number_tib)
 VARIABLE(">in", to_in)
 	.long	0
 
+!!! REFILL - CORE EXT 6.2.2125 
+WORD("refill", refill)
+	.long	tib, lit, 4096, accept_4th
+	.long	dup, question_branch, 9f
+	.long	number_tib, store
+	.long	lit, 0, to_in, store
+	.long	true
+9:	EXIT_4TH
 
 !!! SOURCE - CORE 6.1.2216
 WORD("source", source)
 	.long	tib, number_tib
 	EXIT_4TH
 
+WORD("skip-spaces", skip_spaces)
+	.long	source, swap
+1:
+	.long	over			! #tib
+	.long	to_in, fetch, swap, less_than
+	.long	question_branch, 9f	! exit if >in greater/equal #tib
+	.long	dup, to_in, fetch, plus, c_fetch
+	.long	bl, equals
+	.long	question_branch, 9f	! exit if not a space
+	.long	to_in, one_plus_store	! advance >in
+	.long	branch, 1b		! repeat
+9:
+	.long	two_drop
+	EXIT_4TH
+
+#if 0
+WORD("parse-word", parse_word)
+	!! XXX: skip leading spaces
+	.long	bl, parse
+	EXIT_4TH
+#endif
 
 !!! XXX: TODO: Vocabularies
 
@@ -1300,6 +1331,7 @@ WORD("test-word", test_word)
 ALTENTRY(entry_point)		! call me via NEXT !!!
 	.long	test_word
 
+#if 0
 	.long	lit, 0x1337babe
 #if 0
 	.long	lit, dot, execute
@@ -1312,11 +1344,13 @@ ALTENTRY(entry_point)		! call me via NEXT !!!
 2:
 #endif
 	.long	cr
-
-	.long	STR(100b, 101b), type, cr
-	.long	STR(102b, 103b), type
-	.long	lit, 104b, dup, lit, 128, accept_4th, type
-
+#endif /* 0 */
+	.long	STR(100b, 101b), type, cr ! hello, world
+	.long	STR(102b, 103b), type	  ! "> " prompt
+	.long	refill, question_branch, 9f
+	.long	skip_spaces
+	.long	source, drop, to_in, fetch, plus, lit, 3, type
+9:
 	.long	return_to_c
 	.long	0xdeadbeef
 
