@@ -549,6 +549,15 @@ ASMWORD("rot", rot)
 	jmp	@NEXT
 	 mov	r1, TOS
 
+!!! -ROT - non-standard
+ASMWORD("rot", minus_rot)
+	mov.l	@PSP+, r1
+	mov.l	@PSP+, r2
+	mov.l	TOS, @-PSP
+	mov.l	r2, @-PSP
+	jmp	@NEXT
+	 mov	r1, TOS
+
 
 !!! NIP - CORE EXT 6.2.1930
 ASMWORD("nip", nip)
@@ -1301,8 +1310,8 @@ WORD("parse", parse)
 	.long	lit, 0				 ! result length
 	.long	exit_4th
 1:
-	.long	dup, to_r	! stash away current >in
-	.long	lit, 0		! init result length
+	.long	dup, to_r		! stash away current >in
+	.long	lit, 0, minus_rot	! init result length
 	.long	do_parens, 8f
 2:	!! while >in is exceeding source length
 
