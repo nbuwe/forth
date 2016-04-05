@@ -1305,7 +1305,7 @@ WORD("parse", parse)
 
 	!! parse area is exhausted, return empty word
 	.long	two_drop	! limits
-	.long	nip		! delim
+	.long	drop		! delim
 	.long	source, drop, to_in, fetch, plus ! result address
 	.long	lit, 0				 ! result length
 	.long	exit_4th
