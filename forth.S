@@ -745,6 +745,37 @@ ASMWORD("?branch", question_branch)
 	 add	#4, IP		! skip branch address
 
 
+!!! (do) - auxiliary for "do"
+!!!     ( limit first -- R: addr limit current )
+WORD("(do)", do_parens)
+	.long	r_from, dup	! next cell after compiled "(do)"
+	.long	fetch, to_r 	! is end of loop address - stash it for "leave"
+	.long	rot, to_r       ! limit
+	.long	swap, to_r	! current = first
+	.long	cell_plus, to_r	! skip literal after (do)
+	EXIT_4TH
+
+!!! (loop) - auxiliary for "loop" with the address of (do) compiled
+!!!          as literal after it
+!!! 	( R: addr limit current )
+WORD("(loop)", loop_parens)
+	.long	r_from			! take (loop)'s return address
+	.long	r_from, one_plus, dup	! take and increment current
+	.long	r_fetch			! peek at limit
+	.long	u_less_than, question_branch, 1f
+	.long	    to_r		  ! new current
+	.long	    fetch, to_r, exit_4th ! return to (do)
+1:	!! loop is done, clean up return stack
+	.long	drop		      ! new current
+	.long	two_r_fetch, two_drop ! address for leave and limit
+	.long	cell_plus, to_r	      ! skip literal (do) address
+	EXIT_4TH
+
+WORD("i", i_4th)
+	.long	r_from, r_fetch, swap, to_r
+	EXIT_4TH
+
+
 !!! "false" - CORE-EXT 6.2.1485
 ASMWORD("false", false)
 	SPILL_TOS

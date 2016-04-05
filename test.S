@@ -15,6 +15,13 @@ WORD("test-word", test_word)
 2:
 	.long	cr
 #endif
+
+	.long	lit, 5, lit, 0
+	.long	do_parens, /* leave to */ 4f
+3:	.long	SLITERAL("i="), type, i_4th, dot, cr
+	.long	loop_parens, /* back to */ 3b
+4:
+
 	.long	SLITERAL("Hello, World!"), type, cr
 	.long	SLITERAL("> "),	type
 
