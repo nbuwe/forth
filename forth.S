@@ -755,6 +755,21 @@ WORD("(do)", do_parens)
 	.long	cell_plus, to_r	! skip literal after (do)
 	EXIT_4TH
 
+!!! (?do) - auxiliary for "?do";
+!!!     like "do", but does nothing if first == limit
+!!!     ( limit first -- R: addr limit current )
+WORD("(?do)", question_do_parens)
+	.long	two_dup, equals, question_branch, 1f
+	.long	two_drop
+	.long	r_from, fetch, to_r, exit_4th
+1:
+	.long	r_from, dup	! next cell after compiled "(do)"
+	.long	fetch, to_r 	! is end of loop address - stash it for "leave"
+	.long	rot, to_r       ! limit
+	.long	swap, to_r	! current = first
+	.long	cell_plus, to_r	! skip literal after (do)
+	EXIT_4TH
+
 !!! (loop) - auxiliary for "loop" with the address of (do) compiled
 !!!          as literal after it
 !!! 	( R: addr limit current )
