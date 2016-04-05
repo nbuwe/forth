@@ -799,6 +799,14 @@ WORD("leave", leave)
 	.long	two_r_from, two_drop	! loop limit and counter
 	EXIT_4TH			! to the loop's end
 
+!!! UNLOOP - CORE 6.1.2380
+WORD("unloop", unloop)
+	.long	r_from			! save return address
+	.long	two_r_from, two_drop	! loop limit and counter
+	.long	r_from, drop		! leave address
+	.long	to_r			! restore return address
+	EXIT_4TH
+
 
 !!! "false" - CORE-EXT 6.2.1485
 ASMWORD("false", false)
