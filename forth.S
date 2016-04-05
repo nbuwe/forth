@@ -1269,7 +1269,7 @@ WORD("refill", refill)
 
 !!! SOURCE - CORE 6.1.2216
 WORD("source", source)
-	.long	tib, number_tib
+	.long	tib, number_tib, fetch
 	EXIT_4TH
 
 WORD("skip-spaces", skip_spaces)
