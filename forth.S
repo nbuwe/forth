@@ -773,7 +773,8 @@ WORD("(loop)", loop_parens)
 
 !!! I - CORE 6.1.1680
 WORD("i", i_4th)
-	.long	r_from, r_fetch, swap, to_r
+	.long	two_r_fetch	! current and i'th return address
+	.long	drop
 	EXIT_4TH
 
 !!! LEAVE - CORE 6.1.1760
