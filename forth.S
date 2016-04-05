@@ -771,9 +771,17 @@ WORD("(loop)", loop_parens)
 	.long	cell_plus, to_r	      ! skip literal (do) address
 	EXIT_4TH
 
+!!! I - CORE 6.1.1680
 WORD("i", i_4th)
 	.long	r_from, r_fetch, swap, to_r
 	EXIT_4TH
+
+!!! LEAVE - CORE 6.1.1760
+!!! 	( R: addr limit current )
+WORD("leave", leave)
+	.long	r_from, drop		! return address
+	.long	two_r_from, two_drop	! loop limit and counter
+	EXIT_4TH			! to the loop's end
 
 
 !!! "false" - CORE-EXT 6.2.1485
