@@ -1225,7 +1225,8 @@ WORD("skip-spaces", skip_spaces)
 	EXIT_4TH
 
 !!! PARSE - CORE EXT 6.2.2008
-WORD("parse-word", parse_word)
+!!!     fake, always fails
+WORD("parse", parse)
 	.long	source, drop, to_in, fetch, plus, lit, 0
 	EXIT_4TH
 
