@@ -1288,9 +1288,36 @@ WORD("skip-spaces", skip_spaces)
 	EXIT_4TH
 
 !!! PARSE - CORE EXT 6.2.2008
-!!!     fake, always fails
+!!!     ( delim "ccc<delim>" -- str len )
 WORD("parse", parse)
-	.long	source, drop, to_in, fetch, plus, lit, 0
+	.long	source, nip, to_in, fetch	! parse area limits
+	.long	two_dup, greater_than, zero_equals	! XXX: : <= > 0= ;
+	.long	question_branch, 1f
+
+	!! parse area is exhausted, return empty word
+	.long	two_drop	! limits
+	.long	nip		! delim
+	.long	source, drop, to_in, fetch, plus ! result address
+	.long	lit, 0				 ! result length
+	.long	exit_4th
+1:
+	.long	dup, to_r	! stash away current >in
+	.long	lit, 0		! init result length
+	.long	do_parens, 8f
+2:	!! while >in is exceeding source length
+
+	.long	to_in, one_plus_store ! >in is always advanced
+	.long	over		      ! get a copy of delim
+	.long	source, drop, i_4th, plus, c_fetch ! current char
+	.long	equals, question_branch, 7f	   ! .. is a delim?
+	.long	    leave
+7:	.long	one_plus			   ! increment result length
+	.long	loop_parens, 2b
+8:
+	.long	nip			   ! get rid of delim
+	.long	source, drop, r_from, plus ! result address (via old >in)
+	.long	swap			   ! result length on top
+
 	EXIT_4TH
 
 WORD("parse-word", parse_word)
