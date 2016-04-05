@@ -63,7 +63,12 @@ accept_impl(char *buf, uint32_t buflen)
     }
 
     clen = strlen(cbuf);
+
+    if (clen > 0 && cbuf[clen - 1] == '\n')
+	cbuf[--clen] = '\0';
+
     memcpy(buf, cbuf, clen);
+    free(cbuf);
 
     return clen;
 }
