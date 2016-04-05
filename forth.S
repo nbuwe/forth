@@ -767,7 +767,7 @@ WORD("(loop)", loop_parens)
 	.long	    fetch, to_r, exit_4th ! return to (do)
 1:	!! loop is done, clean up return stack
 	.long	drop		      ! new current
-	.long	two_r_fetch, two_drop ! address for leave and limit
+	.long	two_r_from, two_drop  ! address for leave and limit
 	.long	cell_plus, to_r	      ! skip literal (do) address
 	EXIT_4TH
 
