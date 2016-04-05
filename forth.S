@@ -1384,7 +1384,7 @@ WORD("search-current", search_current)
 	.long	exit_4th		! with zero nfa already on stack
 
 2:	!! we found the word
-	.long	lit, 4, plus		! XXX: link>  -- get cfa
+	.long	link_from		! get cfa
 	.long	to_r, two_drop, r_from	! get rid of the search word
 	.long	lit, 1
 	EXIT_4TH
