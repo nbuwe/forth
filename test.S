@@ -8,6 +8,16 @@
 CONSTANT("c", c_XXX)	.long	42
 VARIABLE("v", v_XXX)	.long	0
 
+VARIABLE("ten", ten_XXX) .long 10
+VARIABLE("sxt", sxt_XXX) .long 16
+
+WORD("dec", dec)
+	.long	lit, 10, base, store
+	EXIT_4TH
+
+WORD("hex", hex)
+	.long	lit, 16, base, store
+	EXIT_4TH
 
 !!! interpret source until it's empty
 WORD("interpret", interpret)
