@@ -1148,12 +1148,6 @@ VARIABLE("base", base)
 CONSTANT("bl", bl) .long 0x20
 
 
-!!! "cr" - CORE 6.1.0990
-WORD("cr", cr)
-	.long	lit, '\n, emit
-	EXIT_4TH
-
-
 !!! "emit" - CORE 6.1.1320
 ASMWORD("emit", emit)
 	mov.l	1f, r0
@@ -1164,6 +1158,12 @@ ASMWORD("emit", emit)
 	 nop
 	.align	2
 1:	.long	_C_LABEL(emit_impl)
+
+
+!!! "cr" - CORE 6.1.0990
+WORD("cr", cr)
+	.long	lit, '\n, emit
+	EXIT_4TH
 
 
 !!! "space" - CORE 6.1.2220
