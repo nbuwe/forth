@@ -1021,6 +1021,18 @@ ASMWORD("<>", not_equals)
 	 not	TOS, TOS
 
 
+!!! "<=" - nonstandard
+WORD("<=", less_than_equals)
+	.long	greater_than, zero_equals
+	EXIT_4TH
+
+
+!!! ">=" - nonstandard
+WORD(">=", greater_than_equals)
+	.long	less_than, zero_equals
+	EXIT_4TH
+
+
 !!! "u<" - CORE 6.1.2340
 ASMWORD("u<", u_less_than)
 	mov.l	@PSP+, r0
@@ -1317,7 +1329,7 @@ WORD("skip-spaces", skip_spaces)
 !!!     ( delim "ccc<delim>" -- str len )
 WORD("parse", parse)
 	.long	source, nip, to_in, fetch	! parse area limits
-	.long	two_dup, greater_than, zero_equals	! XXX: : <= > 0= ;
+	.long	two_dup, less_than_equals
 	.long	question_branch, 1f
 
 	!! parse area is exhausted, return empty word
