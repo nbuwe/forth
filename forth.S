@@ -617,7 +617,7 @@ ASMWORD("2drop", two_drop)
 	 FILL_TOS
 
 !!! "2dup" - CORE 6.1.0380
-ASMWORD("dup", two_dup)
+ASMWORD("2dup", two_dup)
 	mov.l	@PSP, r0
 	SPILL_TOS
 	jmp	@NEXT
