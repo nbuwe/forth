@@ -1173,7 +1173,12 @@ WORD("space", space)
 
 
 !!! "spaces" - CORE 6.1.2230
-!WORD("spaces", space)
+WORD("spaces", spaces)
+	.long	dup, zero_greater, question_branch, 9f
+	.long	lit, 0, do_parens, 9f
+1:	.long	space
+	.long	loop_parens, 1b
+9:	EXIT_4TH
 
 
 !!! "type" - CORE 6.1.2310
