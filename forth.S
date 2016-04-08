@@ -1118,11 +1118,23 @@ WORD("d>s", d2s)
 	.long	drop
 	EXIT_4TH
 
+
 !!! M* - CORE 6.1.1810
 !!!     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
 ASMWORD("m*", m_star)
 	mov.l	@PSP+, r0
 	dmuls.l	r0, TOS
+	sts	macl, r0
+	mov.l	r0, @-PSP
+	jmp	@NEXT
+	 sts	mach, TOS
+
+
+!!! UM* - CORE 6.1.2360
+!!!     ( n1 n2 -- d ) unsigned mixed multiplication (32x32 -> 64)
+ASMWORD("um*", um_star)
+	mov.l	@PSP+, r0
+	dmulu.l	r0, TOS
 	sts	macl, r0
 	mov.l	r0, @-PSP
 	jmp	@NEXT
