@@ -1620,6 +1620,21 @@ WORD("interpret", interpret)
 	EXIT_4TH
 
 
+!!! refill/interpret until eof - outer repl loop
+WORD("repl", repl)
+	!! TODO: for this to become QUIT we need to reset PSP/RSP here
+1:	!! begin
+	.long	    refill
+	.long	question_branch, 9f
+	!! while
+	.long	    interpret
+	.long	    SLITERAL(" ok"), type, cr
+	!! repeat
+	.long	branch, 1b
+9:
+	EXIT_4TH
+
+
 !!! ====================================================================
 /*
  * Test code is in a separate file so that random test changes don't
