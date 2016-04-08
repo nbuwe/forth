@@ -603,13 +603,6 @@ ASMWORD("roll", roll)
 	jmp	@NEXT
 	 mov	r0, TOS
 
-!!! "s>d" - CORE 6.1.2170
-!!!     NB: double numbers are little-endian cell-wise
-ASMWORD("s>d", s2d)
-	SPILL_TOS
-	jmp	@NEXT
-	 mov	#0, TOS
-
 !!! "2drop" - CORE 6.1.0370
 ASMWORD("2drop", two_drop)
 	add	#4, PSP
@@ -1094,6 +1087,31 @@ ASMWORD("xor", xor)
 ! "rshift" - CORE 6.1.2162
 ! "max" - CORE 6.1.1870
 ! "min" - CORE 6.1.1880
+
+
+!!! ====================================================================
+!!! Double-cell numbers
+
+!!! 3.1.4.1 Double-cell integers
+!!! 
+!!!   On the stack, the cell containing the most significant part of a
+!!!   double-cell integer shall be above the cell containing the least
+!!!   significant part.
+
+!!! E.3.1 Big endian vs. little endian
+!!! 
+!!!   When a cell pair is moved from the stack to memory with 2!, the
+!!!   cell that was on top of the stack is placed at the lower memory
+!!!   address.
+
+
+!!! "s>d" - CORE 6.1.2170
+ASMWORD("s>d", s2d)
+	SPILL_TOS		! least significant cell is below
+	shll	TOS		! shift sign into the T bit
+	jmp	@NEXT
+	 subc	TOS, TOS	! most significant cell = 0 - T
+
 
 
 !!! ====================================================================
