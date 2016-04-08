@@ -1113,6 +1113,44 @@ ASMWORD("s>d", s2d)
 	 subc	TOS, TOS	! most significant cell = 0 - T
 
 
+!!! D>S - DOUBLE 8.6.1.1140
+WORD("d>s", d2s)
+	.long	drop
+	EXIT_4TH
+
+!!! M* - CORE 6.1.1810
+!!!     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
+ASMWORD("m*", m_star)
+	mov.l	@PSP+, r0
+	dmuls.l	r0, TOS
+	sts	macl, r0
+	mov.l	r0, @-PSP
+	jmp	@NEXT
+	 sts	mach, TOS
+
+
+!!! SM/REM - CORE 6.1.2214
+!!!     ( d1 n1 -- n2 n3 ) mixed signed division/remainder (64/32 -> 32)
+ASMWORD("sm/rem", sm_slash_rem)
+	mov.l	1f, r0
+	mov.l	@PSP+, r5	! hi(d1)
+	mov.l	@PSP+, r4	! lo(d1)
+	mov	TOS, r6		! lo(n1) = n1
+	mov	TOS, r7
+	shll	r7
+	subc	r7, r7		! hi(n1) = sign(n1)
+	add	#-12, sp	! 4 for pointer (argument), 8 for value
+	mov.l	sp, @sp
+	jsr	@r0
+	 nop
+	mov.l	r0, @-PSP	! lo(div)
+	mov.l	@(8, sp), TOS	! lo(rem)
+	add	#12, sp
+	jmp	@NEXT
+	 nop
+	.align	2
+1:	.long	_C_LABEL(__divmoddi4)
+
 
 !!! ====================================================================
 !!! Strings
