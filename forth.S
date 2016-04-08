@@ -1399,7 +1399,7 @@ WORD("digit?", is_digit)
 
 	!! a digit from 'a'.. range?
 	.long	dup, base_a
-	.long	r_fetch, lit, 0x20, or ! downcased
+	.long	r_from, lit, 0x20, or, dup, to_r ! downcased
 	.long	minus_rot, within
 	.long	question_branch, 9f
 	.long	drop, r_from, lit, 'a, minus, lit, 10, plus, true
