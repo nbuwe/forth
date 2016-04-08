@@ -1238,10 +1238,10 @@ WORD("sign", sign)
 WORD("#", hash)
 	.long	base, fetch, slash_mod, swap
 	.long	dup, lit, 9, greater_than, question_branch, 1f
-	.long		lit, 87 /* 'a' - 10 */
+	.long		lit, 'a - 10
 	.long		branch, 2f
 1:		/* else */
-	.long		lit, 48 /* '0' */
+	.long		lit, '0
 2:		/* then */
 	.long	plus, hold
 	EXIT_4TH
