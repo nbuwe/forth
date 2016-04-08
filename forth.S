@@ -1362,6 +1362,81 @@ WORD("parse-word", parse_word)
 	.long	skip_spaces, bl, parse
 	EXIT_4TH
 
+
+/*
+ * >NUMBER and related words
+ */
+
+!!! ( base - '0' upper ) range of (arabic) digits; for "within"
+WORD("base-0", base_zero)
+	.long	dup, lit, 10, less_than_equals
+	.long	question_branch, 1f
+	.long	    lit, '0, tuck, plus
+	.long	branch, 9f
+1:	.long	    drop, lit, '0, lit, '9 + 1
+9:	EXIT_4TH
+
+!!! ( base  - 'a' upper) range of alphabetic digits; for within 
+WORD("base-a", base_a)
+	.long	lit, 10, minus, lit, 'a, tuck, plus
+	EXIT_4TH
+
+!!! ( char base - value true | false )
+WORD("digit?", is_digit)
+	.long	swap, to_r	! stash away the char
+
+	!! a "normal" digit from '0'.. range?
+	.long	dup, base_zero
+	.long	r_fetch
+	.long	minus_rot, within
+	.long	question_branch, 1f
+	.long	drop, r_from, lit, '0, minus, true
+	.long	exit_4th
+1:
+	!! does base use alphabet digits?
+	.long	dup, lit, 10, greater_than
+	.long	question_branch, 9f
+
+	!! a digit from 'a'.. range?
+	.long	dup, base_a
+	.long	r_fetch, lit, 0x20, or ! downcased
+	.long	minus_rot, within
+	.long	question_branch, 9f
+	.long	drop, r_from, lit, 'a, minus, lit, 10, plus, true
+	.long	exit_4th
+9:
+	!! not a digit
+	.long	drop, r_from, drop, false
+	EXIT_4TH
+
+!!! >NUMBER - CORE 6.1.0570
+!!! XXX: FIXME: single cell for now, should be ud1 and ud2
+!!! ( u1 s1 l1 - u2 s2 l2)
+WORD(">number", to_number)
+	.long	two_dup, to_r, to_r	! stash away initial string
+	.long	over, plus, swap	! pointer loop range
+	.long	question_do_parens, 9f
+1:
+	.long	i_4th, c_fetch, base, fetch, is_digit
+	.long	question_branch, 2f
+	.long	    swap, base, fetch, star, plus
+	.long	branch, 3f
+2:
+	!! bad character, compute new string position
+	.long	i_4th		! current pointer (NB: while we still can)
+	.long	unloop		! clean up return stack for exit
+	.long	dup			! new position
+	.long	r_from, minus		! distance from original position
+	.long	r_from, swap, minus	! decrease length by it
+	.long	exit_4th
+3:
+	.long	loop_parens, 1b
+9:
+	!! loop ended normally, so we used up all the string
+	.long	two_r_from, plus, lit, 0 ! 
+	EXIT_4TH
+	
+
 !!! XXX: TODO: Vocabularies
 
 VARIABLE("current", current)
