@@ -1490,8 +1490,7 @@ WORD("digit?", is_digit)
 	EXIT_4TH
 
 !!! >NUMBER - CORE 6.1.0570
-!!! XXX: FIXME: single cell for now, should be ud1 and ud2
-!!! ( u1 s1 l1 - u2 s2 l2)
+!!! ( ud1 s1 l1 - ud2 s2 l2)
 WORD(">number", to_number)
 	.long	two_dup, to_r, to_r	! stash away initial string
 	.long	over, plus, swap	! pointer loop range
@@ -1499,7 +1498,14 @@ WORD(">number", to_number)
 1:
 	.long	i_4th, c_fetch, base, fetch, is_digit
 	.long	question_branch, 2f
-	.long	    swap, base, fetch, star, plus
+
+	.long	    swap			! get hi above digit
+	.long	    base, fetch, um_star, drop	! lo(hi*base)
+		    !! digit lo(hi*base) - is already a double cell sum!
+	.long	    rot				! lo
+	.long	    base, fetch, um_star	! double cell lo*base
+	.long	    d_plus
+
 	.long	branch, 3f
 2:
 	!! bad character, compute new string position
