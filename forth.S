@@ -619,12 +619,12 @@ ASMWORD("2dup", two_dup)
 
 !!! 2SWAP - CORE 6.1.0430
 ASMWORD("2swap", two_swap)
-	mov.l	@PSP+, r1
-	mov.l	@PSP+, r2
-	mov.l	@PSP+, r3
-	mov.l	r1, @-PSP
-	mov.l	TOS, @-PSP
-	mov.l	r3, @-PSP
+	mov.l	@PSP, r1
+	mov.l	@(4, PSP), r2
+	mov.l	@(8, PSP), r3
+	mov.l	r1, @(8, PSP)
+	mov.l	TOS, @(4, PSP)
+	mov.l	r3, @PSP
 	jmp	@NEXT
 	 mov	r2, TOS
 
