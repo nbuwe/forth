@@ -1119,6 +1119,18 @@ WORD("d>s", d2s)
 	EXIT_4TH
 
 
+!!! D+ - DOUBLE 8.6.1.1040 
+ASMWORD("d+", d_plus)
+	mov.l	@PSP+, r2	! lo(d2)
+	mov.l	@PSP+, r1	! hi(d1)
+	mov.l	@PSP+, r0	! lo(d1)
+	clrt
+	addc	r0, r2		! lo
+	addc	r1, TOS		! hi
+	jmp	@NEXT
+	 mov.l	r2, @-PSP
+
+
 !!! M* - CORE 6.1.1810
 !!!     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
 ASMWORD("m*", m_star)
