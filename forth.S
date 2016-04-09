@@ -82,7 +82,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 .L_BYE_RETURNS_HERE:
 	SPILL_TOS
-	mov	PSP, r0		! return value from the top of forth stack
+	mov	PSP, r0		! return forth stack pointer
 
 	!! epilogue
 	mov	r14, r15
