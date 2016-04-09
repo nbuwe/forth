@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-extern void *test(int);
+extern void *start_forth(/* unchecked */);
 extern int32_t stack_bottom[];
 
 int
@@ -14,7 +14,7 @@ main()
     int32_t *psp;
     int32_t *p;
 
-    psp = test(10);
+    psp = start_forth();
 
     printf("-- STACK:\n");
     for (p = psp; p < stack_bottom; ++p) {

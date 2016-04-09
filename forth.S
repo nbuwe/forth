@@ -44,13 +44,11 @@ word_buf:	      ! buffer for the counted string returned by WORD
 !!! ====================================================================
 /**
  *
- * Trampoline code callable from C that starts Forth executing a test
- * entry point word.  Eventually it will start real Forth REPL.
+ * Trampoline code callable from C that starts Forth.
  *
  */
-
 	.text
-ENTRY(test)
+ENTRY(start_forth)
 	!! prologue
 	mov.l	r8, @-r15
 	mov.l	r9, @-r15
