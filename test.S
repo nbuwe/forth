@@ -18,7 +18,3 @@ WORD("dec", dec)
 WORD("hex", hex)
 	.long	lit, 16, base, store
 	EXIT_4TH
-
-WORD("test-word", test_word)
-	.long	repl
-	EXIT_4TH
