@@ -66,25 +66,21 @@ ENTRY(test)
 	!! address of "next" lives in a dedicated global register
 	mov.l	.L_next, NEXT
 
-	!! stacks
-	mov.l	.L_psp, PSP
-	mov.l	.L_rsp, RSP
+	!! these will be reset by QUIT
+	mov	#0, TOS
+	mov	#0, PSP
+	mov	#0, RSP
 
-	mov	r4, TOS		! pass our first argument to the test word
-
-	!! to return from forth
-	mova	1f, r0
-	mov.l	r0, @-RSP	! for return_to_c
-
-	!! to enter forth
-	mov.l	.L_entry, IP
+	!! QUIT to forth
+	mov.l	.L_quit_body, IP
+	mov.l	@IP+, r0		! CFA of (quit), the first word
+	add	#4, r0			! PFA - the actual code
 
 ALTENTRY(test_enter)		! for gdb breakpoing only
-	jmp	@NEXT
+	jmp	@r0
 	 nop
 
-	.align	2		! mova target
-1:
+.L_BYE_RETURNS_HERE:
 	SPILL_TOS
 	mov	PSP, r0		! return value from the top of forth stack
 
@@ -101,10 +97,8 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 	 mov.l	@r15+, r8
 
 	.align	2
-.L_psp:		.long	stack_bottom
-.L_rsp:		.long	rstack_bottom
-.L_entry: 	.long	entry_point
 .L_next:	.long	next_code
+.L_quit_body:	.long	quit_body
 
 
 !!! ====================================================================
@@ -256,15 +250,28 @@ heap:
 	.long	0xdeadbeef	! dummy
 
 
-/*
- * Headerless asm word to return back to C that called us.  Will not
- * be necessary in a real system.  Used only by the test entry point
- * instead of EXIT.
- */
+!!! Headerless asm word to return back to C that called us.
+!!! Worker behind BYE.
 DEFCODE_ASM(return_to_c)
-	mov.l	@RSP+, r0
+	mov.l	.L_return, r0
 	jmp	@r0
 	 nop
+
+	.align 2
+.L_return:
+	.long	.L_BYE_RETURNS_HERE
+
+
+ASMWORD("(quit)", quit_parens)
+	mov.l	.L_rsp, RSP	! reset return stack
+	mov.l	.L_psp, PSP	! reset parameter stack
+	jmp	@NEXT
+	 mov	#0, TOS		! clear TOS just in case
+
+	.align 2
+.L_psp:		.long	stack_bottom
+.L_rsp:		.long	rstack_bottom
+
 
 
 /*
@@ -1620,9 +1627,15 @@ WORD("interpret", interpret)
 	EXIT_4TH
 
 
+!!! BYE - TOOLS EXT 15.6.2.0830
+WORD("bye", bye)
+	.long	return_to_c
+	.long	0xdeadbeef	! unreachable sentinel
+
+
 !!! refill/interpret until eof - outer repl loop
-WORD("repl", repl)
-	!! TODO: for this to become QUIT we need to reset PSP/RSP here
+WORD("quit", quit)
+	.long	quit_parens	! reset stacks
 1:	!! begin
 	.long	    refill
 	.long	question_branch, 9f
@@ -1632,6 +1645,7 @@ WORD("repl", repl)
 	!! repeat
 	.long	branch, 1b
 9:
+	.long	bye
 	EXIT_4TH
 
 
@@ -1640,14 +1654,7 @@ WORD("repl", repl)
  * Test code is in a separate file so that random test changes don't
  * pollute commits
  */
-#include "test.S"		/* define test_word */
-
-!!!
-	.align	2
-ALTENTRY(entry_point)		! call me via NEXT !!!
-	.long	test_word
-	.long	return_to_c
-	.long	0xdeadbeef
+#include "test.S"
 
 !!! value for CURRENT
 .LATEST = .LASTNFA
