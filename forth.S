@@ -245,8 +245,6 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 	.align	2
 	.global	heap
 heap:
-	.long	0xdeadbeef	! dummy
-
 
 /*
  * Fake sentinel word that starts the vocabulary.
@@ -1655,8 +1653,11 @@ WORD("quit", quit)
  */
 #include "test.S"
 
+	.data
 !!! value for CURRENT
 .LATEST = .LASTNFA
+
+	.size	heap, . - heap
 
 	.section ".bss"
 .L_DATA_SPACE: /* begins HERE */
