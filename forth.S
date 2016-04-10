@@ -248,30 +248,6 @@ heap:
 	.long	0xdeadbeef	! dummy
 
 
-!!! Headerless asm word to return back to C that called us.
-!!! Worker behind BYE.
-DEFCODE_ASM(return_to_c)
-	mov.l	.L_return, r0
-	jmp	@r0
-	 nop
-
-	.align 2
-.L_return:
-	.long	.L_BYE_RETURNS_HERE
-
-
-ASMWORD("(quit)", quit_parens)
-	mov.l	.L_rsp, RSP	! reset return stack
-	mov.l	.L_psp, PSP	! reset parameter stack
-	jmp	@NEXT
-	 mov	#0, TOS		! clear TOS just in case
-
-	.align 2
-.L_psp:		.long	stack_bottom
-.L_rsp:		.long	rstack_bottom
-
-
-
 /*
  * Fake sentinel word that starts the vocabulary.
  */
@@ -286,6 +262,31 @@ ASMWORD("(quit)", quit_parens)
 	.long	0	! XXX: use some sentinel code?  just crash for now
 	!! Parameter Field
 	.long	0	! there's no parameters, but provide a stub
+
+
+!!! Asm part of QUIT that resets parameter and return stacks.
+!!! Must be the first word called by QUIT.
+ASMWORD("(quit)", quit_parens)
+	mov.l	.L_rsp, RSP	! reset return stack
+	mov.l	.L_psp, PSP	! reset parameter stack
+	jmp	@NEXT
+	 mov	#0, TOS		! clear TOS just in case
+
+	.align 2
+.L_psp:		.long	stack_bottom
+.L_rsp:		.long	rstack_bottom
+
+
+!!! Asm part of BYE that returns control to the C code that started
+!!! the Forth system.  The stacks are not reset and can be inspected.
+ASMWORD("(bye)", bye_parens)
+	mov.l	.L_return, r0
+	jmp	@r0
+	 nop
+
+	.align 2
+.L_return:
+	.long	.L_BYE_RETURNS_HERE
 
 
 !!! nop to use as a gdb breakpoint
@@ -1627,13 +1628,13 @@ WORD("interpret", interpret)
 
 !!! BYE - TOOLS EXT 15.6.2.0830
 WORD("bye", bye)
-	.long	return_to_c
+	.long	bye_parens
 	.long	0xdeadbeef	! unreachable sentinel
 
 
 !!! refill/interpret until eof - outer repl loop
 WORD("quit", quit)
-	.long	quit_parens	! reset stacks
+	.long	quit_parens	! reset stacks, must be the first
 1:	!! begin
 	.long	    refill
 	.long	question_branch, 9f
