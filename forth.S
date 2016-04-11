@@ -1125,6 +1125,15 @@ ASMWORD("xor", xor)
 !!!   address.
 
 
+!!! "2LIT" - auxiliary for "2LITERAL" DOUBLE 8.6.1.0390
+ASMWORD("2lit", lit2)
+	SPILL_TOS
+	mov.l	@IP+, TOS	! lower address goes to the top
+	mov.l	@IP+, r0
+	jmp	@NEXT
+	 mov.l	r0, @-PSP
+
+
 !!! "s>d" - CORE 6.1.2170
 ASMWORD("s>d", s2d)
 	SPILL_TOS		! least significant cell is below
