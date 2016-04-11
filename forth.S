@@ -1719,15 +1719,14 @@ WORD("interpret", interpret)
 	.long	parse_word, question_dup ! 0 only on EOF
 	.long	question_branch, 9f
 
-	.long	two_dup, search_current, dup, zero_equals
+	.long	two_dup, search_current, question_dup, zero_equals
 	.long	question_branch, .L_word_found
 
 	!! word not found, may be a number?
-	.long	drop
-	.long	two_dup, is_number, dup, zero_equals
+	.long	two_dup, is_number, question_dup, zero_equals
 	.long	question_branch, .L_number_found
 
-	.long	type, SLITERAL(" unknown word"), type, cr
+	.long	SLITERAL("unknown word "), type, type, cr
 	.long	exit_4th	! abort current line
 
 .L_number_found:
