@@ -1560,7 +1560,83 @@ WORD(">number", to_number)
 	!! loop ended normally, so we used up all the string
 	.long	two_r_from, plus, lit, 0 ! 
 	EXIT_4TH
-	
+
+
+!!! addr len - 0 | n 1 | d 2
+WORD("number?", is_number)
+	.long	base, fetch, to_r ! save base in case of a sigil
+	.long	false, to_r	  ! minus sign
+
+	!! if there's just one char, it cannot be a sigil or a minus sign
+	.long	dup, lit, 1, greater_than, question_branch, .L_check_number
+
+	!! Forth 200x #<dec>, $<hex>, %<bin> base sigils
+	.long	over, c_fetch
+
+	.long	dup, lit, '#, equals, question_branch, 1f
+	.long	    lit, 10, base, store, branch, .L_base_sigil
+1:
+	.long	dup, lit, '$, equals, question_branch, 2f
+	.long	    lit, 16, base, store, branch, .L_base_sigil
+2:
+	.long	dup, lit, '%, equals, question_branch, 3f
+	.long	    lit, 2, base, store, branch, .L_base_sigil
+3:
+	!!	else
+	.long	    drop, branch, .L_check_sign
+
+.L_base_sigil:
+	.long	drop		    ! sigil
+	.long	swap, lit, 1, plus  ! ++address
+	.long	swap, lit, 1, minus ! --length
+
+	!! if there's just one char, it cannot be a minus sign
+	.long	dup, lit, 1, greater_than, question_branch, .L_check_number
+
+.L_check_sign:
+	.long	over, c_fetch, lit, '-, equals
+	.long	question_branch, .L_check_number
+
+	.long	r_from, drop, true, to_r ! note that we have a minus
+
+	.long	swap, lit, 1, plus  ! ++address
+	.long	swap, lit, 1, minus ! --length
+
+.L_check_number:
+	!! try to convert to number -> ud addr len
+	.long	lit2, 0, 0, two_swap, to_number
+
+	.long	dup, zero_equals, question_branch, .L_check_trailer
+
+	!! single cell number
+	.long	two_drop, drop
+	.long	r_from, question_branch, 0f
+	.long	    negate
+0:
+	.long	r_from, base, store
+	.long	lit, 1, exit_4th
+
+.L_check_trailer:
+	.long	dup, lit, 1, equals, question_branch, .L_failed
+
+	.long	over, c_fetch, lit, '., equals
+	.long	question_branch, .L_failed
+
+	!! dot at the end means double-cell number
+	.long	two_drop
+	.long	r_from, question_branch, 0f
+	.long	    dnegate
+0:
+	.long	r_from, base, store
+	.long	lit, 2, exit_4th
+
+.L_failed:
+	.long	two_drop, two_drop
+	.long	r_from, drop
+	.long	r_from, base, store
+	.long	lit, 0
+	EXIT_4TH
+
 
 !!! XXX: TODO: Vocabularies
 
@@ -1625,17 +1701,28 @@ WORD("interpret", interpret)
 	.long	parse_word, question_dup ! 0 only on EOF
 	.long	question_branch, 9f
 
-	.long	two_dup, search_current
-	!! XXX: currently we don't have compilation/immediate etc
-	.long	zero_equals, question_branch, 2f
+	.long	two_dup, search_current, dup, zero_equals
+	.long	question_branch, .L_word_found
 
-	!! word not found
+	!! word not found, may be a number?
+	.long	drop
+	.long	two_dup, is_number, dup, zero_equals
+	.long	question_branch, .L_number_found
+
 	.long	type, SLITERAL(" unknown word"), type, cr
 	.long	exit_4th	! abort current line
 
-2:	!! word found
+.L_number_found:
+	.long	lit, 2, equals, question_branch, 0f
+	.long	    two_swap, two_drop, branch, 8f
+0:
+	.long	minus_rot, two_drop, branch, 8f
+
+.L_word_found:
+	.long	drop		! XXX: TODO: check immediate flag
 	.long	minus_rot, two_drop, execute
 
+8:
 	.long	branch, 1b
 	!! again
 9:
