@@ -1148,6 +1148,16 @@ WORD("d>s", d2s)
 	EXIT_4TH
 
 
+!!! DNEGATE - DOUBLE 8.6.1.1230
+WORD("dnegate", dnegate)
+	mov.l	@PSP, r0	! lower cell
+	clrt
+	negc	r0, r0
+	negc	TOS, TOS
+	jmp	@NEXT
+	 mov.l	r0, @PSP
+
+
 !!! D+ - DOUBLE 8.6.1.1040 
 ASMWORD("d+", d_plus)
 	mov.l	@PSP+, r2	! lo(d2)
