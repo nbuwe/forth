@@ -332,6 +332,24 @@ next_code:
 	 add	r0, TOS		! TOS = PFA (for code to consume)
 
 
+!!! tail-call - note that the difference from EXIT is whether the
+!!! order of CFA := @IP and IP := @RSP+
+!!!
+!!! This makes it possible to add a wrapper around words that examine
+!!! the cell after them, like LIT, BRANCH, etc.  Just make the tail
+!!! call to such word at the end of the wrapper and it will work.
+ASMWORD("(goto)", goto_parens)
+	SPILL_TOS
+	mov.l	@IP, r0		! r0 = CFA of the next word to execute
+
+	mov.l	@RSP+, IP	! NB: this is what makes it a tail call
+
+	mov.l	@r0, r1		! r1 = *CFA (acctual code)
+	mov	#4, TOS		!
+	jmp	@r1		! execute word's code
+	 add	r0, TOS		! TOS = PFA (for code to consume)
+
+
 	!! This should eventually become the DOES> part of CODE
 DOES_ASM(asm_does)		! code field of asm words points here
 	jmp	@TOS		! consume TOS
