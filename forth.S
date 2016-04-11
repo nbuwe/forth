@@ -832,9 +832,24 @@ WORD("(loop)", loop_parens)
 !!! 	( R: addr limit current )
 WORD("(+loop)", plus_loop_parens)
 	.long	r_from, swap		! take (+loop)'s return address
-	.long	r_from, plus, dup	! take and increment current
-	.long	r_fetch			! peek at limit
-	.long	u_less_than, question_branch, 1f
+
+	.long	r_from, two_dup, plus	! delta, current, current+delta --
+	.long	dup, to_r, minus_rot, r_from	! stash new current
+	.long	rot, zero_less, dup, question_branch, 0f ! negative delta?
+	.long	    minus_rot, swap, rot
+0:
+	.long	r_fetch, plus	! adjust limit if delta is negative
+	.long	minus_rot
+
+	!! have we crossed the limit?
+	!! XXX: like within, but with left not included
+	.long	over, minus	! high - low
+	.long	to_r
+	.long	minus		! test - low
+	.long	r_from
+	.long	u_greater_than
+
+	.long	question_branch, 1f
 	.long	    to_r		  ! new current
 	.long	    fetch, to_r, exit_4th ! return to (do)
 1:	!! loop is done, clean up return stack
