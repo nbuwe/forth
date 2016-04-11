@@ -1305,7 +1305,7 @@ ASMWORD("compare", compare)
 
 !!! "base" - CORE 6.1.0750
 VARIABLE("base", base)
-	.long 0x10
+	.long 10
 
 
 !!! ====================================================================
