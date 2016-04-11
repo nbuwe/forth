@@ -18,3 +18,15 @@ WORD("dec", dec)
 WORD("hex", hex)
 	.long	lit, 16, base, store
 	EXIT_4TH
+
+#define STRING(fname, aname, str) \
+    WORD(fname, aname); .long SLITERAL(str); EXIT_4TH
+
+STRING("test-string", test_string, "6789ABCD")
+
+WORD("numtest", numtest)
+	.long	lit, 0, dup, test_string, to_number
+	.long	SLITERAL("num: "), type, rot, drop, rot, dot, cr
+	.long	SLITERAL("...: "), type, type, cr
+	.long	lit, 3, lit, 2, lit, 1, lit, 0, two_swap, two_over
+	EXIT_4TH
