@@ -808,6 +808,24 @@ WORD("(loop)", loop_parens)
 	.long	cell_plus, to_r	      ! skip literal (do) address
 	EXIT_4TH
 
+
+!!! (+loop) - auxiliary for "+loop" with the address of (do) compiled
+!!!           as literal after it
+!!! 	( R: addr limit current )
+WORD("(+loop)", plus_loop_parens)
+	.long	r_from, swap		! take (+loop)'s return address
+	.long	r_from, plus, dup	! take and increment current
+	.long	r_fetch			! peek at limit
+	.long	u_less_than, question_branch, 1f
+	.long	    to_r		  ! new current
+	.long	    fetch, to_r, exit_4th ! return to (do)
+1:	!! loop is done, clean up return stack
+	.long	drop		      ! new current
+	.long	two_r_from, two_drop  ! address for leave and limit
+	.long	cell_plus, to_r	      ! skip literal (do) address
+	EXIT_4TH
+
+
 !!! I - CORE 6.1.1680
 WORD("i", i_4th)
 	.long	two_r_fetch	! current and i'th return address
