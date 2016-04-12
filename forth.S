@@ -1817,6 +1817,23 @@ WORD("search-current", search_current)
 	EXIT_4TH
 
 
+!!! ' - CORE 6.1.0070
+WORD("'", tick)
+	.long	parse_word, question_dup
+	.long	zero_equals, question_branch, 0f
+	.long	    SLITERAL("name missing"), type, cr
+	.long	    drop, exit_4th
+0:
+	.long	two_dup, search_current, question_dup
+	.long	zero_equals, question_branch, 0f
+	.long	    SLITERAL("unknown word "), type, type, cr
+	.long	    exit_4th
+0:
+	.long	drop			! immediate flag
+	.long	minus_rot, two_drop	! a copy of name
+	EXIT_4TH
+
+
 !!! interpret source until it's empty
 WORD("interpret", interpret)
 1:	!! begin
