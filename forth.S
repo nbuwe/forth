@@ -1178,10 +1178,25 @@ ASMWORD("xor", xor)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 xor	r0, TOS
-	
 
-! "lshift" - CORE 6.1.1805
-! "rshift" - CORE 6.1.2162
+
+!! LSHIFT - CORE 6.1.1805
+ASMWORD("lshift", lshift)
+	extu.b	TOS, r1		! shift amount (ensure positive)
+	mov.l	@PSP+, TOS	! the number to shift
+	jmp	@NEXT
+	 shld	r1, TOS
+
+
+!! RSHIFT - CORE 6.1.2162
+ASMWORD("rshift", rshift)
+	extu.b	TOS, r1		! shift amount (ensure positive)
+	mov.l	@PSP+, TOS	! the number to shift
+	neg	r1, r1		! negative means shift right
+	jmp	@NEXT
+	 shld	r1, TOS
+
+
 ! "max" - CORE 6.1.1870
 ! "min" - CORE 6.1.1880
 
@@ -1825,36 +1840,39 @@ WORD("unsmudge", unsmudge)
 !!! 
 WORD("search-current", search_current)
 	.long	latest
-1:
-	.long	to_r			! save current word
-	.long	two_dup			! - the word we search for
-	.long	r_fetch			! - get current word
-	.long	name_count
+1:	!! begin
+	.long	dup, c_fetch, lit, (SFLAG), and, zero_equals ! not smudged?
+	.long	question_branch, 8f
 
-#if 0
-	!! debug print
-	.long	two_dup, swap, dot
-	.long	lit, 43, emit
-	.long	space, dot, space
-	.long	two_dup, type, cr
-#endif
+	.long	to_r			! stash current NFA
+	.long	two_dup			! the word we search for
+	.long	r_fetch			! current NFA
+	.long	name_count		! count, drop the flags
 	.long	compare			! zero if equals
-	.long	r_from			! get back current word
-	.long	n_to_link
-	.long	swap
-	.long	question_branch, 2f	! break if found
+	.long	question_branch, 2f
 
-	.long	fetch			! previous word nfa
-	.long	dup, zero_equals, question_branch, 1b
+	!! not the word we are looking for
+	.long	    r_from		! get back current NFA
+	.long	branch, 9f
 
-	!! we reached the end of the wordlist
-	.long	drop, two_drop, lit, 0
-	.long	exit_4th		! with zero nfa already on stack
+2:	!! we've got a match
+	.long	    two_drop			! the word we searched for
+	.long	    r_from			! get back current NFA
+	.long	    dup, name_from, swap	! CFA NFA --
+	.long	    c_fetch, lit, IFLAG, and	! nfa -> 1 for immediate,
+	.long	    lit, 6, rshift, lit, 1, minus ! ... -1 otherwise
+	.long	exit_4th
 
-2:	!! we found the word
-	.long	link_from		! get cfa
-	.long	to_r, two_drop, r_from	! get rid of the search word
-	.long	lit, 1
+8:	!! smudged
+	!!   placeholder for debugging
+
+9:	!! try previous word in the vocabulary
+	.long	n_to_link, fetch
+	.long	question_dup, zero_equals, question_branch, 1b
+
+	!! we reached the end of the vocabulary
+	.long	two_drop	! the word we searched for
+	.long	lit, 0		! indicate failure
 	EXIT_4TH
 
 
