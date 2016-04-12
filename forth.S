@@ -798,79 +798,65 @@ ASMWORD("+?", plus_question)
 !!! (do) - auxiliary for "do"
 !!!     ( limit first -- R: addr limit current )
 WORD("(do)", do_parens)
-	.long	r_from, dup	! next cell after compiled "(do)"
-	.long	fetch, to_r 	! is end of loop address - stash it for "leave"
-	.long	rot, to_r       ! limit
-	.long	swap, to_r	! current = first
-	.long	cell_plus, to_r	! skip literal after (do)
+	.long	r_from			! next cell after compiled "(do)"
+	.long	dup, fetch, to_r	! stash end of loop address for "leave"
+	.long	rot			! first leave limit --
+	!! offset limit so that last + limit causes overflow
+	.long	lit, 0x80000000, swap, minus, to_r
+	.long	swap			! leave first --
+	!! offset first accordingly too
+	.long	r_fetch, plus, to_r
+	.long	cell_plus, to_r		! skip literal after (do)
 	EXIT_4TH
+
 
 !!! (?do) - auxiliary for "?do";
 !!!     like "do", but does nothing if first == limit
-!!!     ( limit first -- R: addr limit current )
 WORD("(?do)", question_do_parens)
-	.long	two_dup, equals, question_branch, 1f
-	.long	two_drop
-	.long	r_from, fetch, to_r, exit_4th
-1:
-	.long	r_from, dup	! next cell after compiled "(do)"
-	.long	fetch, to_r 	! is end of loop address - stash it for "leave"
-	.long	rot, to_r       ! limit
-	.long	swap, to_r	! current = first
-	.long	cell_plus, to_r	! skip literal after (do)
-	EXIT_4TH
+	.long	two_dup, equals, question_branch, 0f
+	.long	    two_drop
+	.long	    goto_parens, branch ! skip loop
+0:
+	.long	goto_parens, do_parens	! setup loop
+
 
 !!! (loop) - auxiliary for "loop" with the address of (do) compiled
-!!!          as literal after it
+!!!          as literal after it.   Does 1 (+LOOP) via tail call.
 !!! 	( R: addr limit current )
 WORD("(loop)", loop_parens)
-	.long	r_from			! take (loop)'s return address
-	.long	r_from, one_plus, dup	! take and increment current
-	.long	r_fetch			! peek at limit
-	.long	u_less_than, question_branch, 1f
-	.long	    to_r		  ! new current
-	.long	    fetch, to_r, exit_4th ! return to (do)
-1:	!! loop is done, clean up return stack
-	.long	drop		      ! new current
-	.long	two_r_from, two_drop  ! address for leave and limit
-	.long	cell_plus, to_r	      ! skip literal (do) address
-	EXIT_4TH
+	.long	lit, 1, goto_parens, plus_loop_parens
 
 
 !!! (+loop) - auxiliary for "+loop" with the address of (do) compiled
 !!!           as literal after it
 !!! 	( R: addr limit current )
 WORD("(+loop)", plus_loop_parens)
-	.long	question_dup, zero_equals, question_branch, 0f	! zero delta?
-	.long	    r_from, fetch, to_r, exit_4th		! repeat
-0:
 	.long	r_from, swap		! take (+loop)'s return address
 
-	.long	r_from, two_dup, plus	! delta, current, current+delta --
-	.long	dup, to_r, minus_rot, r_from	! stash new current
-	.long	rot				! delta to top
-	.long	zero_greater, question_branch, 0f	! positive delta?
-	.long	    swap
-0:
-	!! have we crossed the line beween limit-1 and limit?
-	.long	r_fetch, lit, 1, minus, minus_rot, within
-	.long	question_branch, 9f
-	.long	    to_r		  ! new current
-	.long	    fetch, to_r, exit_4th ! return to (do)
+	.long	r_from			! current
+	.long	plus_question		! add increment with overflow check
+	.long	question_branch, 1f
 
-9:
-	!! loop is done, clean up return stack
-	.long	drop		      ! new current
-	.long	two_r_from, two_drop  ! address for leave and limit
-	.long	cell_plus, to_r	      ! skip literal (do) address
-	EXIT_4TH
+	!! overflow means we hit the limit, leave the loop
+	.long	drop		! current
+	.long	r_from, drop	! limit
+	.long	r_from, drop	! leave address
+	.long	cell_plus, to_r, exit_4th
+
+1:	!! no overflow, update current and continue
+	.long	to_r			! new current
+	.long	to_r			! return address
+	.long	goto_parens, branch	! to beginning of loop
 
 
 !!! I - CORE 6.1.1680
 WORD("i", i_4th)
-	.long	two_r_fetch	! current and i'th return address
-	.long	drop
+	.long	r_from		! return address
+	.long	two_r_fetch	! limit and current
+	.long	swap, minus	! normalize current - see (do)
+	.long	swap, to_r	! restore return address
 	EXIT_4TH
+
 
 !!! LEAVE - CORE 6.1.1760
 !!! 	( R: addr limit current )
@@ -878,6 +864,7 @@ WORD("leave", leave)
 	.long	r_from, drop		! return address
 	.long	two_r_from, two_drop	! loop limit and counter
 	EXIT_4TH			! to the loop's end
+
 
 !!! UNLOOP - CORE 6.1.2380
 WORD("unloop", unloop)
