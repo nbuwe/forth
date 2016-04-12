@@ -1284,7 +1284,7 @@ ASMWORD("cmove", cmove)
 	bf/s	1b
 	 add	#1, r1
 
-9:	add	#-8, PSP
+9:	add	#8, PSP
 	jmp	@NEXT
 	 FILL_TOS
 
@@ -1309,7 +1309,7 @@ ASMWORD("cmove>", cmove_up)
 	dt	TOS
 	bf	1b
 
-9:	add	#-8, PSP
+9:	add	#8, PSP
 	jmp	@NEXT
 	 FILL_TOS
 
@@ -1744,6 +1744,32 @@ VARIABLE("current", current)
 WORD("latest", latest)
 	.long	current, fetch, fetch
 	EXIT_4TH
+
+
+!!! CREATE - CORE 6.1.1000
+WORD("create", create)
+	.long	parse_word, question_dup ! 0 only on EOF
+	.long	zero_equals, question_branch, 0f
+	.long	    SLITERAL("name missing"), type, cr
+	.long	    drop, exit_4th
+0:
+	.long	align, here, to_r	! save NFA of the new word
+
+	!! Name Field
+	.long	dup, to_r		! save length
+	.long	dup, c_comma		! write name length byte
+	.long	here, swap		! destination
+	.long	cmove			! copy name
+	.long	r_from, allot, align	! move heap pointer past the name
+
+	!! Link Field
+	.long	current, fetch, dup, fetch, comma ! pointer to previous
+	.long	r_from, swap, store		  ! update current to our NFA
+
+	!! Code Field
+	.long	lit, next_code, comma
+	EXIT_4TH
+
 
 !!! Traditional Forth's FIND takes counted string from traditional
 !!! WORD, but that requires temporary space to hold the counted
