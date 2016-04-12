@@ -820,16 +820,9 @@ WORD("(?do)", question_do_parens)
 	.long	goto_parens, do_parens	! setup loop
 
 
-!!! (loop) - auxiliary for "loop" with the address of (do) compiled
-!!!          as literal after it.   Does 1 (+LOOP) via tail call.
-!!! 	( R: addr limit current )
-WORD("(loop)", loop_parens)
-	.long	lit, 1, goto_parens, plus_loop_parens
-
-
-!!! (+loop) - auxiliary for "+loop" with the address of (do) compiled
-!!!           as literal after it
-!!! 	( R: addr limit current )
+!!! (+LOOP) - auxiliary for +LOOP with the address of the beginning of
+!!!     the loop body compiled as literal after it.
+!!! 	( increment -- ) ( R: addr limit current )
 WORD("(+loop)", plus_loop_parens)
 	.long	r_from, swap		! take (+loop)'s return address
 
@@ -847,6 +840,11 @@ WORD("(+loop)", plus_loop_parens)
 	.long	to_r			! new current
 	.long	to_r			! return address
 	.long	goto_parens, branch	! to beginning of loop
+
+
+!!! (LOOP) - auxiliary for LOOP.  Does "1 (+LOOP)" via tail call.
+WORD("(loop)", loop_parens)
+	.long	lit, 1, goto_parens, plus_loop_parens
 
 
 !!! I - CORE 6.1.1680
