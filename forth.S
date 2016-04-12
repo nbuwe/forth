@@ -958,22 +958,23 @@ ASMWORD("*", star)
 !!!	sdivsi3 tweaked to return result in TOS
 ASMWORD("/", slash)
 	tst	TOS, TOS
-	mov	TOS, r1
+	mov	TOS, r1		! r1 = divisor
 	bt/s	.L_divide_by_zero
-	 FILL_TOS
+	 FILL_TOS		! TOS = dividend
 
-	mov	#0, r2
-	div0s	r2, TOS
-	subc	r3, r3
-	subc	r2, TOS
-	div0s	r1, r3
+	mov	#0, r2		! this is a fast way to set ...
+	div0s	r2, TOS		! ... T := sign(dividend)
+	subc	r3, r3		! sign-extend dividend into 64 bit {TOS, r3}
+	subc	r2, TOS		! if dividend < 0 convert to 1-complement
+
+	div0s	r1, r3		! setup division {TOS, r3} / r1
 	.rept /* DIVSTEP */ 32 /* times { */
-	rotcl	TOS
+	rotcl	TOS		! feed bits of TOS into division via T
 	div1	r1, r3
 	.endr /* } */
-	rotcl	TOS
+	rotcl	TOS		! quotient in 1-complement
 	jmp	@NEXT
-	 addc	r2, TOS
+	 addc	r2, TOS		! if quotient < 0 convert to 2-complement
 
   .L_divide_by_zero:
 	jmp	@NEXT
