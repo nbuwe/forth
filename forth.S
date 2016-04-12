@@ -2,11 +2,11 @@
 
 #include <machine/asm.h>
 
-#define TOS	r8		/* top of parameter stack lives in a register */
-#define PSP	r9		/* parameter stack pointer */
-#define RSP	r10		/* return stack pointer */
-#define IP	r11		/* instruction pointer */
-#define NEXT	r13		/* "next" address to avoid memory loads */
+#define TOS	r8	/* top of parameter stack lives in a register */
+#define PSP	r9	/* parameter stack pointer */
+#define RSP	r10	/* return stack pointer */
+#define IP	r11	/* instruction pointer */
+#define NEXT	r13	/* "next" address to avoid memory loads */
 
 #define SPILL_TOS	mov.l	TOS, @-PSP
 #define FILL_TOS	mov.l	@PSP+, TOS
