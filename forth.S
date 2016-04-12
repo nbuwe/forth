@@ -836,7 +836,7 @@ WORD("(+loop)", plus_loop_parens)
 	.long	r_from, two_dup, plus	! delta, current, current+delta --
 	.long	dup, to_r, minus_rot, r_from	! stash new current
 	.long	rot, zero_less, dup, question_branch, 0f ! negative delta?
-	.long	    minus_rot, swap, rot
+	.long	    to_r, swap, r_from
 0:
 	.long	r_fetch, plus	! adjust limit if delta is negative
 	.long	minus_rot
