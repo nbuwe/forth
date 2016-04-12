@@ -842,13 +842,7 @@ WORD("(+loop)", plus_loop_parens)
 	.long	minus_rot
 
 	!! have we crossed the limit?
-	!! XXX: like within, but with left not included
-	.long	over, minus	! high - low
-	.long	to_r
-	.long	minus		! test - low
-	.long	r_from
-	.long	u_greater_than
-
+	.long	swap, within
 	.long	question_branch, 1f
 	.long	    to_r		  ! new current
 	.long	    fetch, to_r, exit_4th ! return to (do)
