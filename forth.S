@@ -571,7 +571,7 @@ ASMWORD("rot", rot)
 	 mov	r1, TOS
 
 !!! -ROT - non-standard
-ASMWORD("rot", minus_rot)
+ASMWORD("-rot", minus_rot)
 	mov.l	@PSP+, r1
 	mov.l	@PSP+, r2
 	mov.l	TOS, @-PSP
