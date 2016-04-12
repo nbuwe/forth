@@ -218,11 +218,14 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
   .LASTNFA = NFA_LABEL(label)			; \
 	defcode(label)
 
-#define WORD(name, label)	DEFWORD(name,    0, DEFCODE_4TH,   label)
-#define IMMWORD(name, label)	DEFWORD(name, 0x80, DEFCODE_4TH,   label)
-#define ASMWORD(name, label)	DEFWORD(name,    0, DEFCODE_ASM,   label)
-#define CONSTANT(name, label)	DEFWORD(name,    0, DEFCODE_CONST, label)
-#define VARIABLE(name, label)	DEFWORD(name,    0, DEFCODE_VAR,   label)
+#define	IFLAG	0x80		/* immediate */
+#define	SFLAG	0x40		/* smudge */
+
+#define WORD(name, label)	DEFWORD(name,     0, DEFCODE_4TH,   label)
+#define IMMWORD(name, label)	DEFWORD(name, IFLAG, DEFCODE_4TH,   label)
+#define ASMWORD(name, label)	DEFWORD(name,     0, DEFCODE_ASM,   label)
+#define CONSTANT(name, label)	DEFWORD(name,     0, DEFCODE_CONST, label)
+#define VARIABLE(name, label)	DEFWORD(name,     0, DEFCODE_VAR,   label)
 
 #define SLITERAL(str)		  \
      /* .long */ branch, 19f	; \
@@ -1797,6 +1800,18 @@ WORD("create", create)
 	EXIT_4TH
 
 
+!!! SMUDGE - hide the latest word from search
+WORD("smudge", smudge)
+	.long	latest, c_fetch, lit, SFLAG, or, latest, c_store
+	EXIT_4TH
+
+
+!!! UNSMUDGE - reverse the latest word to search
+WORD("unsmudge", unsmudge)
+	.long	latest, c_fetch, lit, ~SFLAG, and, latest, c_store
+	EXIT_4TH
+
+
 !!! Traditional Forth's FIND takes counted string from traditional
 !!! WORD, but that requires temporary space to hold the counted
 !!! string, so ANS Forth suggests using PARSE instead.  The
@@ -1857,6 +1872,23 @@ WORD("'", tick)
 0:
 	.long	drop			! immediate flag
 	.long	minus_rot, two_drop	! a copy of name
+	EXIT_4TH
+
+
+!!! STATE - CORE 6.1.2250
+VARIABLE("state", state)
+	.long	0		! interpretation
+
+
+!!! [ - CORE 6.1.2500
+IMMWORD("[", left_bracket)
+	.long	lit, 0, state, store
+	EXIT_4TH
+
+
+!!! ] - CORE 6.1.2540
+IMMWORD("]", right_bracket)
+	.long	lit, -1, state, store
 	EXIT_4TH
 
 
