@@ -30,3 +30,13 @@ WORD("numtest", numtest)
 	.long	SLITERAL("...: "), type, type, cr
 	.long	lit, 3, lit, 2, lit, 1, lit, 0, two_swap, two_over
 	EXIT_4TH
+
+WORD("col", col)
+	.long	create
+	.long	  lit, test_string, comma
+	.long	  lit, type, comma
+	.long	  lit, cr, comma
+	.long	  lit, exit_4th, comma
+	.long	lit, call_code, latest, name_from, store
+	.long	SLITERAL("defined "), type, latest, count, type, cr
+	EXIT_4TH
