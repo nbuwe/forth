@@ -831,28 +831,20 @@ WORD("(loop)", loop_parens)
 !!!           as literal after it
 !!! 	( R: addr limit current )
 WORD("(+loop)", plus_loop_parens)
+	.long	question_dup, zero_equals, question_branch, 0f	! zero delta?
+	.long	    r_from, fetch, to_r, exit_4th		! repeat
+0:
 	.long	r_from, swap		! take (+loop)'s return address
 
 	.long	r_from, two_dup, plus	! delta, current, current+delta --
 	.long	dup, to_r, minus_rot, r_from	! stash new current
 	.long	rot				! delta to top
-
-	!! current+delta, current, current+delta, delta --
-
-	.long	dup, zero_equals, question_branch, 0f	! zero delta?
-	.long       drop	! delta
-	.long	    two_drop	! range
-	.long	    branch, 1f	! next iteration
-0:
-
 	.long	zero_greater, question_branch, 0f	! positive delta?
 	.long	    swap
 0:
 	!! have we crossed the line beween limit-1 and limit?
 	.long	r_fetch, lit, 1, minus, minus_rot, within
 	.long	question_branch, 9f
-1:
-	!! next iteration
 	.long	    to_r		  ! new current
 	.long	    fetch, to_r, exit_4th ! return to (do)
 
