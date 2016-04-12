@@ -785,6 +785,16 @@ ASMWORD("?branch", question_branch)
 	 add	#4, IP		! skip branch address
 
 
+!!! Add with overflow check
+ASMWORD("+?", plus_question)
+	mov.l	@PSP+, r0
+	addv	r0, TOS
+	SPILL_TOS
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
 !!! (do) - auxiliary for "do"
 !!!     ( limit first -- R: addr limit current )
 WORD("(do)", do_parens)
