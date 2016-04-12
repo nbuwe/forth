@@ -835,18 +835,29 @@ WORD("(+loop)", plus_loop_parens)
 
 	.long	r_from, two_dup, plus	! delta, current, current+delta --
 	.long	dup, to_r, minus_rot, r_from	! stash new current
-	.long	rot, zero_less, dup, question_branch, 0f ! negative delta?
-	.long	    to_r, swap, r_from
-0:
-	.long	r_fetch, plus	! adjust limit if delta is negative
-	.long	minus_rot
+	.long	rot				! delta to top
 
-	!! have we crossed the limit?
-	.long	swap, within
-	.long	question_branch, 1f
+	!! current+delta, current, current+delta, delta --
+
+	.long	dup, zero_equals, question_branch, 0f	! zero delta?
+	.long       drop	! delta
+	.long	    two_drop	! range
+	.long	    branch, 1f	! next iteration
+0:
+
+	.long	zero_greater, question_branch, 0f	! positive delta?
+	.long	    swap
+0:
+	!! have we crossed the line beween limit-1 and limit?
+	.long	r_fetch, lit, 1, minus, minus_rot, within
+	.long	question_branch, 9f
+1:
+	!! next iteration
 	.long	    to_r		  ! new current
 	.long	    fetch, to_r, exit_4th ! return to (do)
-1:	!! loop is done, clean up return stack
+
+9:
+	!! loop is done, clean up return stack
 	.long	drop		      ! new current
 	.long	two_r_from, two_drop  ! address for leave and limit
 	.long	cell_plus, to_r	      ! skip literal (do) address
