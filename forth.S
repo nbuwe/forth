@@ -1905,7 +1905,7 @@ IMMWORD("[", left_bracket)
 
 
 !!! ] - CORE 6.1.2540
-IMMWORD("]", right_bracket)
+WORD("]", right_bracket)
 	.long	lit, -1, state, store
 	EXIT_4TH
 
