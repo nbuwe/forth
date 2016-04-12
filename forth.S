@@ -981,7 +981,6 @@ ASMWORD("/", slash)
 	 mov	#0, TOS
 
 
-
 !!! "mod" - CORE 6.1.1890
 WORD("mod", mod)
 	.long two_dup, slash, star, minus
@@ -998,6 +997,38 @@ WORD("/mod", slash_mod)
 	EXIT_4TH
 
 	
+!!! U/ - nonstandard unsigned division
+!!!	udivsi3 adjusted for register usage
+ASMWORD("u/", u_slash)
+	tst	TOS, TOS
+	mov	TOS, r1		! r1 = divisor
+	bt/s	.L_u_divide_by_zero
+	 FILL_TOS		! TOS = dividend
+
+	mov	#0, r0
+	div0u
+	.rept /* DIVSTEP */ 32 /* times { */
+	rotcl	TOS		! feed bits of dividend into division via T
+	div1	r1, r0
+	.endr /* } */
+	jmp	@NEXT
+	 rotcl	TOS
+
+  .L_u_divide_by_zero:
+	jmp	@NEXT
+	 mov	#0, TOS
+
+
+!!! U/MOD - nonstandard unsigned division with remainder
+WORD("u/mod", u_slash_mod)
+	.long two_dup, u_slash
+	.long tuck, star
+	.long lit, 2, roll
+	.long swap, minus
+	.long swap
+	EXIT_4TH
+
+
 !!! "1+" - CORE 6.1.0290
 ASMWORD("1+", one_plus)
 	jmp	@NEXT
@@ -1462,7 +1493,7 @@ WORD("sign", sign)
 !!! # - CORE 6.1.0030
 !!!     XXX: FIXME: single cell!
 WORD("#", hash)
-	.long	base, fetch, slash_mod, swap
+	.long	base, fetch, u_slash_mod, swap ! NB: unsigned
 	.long	dup, lit, 9, greater_than, question_branch, 1f
 	.long		lit, 'a - 10
 	.long		branch, 2f
