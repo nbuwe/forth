@@ -161,8 +161,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 
 #define EXIT_4TH		  \
-	.long	exit_4th	; \
-	.long	0xdeadbeef	/* sentinel */
+	.long	exit_4th
 
 
 /*
