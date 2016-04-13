@@ -1966,6 +1966,34 @@ WORD("quit", quit)
 	EXIT_4TH
 
 
+!!! (;CODE)
+WORD("(;code)", semicolon_code_parens)
+	.long	r_from, latest, name_from, store
+	EXIT_4TH		! to the caller's caller
+
+
+!!! : - CORE 6.1.0450
+WORD(":", colon)
+	.long	create, smudge, right_bracket
+	.long	semicolon_code_parens
+	!! code field of colon definitions will point here
+	.local	colon_does
+colon_does:
+	mov.l	1f, r0
+	jmp	@r0
+	 nop
+	.align 2
+1:	.long	call_code
+
+
+!!! ; - CORE 6.1.0460
+IMMWORD(";", semicolon)
+	.long	lit, exit_4th, comma	! compile exit
+	.long	unsmudge		! reveal the word to search
+	.long	left_bracket		! back to interpretation
+	EXIT_4TH
+
+
 !!! ====================================================================
 /*
  * Test code is in a separate file so that random test changes don't
