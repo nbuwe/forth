@@ -1940,18 +1940,41 @@ WORD("interpret", interpret)
 	.long	two_dup, is_number, question_dup, zero_equals
 	.long	question_branch, .L_number_found
 
+	!! not a number either, complain and punt
 	.long	SLITERAL("unknown word "), type, type, cr
+	.long	left_bracket	! make sure we are interpreting
 	.long	exit_4th	! abort current line
 
 .L_number_found:
-	.long	lit, 2, equals, question_branch, 0f
-	.long	    two_swap, two_drop, branch, 8f
-0:
-	.long	minus_rot, two_drop, branch, 8f
+	.long	lit, 2, equals, question_branch, 2f
+
+		!! double cell number
+	.long	    two_swap, two_drop
+	.long	    state, fetch, question_branch, 0f
+	.long		compile, two_lit, comma, comma
+0:	.long	    branch, 8f
+
+2:		!! single cell number
+	.long	    minus_rot, two_drop
+	.long	    state, fetch, question_branch, 0f
+	.long		compile, lit, comma
+0:	.long	    branch, 8f
 
 .L_word_found:
-	.long	drop		! XXX: TODO: check immediate flag
-	.long	minus_rot, two_drop, execute
+	.long	two_swap, two_drop
+
+	.long	lit, 1, plus, question_branch, 3f
+
+		!! immediate
+	.long	    execute
+	.long	    branch, 8f
+
+3:		!! not immediate
+	.long	    state, fetch, question_branch, 0f
+	.long		comma
+	.long		branch, 8f
+
+0:	.long		execute
 
 8:
 	.long	branch, 1b
