@@ -1218,7 +1218,7 @@ ASMWORD("rshift", rshift)
 
 
 !!! "2LIT" - auxiliary for "2LITERAL" DOUBLE 8.6.1.0390
-ASMWORD("2lit", lit2)
+ASMWORD("2lit", two_lit)
 	SPILL_TOS
 	mov.l	@IP+, TOS	! lower address goes to the top
 	mov.l	@IP+, r0
@@ -1744,7 +1744,7 @@ WORD("number?", is_number)
 
 .L_check_number:
 	!! try to convert to number -> ud addr len
-	.long	lit2, 0, 0, two_swap, to_number
+	.long	two_lit, 0, 0, two_swap, to_number
 
 	.long	dup, zero_equals, question_branch, .L_check_trailer
 
@@ -1908,6 +1908,23 @@ IMMWORD("[", left_bracket)
 WORD("]", right_bracket)
 	.long	lit, -1, state, store
 	EXIT_4TH
+
+WORD("compile", compile)
+	.long	r_from, dup, cell_plus, to_r
+	.long	fetch, comma
+	EXIT_4TH
+
+
+IMMWORD("literal", literal)
+	.long	state, fetch, question_branch, 9f
+	.long	    compile, lit, comma
+9:	EXIT_4TH
+
+
+IMMWORD("2literal", two_literal)
+	.long	state, fetch, question_branch, 9f
+	.long	    compile, two_lit, comma, comma
+9:	EXIT_4TH
 
 
 !!! interpret source until it's empty
