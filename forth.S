@@ -1827,6 +1827,12 @@ WORD("unsmudge", unsmudge)
 	EXIT_4TH
 
 
+!!! IMMEDIATE - CORE .6.1.1710
+WORD("immediate", immediate)
+	.long	latest, c_fetch, lit, IFLAG, or, latest, c_store
+	EXIT_4TH
+
+
 !!! Traditional Forth's FIND takes counted string from traditional
 !!! WORD, but that requires temporary space to hold the counted
 !!! string, so ANS Forth suggests using PARSE instead.  The
