@@ -1918,6 +1918,23 @@ WORD("immediate", immediate)
 	EXIT_4TH
 
 
+!!! VARIABLE - CORE 6.1.2410
+WORD("variable", variable)
+	.long	create, lit, 1, cells, allot
+	EXIT_4TH
+
+!!! CONSTANT - CORE 6.1.0950
+WORD("constant", constant)
+	.long	create, comma
+	!! DOES>
+	.long	semicolon_code_parens
+	!! code field of CONSTANT definitions will point here
+	.local	constant_does
+constant_does:
+	jmp	@NEXT
+	 mov.l	@TOS, TOS
+
+
 !!! Traditional Forth's FIND takes counted string from traditional
 !!! WORD, but that requires temporary space to hold the counted
 !!! string, so ANS Forth suggests using PARSE instead.  The
