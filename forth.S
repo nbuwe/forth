@@ -1622,6 +1622,18 @@ WORD("parse-word", parse_word)
 	EXIT_4TH
 
 
+!!! ( - CORE 6.1.0080
+IMMWORD("(", paren)
+	.long	lit, '), parse, two_drop
+	EXIT_4TH
+
+
+!!! \ - CORE EXT 6.2.2535
+IMMWORD("\\", backslash)
+	.long	lit, '\n, parse, two_drop
+	EXIT_4TH
+
+
 /*
  * >NUMBER and related words
  */
