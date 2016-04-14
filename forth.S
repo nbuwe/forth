@@ -1923,6 +1923,7 @@ WORD("variable", variable)
 	.long	create, lit, 1, cells, allot
 	EXIT_4TH
 
+
 !!! CONSTANT - CORE 6.1.0950
 WORD("constant", constant)
 	.long	create, comma
@@ -1931,8 +1932,25 @@ WORD("constant", constant)
 	!! code field of CONSTANT definitions will point here
 	.local	constant_does
 constant_does:
+#if 0	/* forth version just as a test/demo */
+	!! there's still an asm trampoline for CFA to point to
+	mova	9f, r0		! forth code of DOES>
+	mov.l	1f, r1		! call_code
+	SPILL_TOS		! call_code needs IP to interpret in TOS
+	jmp	@r1		! call_code
+	 mov	r0, TOS		! IP := forth code after DOES>
+
+	.align 2
+1:	.long	call_code
+
+	!! forth code follows
+9:	.long	fetch
+	EXIT_4TH
+
+#else	/* asm version */
 	jmp	@NEXT
 	 mov.l	@TOS, TOS
+#endif
 
 
 !!! Traditional Forth's FIND takes counted string from traditional
