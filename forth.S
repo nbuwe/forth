@@ -1935,14 +1935,9 @@ constant_does:
 #if 0	/* forth version just as a test/demo */
 	!! there's still an asm trampoline for CFA to point to
 	mova	9f, r0		! forth code of DOES>
-	mov.l	1f, r1		! call_code
-	SPILL_TOS		! call_code needs IP to interpret in TOS
-	jmp	@r1		! call_code
-	 mov	r0, TOS		! IP := forth code after DOES>
-
-	.align 2
-1:	.long	call_code
-
+	mov.l	IP, @-RSP
+	jmp	@NEXT
+	 mov	r0, IP
 	!! forth code follows
 9:	.long	fetch
 	EXIT_4TH
