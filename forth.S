@@ -1197,8 +1197,30 @@ ASMWORD("rshift", rshift)
 	 shld	r1, TOS
 
 
-! "max" - CORE 6.1.1870
-! "min" - CORE 6.1.1880
+!!! MAX - CORE 6.1.1870
+ASMWORD("max", max)
+	mov.l	@PSP+, r0
+	cmp/ge	r0, TOS		! TOS > r0?
+	bt	0f
+
+	jmp	@NEXT
+	 mov	r0, TOS
+
+0:	jmp	@NEXT
+	 nop
+
+
+!!! MIN - CORE 6.1.1880
+ASMWORD("min", min)
+	mov.l	@PSP+, r0
+	cmp/ge	TOS, r0		! TOS < r0?
+	bt	0f
+
+	jmp	@NEXT
+	 mov	r0, TOS
+
+0:	jmp	@NEXT
+	 nop
 
 
 !!! ====================================================================
