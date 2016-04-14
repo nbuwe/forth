@@ -147,15 +147,10 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
   NAMED_CELL(label/**/_var)
 
 
-#if 1
-#define _CONST_DOES	const_does_asm
-#else
-#define _CONST_DOES	const_does_4th
-#endif
 #define DEFCODE_CONST(label)	  \
 	/* Code Field */	  \
   NAMED_CELL(label)		; \
-	.long	_CONST_DOES	; \
+	.long	constant_does	; \
 	/* Parameter Field */	  \
   NAMED_CELL(label/**/_const)
 
@@ -376,23 +371,6 @@ DOES_4TH(var_does_4th)
 DOES_ASM(var_does_asm)
 	jmp	@NEXT
 	 nop
-
-
-/*
- * "does" code of CONSTANT
- *
- * For reference here are both asm and forth versions.
- * See DEFCODE_CONST above, where you can select which one is used.
- */
-	!! forth version: ... DOES> @ ;
-DOES_4TH(const_does_4th)
-	.long	fetch
-	EXIT_4TH
-
-	!! asm version is basically inlined "fetch"
-DOES_ASM(const_does_asm)
-	jmp	@NEXT
-	 mov.l	@TOS, TOS
 
 
 /**
@@ -1927,22 +1905,14 @@ WORD("variable", variable)
 !!! CONSTANT - CORE 6.1.0950
 WORD("constant", constant)
 	.long	create, comma
-	!! DOES>
 	.long	semicolon_code_parens
-	!! code field of CONSTANT definitions will point here
-	.local	constant_does
-constant_does:
-#if 0	/* forth version just as a test/demo */
-	!! there's still an asm trampoline for CFA to point to
-	mova	9f, r0		! forth code of DOES>
-	mov.l	IP, @-RSP
-	jmp	@NEXT
-	 mov	r0, IP
-	!! forth code follows
-9:	.long	fetch
+	!! code fields of CONSTANT definitions point here
+#if 0	/* ... DOES> @ ; */
+DOES_4TH(constant_does)
+	.long	fetch
 	EXIT_4TH
-
-#else	/* asm version */
+#else	/* just inlined @ */
+DOES_ASM(constant_does)
 	jmp	@NEXT
 	 mov.l	@TOS, TOS
 #endif
