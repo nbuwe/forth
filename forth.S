@@ -1412,6 +1412,18 @@ VARIABLE("base", base)
 	.long 10
 
 
+!!! DECIMAL - CORE 6.1.1170
+WORD("decimal", decimal)
+	.long	lit, 10, base, store
+	EXIT_4TH
+
+
+!!! HEX - CORE EXT 6.2.1660
+WORD("hex", hex)
+	.long	lit, 16, base, store
+	EXIT_4TH
+
+
 !!! ====================================================================
 !!! I/O - Output
 
