@@ -1687,6 +1687,26 @@ IMMWORD("\\", backslash)
 	EXIT_4TH
 
 
+!!! CHAR - CORE 6.1.0895
+WORD("char", char)
+	.long	parse_word, question_branch, 0f
+	.long	    c_fetch, exit_4th
+0:	.long	drop, lit, 0
+	EXIT_4TH
+
+
+!!! [CHAR] - CORE 6.1.2520
+IMMWORD("[char]", char_brackets)
+	!! XXX: enforce compilation
+	.long	parse_word, question_branch, 0f
+	.long	    c_fetch, branch, 1f
+	!!	else
+0:	.long	    drop, lit, 0
+1:
+	.long	    compile, lit, comma
+	EXIT_4TH
+
+
 /*
  * >NUMBER and related words
  */
