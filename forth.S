@@ -2028,7 +2028,7 @@ colon_does:
 
 !!! ; - CORE 6.1.0460
 IMMWORD(";", semicolon)
-	.long	lit, exit_4th, comma	! compile exit
+	.long	compile, exit_4th	! compile exit
 	.long	unsmudge		! reveal the word to search
 	.long	left_bracket		! back to interpretation
 	EXIT_4TH
