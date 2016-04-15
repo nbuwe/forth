@@ -2052,6 +2052,12 @@ WORD("'", tick)
 	EXIT_4TH
 
 
+!!! ['] - CORE 6.1.2510
+IMMWORD("[']", tick_brackets)
+	.long	tick, literal
+	EXIT_4TH
+
+
 !!! STATE - CORE 6.1.2250
 VARIABLE("state", state)
 	.long	0		! interpretation
