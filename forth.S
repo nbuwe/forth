@@ -2220,6 +2220,30 @@ IMMWORD(";", semicolon)
 	EXIT_4TH
 
 
+!!! IF - CORE 6.1.1700
+IMMWORD("if", if)
+	.long	compile, question_branch
+	.long	here	 ! forward reference past the true branch
+	.long	lit, 0, comma
+	EXIT_4TH
+
+
+!!! ELSE - CORE 6.1.1310
+IMMWORD("else", else)
+	.long	compile, branch
+	.long	here		! forward reference past the false branch
+	.long	lit, 0, comma
+	.long	swap		! address left by "if"
+	.long	here, swap, store
+	EXIT_4TH
+
+
+!!! THEN - CORE 6.1.2270
+IMMWORD("then", then)
+	.long	here, swap, store
+	EXIT_4TH
+
+
 !!! ====================================================================
 /*
  * Test code is in a separate file so that random test changes don't
