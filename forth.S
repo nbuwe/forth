@@ -2075,7 +2075,7 @@ VARIABLE("state", state)
 !!! ?COMP
 WORD("?comp", question_comp)
 	.long	state, fetch, zero_equals, question_branch, 9f
-	.long	    lit, -14, ABORTQ("Executing a compile-only word!")
+	.long	    lit, -14, ABORTQ("Interpreting a compile-only word!")
 9:	EXIT_4TH
 
 
@@ -2238,6 +2238,7 @@ IMMWORD(";", semicolon)
 
 !!! IF - CORE 6.1.1700
 IMMWORD("if", if)
+	.long	question_comp
 	.long	compile, question_branch
 	.long	here	 ! forward reference past the true branch
 	.long	lit, 0, comma
@@ -2246,6 +2247,7 @@ IMMWORD("if", if)
 
 !!! ELSE - CORE 6.1.1310
 IMMWORD("else", else)
+	.long	question_comp
 	.long	compile, branch
 	.long	here		! forward reference past the false branch
 	.long	lit, 0, comma
@@ -2256,6 +2258,7 @@ IMMWORD("else", else)
 
 !!! THEN - CORE 6.1.2270
 IMMWORD("then", then)
+	.long	question_comp
 	.long	here, swap, store
 	EXIT_4TH
 
