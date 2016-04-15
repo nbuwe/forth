@@ -2206,6 +2206,12 @@ colon_does:
 1:	.long	call_code
 
 
+!!! RECURSE - 6.1.2120
+IMMWORD("recurse", recurse)
+	.long	latest, name_from, comma
+	EXIT_4TH
+
+
 !!! ; - CORE 6.1.0460
 IMMWORD(";", semicolon)
 	.long	compile, exit_4th	! compile exit
