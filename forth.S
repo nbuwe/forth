@@ -1719,6 +1719,26 @@ IMMWORD(".\"", dot_quote)
 	EXIT_4TH
 
 
+WORD("(abort\")", abort_quote_parens)
+	.long	r_from, dup
+	.long	cell_plus, swap			! address of string
+	.long	fetch				! length
+	.long	two_dup, plus, aligned, to_r	! skip string
+	!! the above is a copy of (s")
+	.long	rot, zero_equals, question_branch, 0f
+	.long	    two_drop, exit_4th
+0:
+	.long	type, cr	! should it call CR?
+	.long	quit ! XXX: FIXME: must be ABORT, but see QUIT definition
+	EXIT_4TH
+
+
+!!! ABORT" - CORE 6.1.0680
+IMMWORD("abort\"", abort_quote)
+	.long	lit, abort_quote_parens, compile_quote
+	EXIT_4TH
+
+
 /*
  * >NUMBER and related words
  */
