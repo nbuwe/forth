@@ -214,6 +214,13 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define CONSTANT(name, label)	DEFWORD(name,     0, DEFCODE_CONST, label)
 #define VARIABLE(name, label)	DEFWORD(name,     0, DEFCODE_VAR,   label)
 
+
+!!! it takes a bit of effort to remember that question_branch is taken
+!!! when the condition is false, so provide a more mnemonic and
+!!! shorter way to say it
+#define OR_ELSE(label)	/* .long */ question_branch, label
+
+
 #define SLITERAL(str)		  \
      /* .long */ branch, 19f	; \
 11:	.ascii	str		; \
@@ -801,7 +808,7 @@ WORD("(do)", do_parens)
 !!! (?do) - auxiliary for "?do";
 !!!     like "do", but does nothing if first == limit
 WORD("(?do)", question_do_parens)
-	.long	two_dup, equals, question_branch, 0f
+	.long	two_dup, equals, OR_ELSE(0f)
 	.long	    two_drop
 	.long	    goto_parens, branch ! skip loop
 0:
@@ -816,7 +823,7 @@ WORD("(+loop)", plus_loop_parens)
 
 	.long	r_from			! current
 	.long	plus_question		! add increment with overflow check
-	.long	question_branch, 1f
+	.long	OR_ELSE(1f)
 
 	!! overflow means we hit the limit, leave the loop
 	.long	drop		! current
@@ -1484,7 +1491,7 @@ WORD("space", space)
 
 !!! "spaces" - CORE 6.1.2230
 WORD("spaces", spaces)
-	.long	dup, zero_greater, question_branch, 9f
+	.long	dup, zero_greater, OR_ELSE(9f)
 	.long	lit, 0, do_parens, 9f
 1:	.long	space
 	.long	loop_parens, 1b
@@ -1527,7 +1534,7 @@ WORD("#>", hash_greater)
 
 !!! SIGN - CORE 6.1.2210
 WORD("sign", sign)
-	.long	zero_less, question_branch, 1f
+	.long	zero_less, OR_ELSE(1f)
 	.long	    lit, 45 /* '-' */, hold
 1:	EXIT_4TH
 
@@ -1535,7 +1542,7 @@ WORD("sign", sign)
 !!!     XXX: FIXME: single cell!
 WORD("#", hash)
 	.long	base, fetch, u_slash_mod, swap ! NB: unsigned
-	.long	dup, lit, 9, greater_than, question_branch, 1f
+	.long	dup, lit, 9, greater_than, OR_ELSE(1f)
 	.long		lit, 'a - 10
 	.long		branch, 2f
 1:		/* else */
@@ -1549,7 +1556,7 @@ WORD("#", hash)
 WORD("#s", hash_s)
 1:	.long	hash
 	.long	dup, zero_equals
-	.long	question_branch, 1b
+	.long	OR_ELSE(1b)
 	EXIT_4TH
 
 !!!     XXX: FIXME: single cell!
@@ -1597,7 +1604,7 @@ VARIABLE(">in", to_in)
 !!! REFILL - CORE EXT 6.2.2125 
 WORD("refill", refill)
 	.long	tib, lit, 4096, accept_4th
-	.long	dup, question_branch, 9f
+	.long	dup, OR_ELSE(9f)
 	.long	number_tib, store
 	.long	lit, 0, to_in, store
 	.long	true
@@ -1613,10 +1620,10 @@ WORD("skip-spaces", skip_spaces)
 1:
 	.long	over			! #tib
 	.long	to_in, fetch, swap, less_than
-	.long	question_branch, 9f	! exit if >in greater/equal #tib
+	.long	OR_ELSE(9f)		! exit if >in greater/equal #tib
 	.long	dup, to_in, fetch, plus, c_fetch
 	.long	bl, equals
-	.long	question_branch, 9f	! exit if not a space
+	.long	OR_ELSE(9f)		! exit if not a space
 	.long	to_in, one_plus_store	! advance >in
 	.long	branch, 1b		! repeat
 9:
@@ -1628,7 +1635,7 @@ WORD("skip-spaces", skip_spaces)
 WORD("parse", parse)
 	.long	source, nip, to_in, fetch	! parse area limits
 	.long	two_dup, less_than_equals
-	.long	question_branch, 1f
+	.long	OR_ELSE(1f)
 
 	!! parse area is exhausted, return empty word
 	.long	two_drop	! limits
@@ -1645,7 +1652,7 @@ WORD("parse", parse)
 	.long	to_in, one_plus_store ! >in is always advanced
 	.long	over		      ! get a copy of delim
 	.long	source, drop, i_4th, plus, c_fetch ! current char
-	.long	equals, question_branch, 7f	   ! .. is a delim?
+	.long	equals, OR_ELSE(7f)	! .. is a delim?
 	.long	    leave
 7:	.long	one_plus			   ! increment result length
 	.long	loop_parens, 2b
@@ -1675,7 +1682,7 @@ IMMWORD("\\", backslash)
 
 !!! CHAR - CORE 6.1.0895
 WORD("char", char)
-	.long	parse_word, question_branch, 0f
+	.long	parse_word, OR_ELSE(0f)
 	.long	    c_fetch, exit_4th
 0:	.long	drop, lit, 0
 	EXIT_4TH
@@ -1684,7 +1691,7 @@ WORD("char", char)
 !!! [CHAR] - CORE 6.1.2520
 IMMWORD("[char]", char_brackets)
 	.long	question_comp
-	.long	parse_word, question_branch, 0f
+	.long	parse_word, OR_ELSE(0f)
 	.long	    c_fetch, branch, 1f
 	!!	else
 0:	.long	    drop, lit, 0
@@ -1741,7 +1748,7 @@ WORD("(abort\")", abort_quote_parens)
 	.long	fetch				! length
 	.long	two_dup, plus, aligned, to_r	! skip string
 	!! the above is a copy of (s")
-	.long	rot, zero_equals, question_branch, 0f
+	.long	rot, zero_equals, OR_ELSE(0f)
 	.long	    two_drop, exit_4th
 0:
 	.long	type, cr	! should it call CR?
@@ -1762,7 +1769,7 @@ IMMWORD("abort\"", abort_quote)
 !!! ( base - '0' upper ) range of (arabic) digits; for "within"
 WORD("base-0", base_zero)
 	.long	dup, lit, 10, less_than_equals
-	.long	question_branch, 1f
+	.long	OR_ELSE(1f)
 	.long	    lit, '0, tuck, plus
 	.long	branch, 9f
 1:	.long	    drop, lit, '0, lit, '9 + 1
@@ -1781,19 +1788,19 @@ WORD("digit?", is_digit)
 	.long	dup, base_zero
 	.long	r_fetch
 	.long	minus_rot, within
-	.long	question_branch, 1f
+	.long	OR_ELSE(1f)
 	.long	drop, r_from, lit, '0, minus, true
 	.long	exit_4th
 1:
 	!! does base use alphabet digits?
 	.long	dup, lit, 10, greater_than
-	.long	question_branch, 9f
+	.long	OR_ELSE(9f)
 
 	!! a digit from 'a'.. range?
 	.long	dup, base_a
 	.long	r_from, lit, 0x20, or, dup, to_r ! downcased
 	.long	minus_rot, within
-	.long	question_branch, 9f
+	.long	OR_ELSE(9f)
 	.long	drop, r_from, lit, 'a, minus, lit, 10, plus, true
 	.long	exit_4th
 9:
@@ -1809,7 +1816,7 @@ WORD(">number", to_number)
 	.long	question_do_parens, 9f
 1:
 	.long	i_4th, c_fetch, base, fetch, is_digit
-	.long	question_branch, 2f
+	.long	OR_ELSE(2f)
 
 	.long	    swap			! get hi above digit
 	.long	    base, fetch, um_star, drop	! lo(hi*base)
@@ -1841,18 +1848,18 @@ WORD("number?", is_number)
 	.long	false, to_r	  ! minus sign
 
 	!! if there's just one char, it cannot be a sigil or a minus sign
-	.long	dup, lit, 1, greater_than, question_branch, .L_check_number
+	.long	dup, lit, 1, greater_than, OR_ELSE(.L_check_number)
 
 	!! Forth 200x #<dec>, $<hex>, %<bin> base sigils
 	.long	over, c_fetch
 
-	.long	dup, lit, '#, equals, question_branch, 1f
+	.long	dup, lit, '# /*'*/, equals, OR_ELSE(1f)
 	.long	    lit, 10, base, store, branch, .L_base_sigil
 1:
-	.long	dup, lit, '$, equals, question_branch, 2f
+	.long	dup, lit, '$ /*'*/, equals, OR_ELSE(2f)
 	.long	    lit, 16, base, store, branch, .L_base_sigil
 2:
-	.long	dup, lit, '%, equals, question_branch, 3f
+	.long	dup, lit, '% /*'*/, equals, OR_ELSE(3f)
 	.long	    lit, 2, base, store, branch, .L_base_sigil
 3:
 	!!	else
@@ -1864,11 +1871,11 @@ WORD("number?", is_number)
 	.long	swap, lit, 1, minus ! --length
 
 	!! if there's just one char, it cannot be a minus sign
-	.long	dup, lit, 1, greater_than, question_branch, .L_check_number
+	.long	dup, lit, 1, greater_than, OR_ELSE(.L_check_number)
 
 .L_check_sign:
 	.long	over, c_fetch, lit, '-, equals
-	.long	question_branch, .L_check_number
+	.long	OR_ELSE(.L_check_number)
 
 	.long	r_from, drop, true, to_r ! note that we have a minus
 
@@ -1879,25 +1886,25 @@ WORD("number?", is_number)
 	!! try to convert to number -> ud addr len
 	.long	two_lit, 0, 0, two_swap, to_number
 
-	.long	dup, zero_equals, question_branch, .L_check_trailer
+	.long	dup, zero_equals, OR_ELSE(.L_check_trailer)
 
 	!! single cell number
 	.long	two_drop, drop
-	.long	r_from, question_branch, 0f
+	.long	r_from, OR_ELSE(0f)
 	.long	    negate
 0:
 	.long	r_from, base, store
 	.long	lit, 1, exit_4th
 
 .L_check_trailer:
-	.long	dup, lit, 1, equals, question_branch, .L_failed
+	.long	dup, lit, 1, equals, OR_ELSE(.L_failed)
 
 	.long	over, c_fetch, lit, '., equals
-	.long	question_branch, .L_failed
+	.long	OR_ELSE(.L_failed)
 
 	!! dot at the end means double-cell number
 	.long	two_drop
-	.long	r_from, question_branch, 0f
+	.long	r_from, OR_ELSE(0f)
 	.long	    dnegate
 0:
 	.long	r_from, base, store
@@ -1926,7 +1933,7 @@ WORD("latest", latest)
 !!! CREATE - CORE 6.1.1000
 WORD("create", create)
 	.long	parse_word, question_dup ! 0 only on EOF
-	.long	zero_equals, question_branch, 0f
+	.long	zero_equals, OR_ELSE(0f)
 	.long	    SLITERAL("name missing"), type, cr
 	.long	    drop, exit_4th
 0:
@@ -2017,14 +2024,14 @@ WORD("search-current", search_current)
 	.long	latest
 1:	!! begin
 	.long	dup, c_fetch, lit, (SFLAG), and, zero_equals ! not smudged?
-	.long	question_branch, 8f
+	.long	OR_ELSE(8f)
 
 	.long	to_r			! stash current NFA
 	.long	two_dup			! the word we search for
 	.long	r_fetch			! current NFA
 	.long	name_count		! count, drop the flags
 	.long	compare			! zero if equals
-	.long	question_branch, 2f
+	.long	OR_ELSE(2f)
 
 	!! not the word we are looking for
 	.long	    r_from		! get back current NFA
@@ -2043,7 +2050,7 @@ WORD("search-current", search_current)
 
 9:	!! try previous word in the vocabulary
 	.long	n_to_link, fetch
-	.long	question_dup, zero_equals, question_branch, 1b
+	.long	question_dup, zero_equals, OR_ELSE(1b)
 
 	!! we reached the end of the vocabulary
 	.long	two_drop	! the word we searched for
@@ -2054,12 +2061,12 @@ WORD("search-current", search_current)
 !!! ' - CORE 6.1.0070
 WORD("'", tick)
 	.long	parse_word, question_dup
-	.long	zero_equals, question_branch, 0f
+	.long	zero_equals, OR_ELSE(0f)
 	.long	    SLITERAL("name missing"), type, cr
 	.long	    drop, exit_4th
 0:
 	.long	two_dup, search_current, question_dup
-	.long	zero_equals, question_branch, 0f
+	.long	zero_equals, OR_ELSE(0f)
 	.long	    SLITERAL("unknown word "), type, type, cr
 	.long	    exit_4th
 0:
@@ -2082,7 +2089,7 @@ VARIABLE("state", state)
 
 !!! ?COMP
 WORD("?comp", question_comp)
-	.long	state, fetch, zero_equals, question_branch, 9f
+	.long	state, fetch, zero_equals, OR_ELSE(9f)
 	.long	    THROW(14)
 9:	EXIT_4TH
 
@@ -2115,14 +2122,14 @@ WORD("compile", compile)
 
 !!! LITERAL - CORE 6.1.1780
 IMMWORD("literal", literal)
-	.long	state, fetch, question_branch, 9f
+	.long	state, fetch, OR_ELSE(9f)
 	.long	    compile, lit, comma
 9:	EXIT_4TH
 
 
 !!! 2LITERAL - DOUBLE 8.6.1.0390
 IMMWORD("2literal", two_literal)
-	.long	state, fetch, question_branch, 9f
+	.long	state, fetch, OR_ELSE(9f)
 	.long	    compile, two_lit, comma, comma
 9:	EXIT_4TH
 
@@ -2131,14 +2138,14 @@ IMMWORD("2literal", two_literal)
 WORD("interpret", interpret)
 1:	!! begin
 	.long	parse_word, question_dup ! 0 only on EOF
-	.long	question_branch, 9f
+	.long	OR_ELSE(9f)
 
 	.long	two_dup, search_current, question_dup, zero_equals
-	.long	question_branch, .L_word_found
+	.long	OR_ELSE(.L_word_found)
 
 	!! word not found, may be a number?
 	.long	two_dup, is_number, question_dup, zero_equals
-	.long	question_branch, .L_number_found
+	.long	OR_ELSE(.L_number_found)
 
 	!! not a number either, complain and punt
 	.long	SLITERAL("unknown word "), type, type, cr
@@ -2146,7 +2153,7 @@ WORD("interpret", interpret)
 	.long	exit_4th	! abort current line
 
 .L_number_found:
-	.long	lit, 2, equals, question_branch, 2f
+	.long	lit, 2, equals, OR_ELSE(2f)
 
 		!! double cell number
 	.long	    two_swap, two_drop
@@ -2161,14 +2168,14 @@ WORD("interpret", interpret)
 .L_word_found:
 	.long	two_swap, two_drop
 
-	.long	lit, 1, plus, question_branch, 3f
+	.long	lit, 1, plus, OR_ELSE(3f)
 
 		!! immediate
 	.long	    execute
 	.long	    branch, 8f
 
 3:		!! not immediate
-	.long	    state, fetch, question_branch, 0f
+	.long	    state, fetch, OR_ELSE(0f)
 	.long		compile_comma
 	.long		branch, 8f
 
@@ -2199,7 +2206,7 @@ WORD("quit", quit)
 	.long	quit_parens	! reset stacks, must be the first
 1:	!! begin
 	.long	    refill
-	.long	question_branch, 9f
+	.long	OR_ELSE(9f)
 	!! while
 	.long	    interpret
 	.long	    SLITERAL(" ok"), type, cr
