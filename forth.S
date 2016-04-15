@@ -1676,7 +1676,7 @@ WORD("char", char)
 
 !!! [CHAR] - CORE 6.1.2520
 IMMWORD("[char]", char_brackets)
-	!! XXX: enforce compilation
+	.long	question_comp
 	.long	parse_word, question_branch, 0f
 	.long	    c_fetch, branch, 1f
 	!!	else
@@ -2063,6 +2063,7 @@ WORD("'", tick)
 
 !!! ['] - CORE 6.1.2510
 IMMWORD("[']", tick_brackets)
+	.long	question_comp
 	.long	tick, literal
 	EXIT_4TH
 
