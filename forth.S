@@ -1677,6 +1677,25 @@ IMMWORD("[char]", char_brackets)
 	EXIT_4TH
 
 
+WORD("(s\")", s_quote_parens)
+	.long	r_from, dup
+	.long	cell_plus, swap			! address of string
+	.long	fetch				! length
+	.long	two_dup, plus, aligned, to_r	! skip string
+	EXIT_4TH
+
+
+!!! S" - 6.1.2165
+IMMWORD("s\"", s_quote)
+	.long	lit, '\", parse	! XXX: handle failure
+	!! compile: (s") <len> <len bytes of string>
+	.long	compile, s_quote_parens, dup, comma
+	.long	here, swap
+	.long	dup, allot
+	.long	cmove, align
+	EXIT_4TH
+
+
 /*
  * >NUMBER and related words
  */
