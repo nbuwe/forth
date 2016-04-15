@@ -2074,6 +2074,15 @@ WORD("]", right_bracket)
 	.long	lit, -1, state, store
 	EXIT_4TH
 
+
+!!! COMPILE, - CORE EXT 6.2.0945
+!!!     since this is a naive indirect threaded code implementation we
+!!!     can compile the xt/address directly
+WORD("compile,", compile_comma)
+	.long	comma
+	EXIT_4TH
+
+
 WORD("compile", compile)
 	.long	r_from, dup, cell_plus, to_r
 	.long	fetch, comma
