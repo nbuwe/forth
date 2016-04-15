@@ -230,6 +230,13 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define DOTQ(str)	QUOTESTR(dot, str)	/* ."     */
 #define ABORTQ(str)	QUOTESTR(abort, str)	/* abort" */
 
+#define THR14	"Interpreting a compile-only word"
+#define THR16	"Attempt to use zero-length string as a name"
+
+/* XXX: for now, implement in terms of abort" */
+#define THROW(code) \
+	/* .long */ lit, (code), ABORTQ(THR/**/code)
+
 
 !!! ====================================================================
 /**
@@ -2076,7 +2083,7 @@ VARIABLE("state", state)
 !!! ?COMP
 WORD("?comp", question_comp)
 	.long	state, fetch, zero_equals, question_branch, 9f
-	.long	    lit, -14, ABORTQ("Interpreting a compile-only word!")
+	.long	    THROW(14)
 9:	EXIT_4TH
 
 
