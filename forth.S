@@ -244,6 +244,10 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define THROW(code) \
 	/* .long */ lit, (code), ABORTQ(THR/**/code)
 
+#define OR_THROW(code)				  \
+	/* .long */ OR_ELSE(0f), THROW(code)	; \
+0:
+
 
 !!! ====================================================================
 /**
@@ -2089,9 +2093,8 @@ VARIABLE("state", state)
 
 !!! ?COMP
 WORD("?comp", question_comp)
-	.long	state, fetch, zero_equals, OR_ELSE(9f)
-	.long	    THROW(14)
-9:	EXIT_4TH
+	.long	state, fetch, zero_equals, OR_THROW(14)
+	EXIT_4TH
 
 
 !!! [ - CORE 6.1.2500
