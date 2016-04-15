@@ -221,6 +221,15 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 19:	.long	lit, 11b, lit, (12b - 11b)
 
 
+#define QUOTESTR(word, str)				  \
+	/* .long */ word/**/_quote_parens, (22f - 21f)	; \
+21:	.ascii	str					; \
+22:	.align	2, 0 /* force new directive with ; */	;
+
+#define SQ(str)		QUOTESTR(s, str)	/* s"     */
+#define DOTQ(str)	QUOTESTR(dot, str)	/* ."     */
+#define ABORTQ(str)	QUOTESTR(abort, str)	/* abort" */
+
 
 !!! ====================================================================
 /**
@@ -2061,6 +2070,13 @@ IMMWORD("[']", tick_brackets)
 !!! STATE - CORE 6.1.2250
 VARIABLE("state", state)
 	.long	0		! interpretation
+
+
+!!! ?COMP
+WORD("?comp", question_comp)
+	.long	state, fetch, zero_equals, question_branch, 9f
+	.long	    lit, -14, ABORTQ("Executing a compile-only word!")
+9:	EXIT_4TH
 
 
 !!! [ - CORE 6.1.2500
