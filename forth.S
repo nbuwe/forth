@@ -1681,7 +1681,7 @@ IMMWORD("[char]", char_brackets)
 WORD("compile\"", compile_quote)
 	.long	lit, '\", parse	! XXX: handle failure
 	!! compile: xt <len> <len bytes of string>
-	.long	rot, comma	! compile run-time word
+	.long	rot, compile_comma	! compile run-time word
 	.long	dup, comma	! string length
 	.long	here, swap	! copy destination
 	.long	dup, allot	! reserve space
