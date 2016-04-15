@@ -2126,14 +2126,12 @@ WORD("interpret", interpret)
 
 		!! double cell number
 	.long	    two_swap, two_drop
-	.long	    state, fetch, question_branch, 0f
-	.long		compile, two_lit, comma, comma
+	.long	    two_literal
 0:	.long	    branch, 8f
 
 2:		!! single cell number
 	.long	    minus_rot, two_drop
-	.long	    state, fetch, question_branch, 0f
-	.long		compile, lit, comma
+	.long	    literal
 0:	.long	    branch, 8f
 
 .L_word_found:
@@ -2147,7 +2145,7 @@ WORD("interpret", interpret)
 
 3:		!! not immediate
 	.long	    state, fetch, question_branch, 0f
-	.long		comma
+	.long		compile_comma
 	.long		branch, 8f
 
 0:	.long		execute
