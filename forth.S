@@ -2129,7 +2129,13 @@ WORD("bye", bye)
 	.long	0xdeadbeef	! unreachable sentinel
 
 
+!!! QUIT - CORE 6.1.2050
 !!! refill/interpret until eof - outer repl loop
+!!! 
+!!! XXX: ABORT - CORE 6.1.0670
+!!!     FIXME: The difference between QUIT and ABORT is that QUIT does
+!!!     NOT reset the parameter stack!  I misread QUIT description, so
+!!!     the code below is actually ABORT.
 WORD("quit", quit)
 	.long	quit_parens	! reset stacks, must be the first
 1:	!! begin
