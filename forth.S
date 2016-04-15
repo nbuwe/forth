@@ -1696,6 +1696,12 @@ IMMWORD("s\"", s_quote)
 	EXIT_4TH
 
 
+!!! ." - 6.1.0190
+IMMWORD(".\"", dot_quote)
+	.long	s_quote, compile, type
+	EXIT_4TH
+
+
 /*
  * >NUMBER and related words
  */
