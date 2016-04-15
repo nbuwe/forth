@@ -2080,12 +2080,14 @@ WORD("compile", compile)
 	EXIT_4TH
 
 
+!!! LITERAL - CORE 6.1.1780
 IMMWORD("literal", literal)
 	.long	state, fetch, question_branch, 9f
 	.long	    compile, lit, comma
 9:	EXIT_4TH
 
 
+!!! 2LITERAL - DOUBLE 8.6.1.0390
 IMMWORD("2literal", two_literal)
 	.long	state, fetch, question_branch, 9f
 	.long	    compile, two_lit, comma, comma
