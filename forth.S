@@ -131,18 +131,10 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
   label/**/_body:		;
 
 
-#if 1
-/* see var_does_asm for why we can do this */
-#define _VAR_DOES	next_code
-#elif 1
-#define _VAR_DOES	var_does_asm
-#else
-#define _VAR_DOES	var_does_4th
-#endif
 #define DEFCODE_VAR(label)	  \
 	/* Code Field */	  \
   NAMED_CELL(label)		; \
-	.long	_VAR_DOES	; \
+	.long	next_code	; \
 	/* Parameter Field */	  \
   NAMED_CELL(label/**/_var)
 
@@ -1874,6 +1866,20 @@ WORD("create", create)
 	.long	r_from, swap, store		  ! update current to our NFA
 
 	!! Code Field
+	!!
+	!! -- by default a word does nothing, so:
+	!!
+	!! 	!! forth version: ... DOES> ;
+	!!  DOES_4TH(does_nothing)
+	!! 	!! -- nop; leave PFA pushed by next_code on the stack
+	!! 	EXIT_4TH
+	!!
+	!! 	!! asm version is basically inlined "nop"; as you can
+	!! 	!! see, we can remove the indirection and instead use
+	!! 	!! "next_code" directly.
+	!!     DOES_ASM(does_nothing)
+	!! 	jmp	@NEXT
+	!! 	 nop
 	.long	lit, next_code, comma
 	EXIT_4TH
 
