@@ -221,13 +221,6 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define OR_ELSE(label)	/* .long */ question_branch, label
 
 
-#define SLITERAL(str)		  \
-     /* .long */ branch, 19f	; \
-11:	.ascii	str		; \
-12:	.align	2		; \
-19:	.long	lit, 11b, lit, (12b - 11b)
-
-
 #define QUOTESTR(word, str)				  \
 	/* .long */ word/**/_quote_parens, (22f - 21f)	; \
 21:	.ascii	str					; \
@@ -2070,8 +2063,8 @@ WORD("'", tick)
 0:
 	.long	two_dup, search_current, question_dup
 	.long	zero_equals, OR_ELSE(0f)
-	.long	    SLITERAL("unknown word "), type, type, cr
-	.long	    exit_4th
+	.long	    type, DOTQ(" - ")
+	.long	    THROW(13)
 0:
 	.long	drop			! immediate flag
 	.long	minus_rot, two_drop	! a copy of name
@@ -2150,9 +2143,8 @@ WORD("interpret", interpret)
 	.long	OR_ELSE(.L_number_found)
 
 	!! not a number either, complain and punt
-	.long	SLITERAL("unknown word "), type, type, cr
-	.long	left_bracket	! make sure we are interpreting
-	.long	exit_4th	! abort current line
+	.long	type, DOTQ(" - ")
+	.long	THROW(13)
 
 .L_number_found:
 	.long	lit, 2, equals, OR_ELSE(2f)
@@ -2206,6 +2198,7 @@ WORD("bye", bye)
 !!!     the code below is actually ABORT.
 WORD("quit", quit)
 	.long	quit_parens	! reset stacks, must be the first
+	.long	left_bracket	! interpret
 1:	!! begin
 	.long	    refill
 	.long	OR_ELSE(9f)
