@@ -842,16 +842,25 @@ WORD("(loop)", loop_parens)
 
 
 !!! I - CORE 6.1.1680
+#if 0
 WORD("i", i_4th)
 	.long	r_from		! return address
 	.long	two_r_fetch	! limit and current
 	.long	swap, minus	! normalize current - see (do)
 	.long	swap, to_r	! restore return address
 	EXIT_4TH
+#else
+ASMWORD("i", i_4th)
+	SPILL_TOS
+	mov.l	@RSP, TOS
+	mov.l	@(4, RSP), r0
+	jmp	@NEXT
+	 sub	r0, TOS
+#endif
 
 
 !!! J - 6.1.1730
-!!!     XXX: stackrobatics is rather ugly, use an asm version
+#if 0
 WORD("j", j_4th)
 	.long	two_r_from, two_r_from ! return address and inner loop params
 	.long	two_r_fetch	       ! limit and current of the outer loop
@@ -859,6 +868,14 @@ WORD("j", j_4th)
 	.long	minus_rot, two_to_r
 	.long	minus_rot, two_to_r
 	EXIT_4TH
+#else
+ASMWORD("j", j_4th)
+	SPILL_TOS
+	mov.l	@(12, RSP), TOS
+	mov.l	@(16, RSP), r0
+	jmp	@NEXT
+	 sub	r0, TOS
+#endif
 
 
 !!! LEAVE - CORE 6.1.1760
