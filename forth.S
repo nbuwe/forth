@@ -2247,30 +2247,36 @@ IMMWORD(";", semicolon)
 	EXIT_4TH
 
 
+WORD(">mark", mark_fwd)
+	.long	here, lit, 0, comma
+	EXIT_4TH
+
+
+WORD("resolve>", resolve_fwd)
+	.long	here, swap, store
+	EXIT_4TH
+
+
 !!! IF - CORE 6.1.1700
 IMMWORD("if", if)
 	.long	question_comp
 	.long	compile, question_branch
-	.long	here	 ! forward reference past the true branch
-	.long	lit, 0, comma
+	.long	mark_fwd
 	EXIT_4TH
 
 
 !!! ELSE - CORE 6.1.1310
 IMMWORD("else", else)
 	.long	question_comp
-	.long	compile, branch
-	.long	here		! forward reference past the false branch
-	.long	lit, 0, comma
-	.long	swap		! address left by "if"
-	.long	here, swap, store
+	.long	compile, branch, mark_fwd ! will be resolved by THEN
+	.long	swap, resolve_fwd	  ! address left by IF
 	EXIT_4TH
 
 
 !!! THEN - CORE 6.1.2270
 IMMWORD("then", then)
 	.long	question_comp
-	.long	here, swap, store
+	.long	resolve_fwd	! MARK_FWD of IF or ELSE
 	EXIT_4TH
 
 
