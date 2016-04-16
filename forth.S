@@ -850,6 +850,17 @@ WORD("i", i_4th)
 	EXIT_4TH
 
 
+!!! J - 6.1.1730
+!!!     XXX: stackrobatics is rather ugly, use an asm version
+WORD("j", j_4th)
+	.long	two_r_from, two_r_from ! return address and inner loop params
+	.long	two_r_fetch	       ! limit and current of the outer loop
+	.long	swap, minus	       ! normalize current - see (do)
+	.long	minus_rot, two_to_r
+	.long	minus_rot, two_to_r
+	EXIT_4TH
+
+
 !!! LEAVE - CORE 6.1.1760
 !!! 	( R: addr limit current )
 WORD("leave", leave)
@@ -2337,6 +2348,44 @@ IMMWORD("while", while)
 !!!     ( C: orig dest -- )
 IMMWORD("repeat", repeat)
 	.long	again, then
+	EXIT_4TH
+
+
+!!! DO - CORE 6.1.1240
+IMMWORD("do", do)
+	.long	question_comp
+	.long	compile, do_parens
+	.long	mark_fwd	! address for leave
+	.long	mark_back	! address to loop back to
+	.long	lit, 3		! for ?pairs
+	EXIT_4TH
+
+
+!!! ?DO - CORE EXT 6.2.0620
+IMMWORD("question_do", question_do)
+	.long	question_comp
+	.long	compile, question_do_parens
+	.long	mark_fwd	! address for leave
+	.long	mark_back	! address to loop back to
+	.long	lit, 3		! for ?pairs
+	EXIT_4TH
+
+
+!!! LOOP - CORE 6.1.1800
+IMMWORD("loop", loop)
+	.long	question_comp
+	.long	lit, 3, question_pairs
+	.long	compile, loop_parens, resolve_back
+	.long	resolve_fwd
+	EXIT_4TH
+
+
+!!! +LOOP - CORE 6.1.0140
+IMMWORD("+loop", plus_loop)
+	.long	question_comp
+	.long	lit, 3, question_pairs
+	.long	compile, plus_loop_parens, resolve_back
+	.long	resolve_fwd
 	EXIT_4TH
 
 
