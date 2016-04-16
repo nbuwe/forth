@@ -233,12 +233,13 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define THR13	"Undefined word"
 #define THR14	"Interpreting a compile-only word"
 #define THR16	"Attempt to use zero-length string as a name"
+#define THR22	"Control structure mismatch"
 
 /* XXX: for now, implement in terms of abort" */
 #define THROW(code) \
 	/* .long */ lit, (code), ABORTQ(THR/**/code)
 
-#define OR_THROW(code)				  \
+#define THEN_THROW(code)			  \
 	/* .long */ OR_ELSE(0f), THROW(code)	; \
 0:
 
@@ -2085,7 +2086,7 @@ VARIABLE("state", state)
 
 !!! ?COMP
 WORD("?comp", question_comp)
-	.long	state, fetch, zero_equals, OR_THROW(14)
+	.long	state, fetch, zero_equals, THEN_THROW(14)
 	EXIT_4TH
 
 
@@ -2247,6 +2248,11 @@ IMMWORD(";", semicolon)
 	EXIT_4TH
 
 
+WORD("?pairs", question_pairs)
+	.long	minus, zero_not_equals, THEN_THROW(22)
+	EXIT_4TH
+
+
 WORD(">mark", mark_fwd)
 	.long	here, lit, 0, comma
 	EXIT_4TH
@@ -2262,20 +2268,24 @@ IMMWORD("if", if)
 	.long	question_comp
 	.long	compile, question_branch
 	.long	mark_fwd
+	.long	lit, 1		! for ?pairs
 	EXIT_4TH
 
 
 !!! ELSE - CORE 6.1.1310
 IMMWORD("else", else)
 	.long	question_comp
+	.long	lit, 1, question_pairs
 	.long	compile, branch, mark_fwd ! will be resolved by THEN
 	.long	swap, resolve_fwd	  ! address left by IF
+	.long	lit, 1			  ! for ?pairs
 	EXIT_4TH
 
 
 !!! THEN - CORE 6.1.2270
 IMMWORD("then", then)
 	.long	question_comp
+	.long	lit, 1, question_pairs
 	.long	resolve_fwd	! MARK_FWD of IF or ELSE
 	EXIT_4TH
 
