@@ -2323,6 +2323,23 @@ IMMWORD("until", until)
 	EXIT_4TH
 
 
+!!! WHILE - CORE 6.1.2430
+!!!     ( C: dest -- orig dest )
+IMMWORD("while", while)
+	.long	question_comp
+	.long	lit, 2, question_pairs
+	.long	lit, 2		! for ?pairs
+	.long	if, two_swap
+	EXIT_4TH
+
+
+!!! 6.1.2140 REPEAT
+!!!     ( C: orig dest -- )
+IMMWORD("repeat", repeat)
+	.long	again, then
+	EXIT_4TH
+
+
 !!! ====================================================================
 /*
  * Test code is in a separate file so that random test changes don't
