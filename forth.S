@@ -2263,6 +2263,15 @@ WORD("resolve>", resolve_fwd)
 	EXIT_4TH
 
 
+WORD("<mark", mark_back)
+	.long	here
+	EXIT_4TH
+
+WORD("<resolve", resolve_back)
+	.long	comma
+	EXIT_4TH
+
+
 !!! IF - CORE 6.1.1700
 IMMWORD("if", if)
 	.long	question_comp
@@ -2287,6 +2296,30 @@ IMMWORD("then", then)
 	.long	question_comp
 	.long	lit, 1, question_pairs
 	.long	resolve_fwd	! MARK_FWD of IF or ELSE
+	EXIT_4TH
+
+
+!!! BEGIN - CORE 6.1.0760
+IMMWORD("begin", begin)
+	.long	question_comp
+	.long	mark_back
+	.long	lit, 2		! for ?pairs
+	EXIT_4TH
+
+
+!!! AGAIN - CORE EXT 6.2.0700
+IMMWORD("again", again)
+	.long	question_comp
+	.long	lit, 2, question_pairs
+	.long	compile, branch, resolve_back
+	EXIT_4TH
+
+
+!!! UNTIL - CORE 6.1.2390
+IMMWORD("until", until)
+	.long	question_comp
+	.long	lit, 2, question_pairs
+	.long	compile, question_branch, resolve_back
 	EXIT_4TH
 
 
