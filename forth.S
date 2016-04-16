@@ -237,6 +237,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define DOTQ(str)	QUOTESTR(dot, str)	/* ."     */
 #define ABORTQ(str)	QUOTESTR(abort, str)	/* abort" */
 
+#define THR13	"Undefined word"
 #define THR14	"Interpreting a compile-only word"
 #define THR16	"Attempt to use zero-length string as a name"
 
@@ -1938,8 +1939,7 @@ WORD("latest", latest)
 WORD("create", create)
 	.long	parse_word, question_dup ! 0 only on EOF
 	.long	zero_equals, OR_ELSE(0f)
-	.long	    SLITERAL("name missing"), type, cr
-	.long	    drop, exit_4th
+	.long	    drop, THROW(16)
 0:
 	.long	align, here, to_r	! save NFA of the new word
 
@@ -2066,8 +2066,7 @@ WORD("search-current", search_current)
 WORD("'", tick)
 	.long	parse_word, question_dup
 	.long	zero_equals, OR_ELSE(0f)
-	.long	    SLITERAL("name missing"), type, cr
-	.long	    drop, exit_4th
+	.long	    drop, THROW(16)
 0:
 	.long	two_dup, search_current, question_dup
 	.long	zero_equals, OR_ELSE(0f)
@@ -2212,7 +2211,8 @@ WORD("quit", quit)
 	.long	OR_ELSE(9f)
 	!! while
 	.long	    interpret
-	.long	    SLITERAL(" ok"), type, cr
+	.long	    DOTQ(" ok")
+	.long	    cr
 	!! repeat
 	.long	branch, 1b
 9:
