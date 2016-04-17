@@ -2262,6 +2262,20 @@ colon_does:
 1:	.long	call_code
 
 
+
+!!! DOES> - CORE 6.1.1250
+IMMWORD("does>", does)
+	.long	compile, semicolon_code_parens
+	!! DOES_4TH:
+	!!   01 c7	mova	.+8, r0
+	!!   b6 2a	mov.l	IP, @-RSP
+	!!   2b 4d	jmp	@NEXT
+	!!   03 6b	 mov	r0, IP
+	.long	lit, 0x2ab6c701, comma
+	.long	lit, 0x6b034d2b, comma
+	EXIT_4TH
+
+
 !!! RECURSE - 6.1.2120
 IMMWORD("recurse", recurse)
 	.long	latest, name_from, comma
