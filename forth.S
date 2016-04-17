@@ -273,29 +273,27 @@ heap:
 	.long	0	! there's no parameters, but provide a stub
 
 
-!!! Asm part of ABORT that resets parameter and return stacks.
+!!! Asm part of ABORT that resets parameter and return stacks
 !!! Must be the first word called by ABORT.
 ASMWORD("(abort)", abort_parens)
-	mov.l	.L_abort_rsp, RSP	! reset return stack
-	mov.l	.L_abort_psp, PSP	! reset parameter stack
+	mov.l	rp0_const, RSP	! reset return stack
+	mov.l	sp0_const, PSP	! reset parameter stack
 	jmp	@NEXT
-	 mov	#0, TOS			! clear TOS just in case
-
-	.align 2
-.L_abort_psp:	.long	stack_bottom
-.L_abort_rsp:	.long	rstack_bottom
+	 mov	#0, TOS		! clear TOS just in case
 
 
 !!! Asm part of QUIT that resets return stack.
 !!! Must be the first word called by QUIT.
 ASMWORD("(quit)", quit_parens)
-	mov.l	.L_quit_rsp, RSP	! reset return stack
+	mov.l	rp0_const, RSP	! reset return stack
 	jmp	@NEXT
 	 nop
 
-	.align 2
-.L_quit_rsp:	.long	rstack_bottom
 
+!!! Where the stacks are.  (ABORT) and (QUIT) just above use this
+!!! directly in assembler.
+CONSTANT("sp0", sp0)	.long	stack_bottom
+CONSTANT("rp0", rp0)	.long	rstack_bottom
 
 
 !!! Asm part of BYE that returns control to the C code that started
