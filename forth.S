@@ -2132,8 +2132,9 @@ WORD("search-current", search_current)
 	EXIT_4TH
 
 
-!!! ' - CORE 6.1.0070
-WORD("'", tick)
+!!! Common helper for ' and POSTPONE
+!!!     ( "<spaces>name" -- 0 | xt 1 | xt -1 )
+WORD("(')", tick_parens)
 	.long	parse_word, question_dup
 	.long	zero_equals, OR_ELSE(0f)
 	.long	    drop, THROW(16)
@@ -2143,8 +2144,13 @@ WORD("'", tick)
 	.long	    type, DOTQ(" - ")
 	.long	    THROW(13)
 0:
-	.long	drop			! immediate flag
-	.long	minus_rot, two_drop	! a copy of name
+	.long	two_swap, two_drop
+	EXIT_4TH
+
+
+!!! ' - CORE 6.1.0070
+WORD("'", tick)
+	.long	tick_parens, drop ! immediate flag
 	EXIT_4TH
 
 
@@ -2190,6 +2196,23 @@ WORD("compile", compile)
 	.long	r_from, dup, cell_plus, to_r
 	.long	fetch, comma
 	EXIT_4TH
+
+
+!!! [COMPILE] - CORE EXT 6.2.2530
+IMMWORD("[compile]", compile_brackets)
+	.long	tick, compile_comma
+	EXIT_4TH
+
+
+!!! POSTPONE - CORE 6.1.2033
+IMMWORD("postpone", postpone)
+	.long	tick_parens, one_plus, OR_ELSE(1f)
+		!! immediate
+	.long	    compile_comma
+	.long	    branch, 9f
+1:		!! normal
+	.long	    compile, compile, compile_comma
+9:	EXIT_4TH
 
 
 !!! LITERAL - CORE 6.1.1780
