@@ -296,6 +296,12 @@ CONSTANT("sp0", sp0)	.long	stack_bottom
 CONSTANT("rp0", rp0)	.long	rstack_bottom
 
 
+ASMWORD("sp@", sp_fetch)
+	SPILL_TOS
+	jmp	@NEXT
+	 mov	PSP, TOS
+
+
 !!! Asm part of BYE that returns control to the C code that started
 !!! the Forth system.  The stacks are not reset and can be inspected.
 ASMWORD("(bye)", bye_parens)
@@ -376,25 +382,6 @@ DOES_ASM(asm_does)		! code field of asm words points here
 	jmp	@TOS		! consume TOS
 	 FILL_TOS
 
-
-/*
- * "does" code of VARIABLE
- *
- * For reference here are both asm and forth versions.
- * See DEFCODE_VAR above, where you can select which one is used.
- */
-	!! forth version: ... DOES> ;
-DOES_4TH(var_does_4th)
-	!! -- nop; leave PFA (variable's address) on the stack
-	EXIT_4TH
-
-	!! asm version is basically inlined "nop"
-	!!
-	!! NB: as you can see, we can remove the indirection and
-	!! instead use "next_code" directly as a further optimization!
-DOES_ASM(var_does_asm)
-	jmp	@NEXT
-	 nop
 
 
 /**
