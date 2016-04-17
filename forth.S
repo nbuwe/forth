@@ -1482,6 +1482,25 @@ ASMWORD("fill", fill)
 1:	.long	memset
 
 
+!!! MOVE - CORE 6.1.1900
+!!!     ( src dst len -- )
+ASMWORD("move", move)
+	!! cheat, use memmove(3)
+	mov.l	1f, r0
+	mov.l	@PSP, r4	! dst
+	mov.l	@(4, PSP), r5	! src
+	mov	TOS, r6		! len
+	add	#8, PSP
+	jsr	@r0
+	 FILL_TOS
+	jmp	@NEXT
+	 nop
+	.align	2
+1:	.long	memmove
+
+
+
+
 !!! ====================================================================
 !!! I/O - Common
 
