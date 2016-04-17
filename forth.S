@@ -64,14 +64,14 @@ ENTRY(start_forth)
 	!! address of "next" lives in a dedicated global register
 	mov.l	.L_next, NEXT
 
-	!! these will be reset by QUIT
+	!! these will be reset by ABORT
 	mov	#0, TOS
 	mov	#0, PSP
 	mov	#0, RSP
 
-	!! QUIT to forth
-	mov.l	.L_quit_body, IP
-	mov.l	@IP+, r0		! CFA of (quit), the first word
+	!! ABORT to forth
+	mov.l	.L_abort_body, IP
+	mov.l	@IP+, r0		! CFA of (abort), the first word
 	add	#4, r0			! PFA - the actual code
 
 ALTENTRY(test_enter)		! for gdb breakpoing only
@@ -96,7 +96,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 	.align	2
 .L_next:	.long	next_code
-.L_quit_body:	.long	quit_body
+.L_abort_body:	.long	abort_4th_body
 
 
 !!! ====================================================================
@@ -273,17 +273,29 @@ heap:
 	.long	0	! there's no parameters, but provide a stub
 
 
-!!! Asm part of QUIT that resets parameter and return stacks.
-!!! Must be the first word called by QUIT.
-ASMWORD("(quit)", quit_parens)
-	mov.l	.L_rsp, RSP	! reset return stack
-	mov.l	.L_psp, PSP	! reset parameter stack
+!!! Asm part of ABORT that resets parameter and return stacks.
+!!! Must be the first word called by ABORT.
+ASMWORD("(abort)", abort_parens)
+	mov.l	.L_abort_rsp, RSP	! reset return stack
+	mov.l	.L_abort_psp, PSP	! reset parameter stack
 	jmp	@NEXT
-	 mov	#0, TOS		! clear TOS just in case
+	 mov	#0, TOS			! clear TOS just in case
 
 	.align 2
-.L_psp:		.long	stack_bottom
-.L_rsp:		.long	rstack_bottom
+.L_abort_psp:	.long	stack_bottom
+.L_abort_rsp:	.long	rstack_bottom
+
+
+!!! Asm part of QUIT that resets return stack.
+!!! Must be the first word called by QUIT.
+ASMWORD("(quit)", quit_parens)
+	mov.l	.L_quit_rsp, RSP	! reset return stack
+	jmp	@NEXT
+	 nop
+
+	.align 2
+.L_quit_rsp:	.long	rstack_bottom
+
 
 
 !!! Asm part of BYE that returns control to the C code that started
@@ -2297,7 +2309,7 @@ WORD("bye", bye)
 !!!     NOT reset the parameter stack!  I misread QUIT description, so
 !!!     the code below is actually ABORT.
 WORD("quit", quit)
-	.long	quit_parens	! reset stacks, must be the first
+	.long	quit_parens	! reset data stack, must be the first
 	.long	left_bracket	! interpret
 1:	!! begin
 	.long	    refill
@@ -2310,6 +2322,13 @@ WORD("quit", quit)
 	.long	branch, 1b
 9:
 	.long	bye
+	EXIT_4TH
+
+
+!!! ABORT - CORE 6.1.0670
+WORD("abort", abort_4th)
+	.long	abort_parens	! reset return stack, must be first
+	.long	goto_parens, quit
 	EXIT_4TH
 
 
