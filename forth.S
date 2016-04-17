@@ -1465,6 +1465,23 @@ ASMWORD("compare", compare)
 	 mov	#1, TOS		! *ca1 > *ca2
 
 
+!!! FILL - CORE 6.1.1540
+!!!     ( c-addr u char -- )
+ASMWORD("fill", fill)
+	!! cheat, use memset(3)
+	mov.l	1f, r0
+	mov.l	@(4, PSP), r4	! dst
+	mov	TOS, r5		! char
+	mov.l	@PSP, r6	! len
+	add	#8, PSP
+	jsr	@r0
+	 FILL_TOS
+	jmp	@NEXT
+	 nop
+	.align	2
+1:	.long	memset
+
+
 !!! ====================================================================
 !!! I/O - Common
 
