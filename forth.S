@@ -1586,14 +1586,28 @@ WORD("#s", hash_s)
 	.long	OR_ELSE(1b)
 	EXIT_4TH
 
+
 !!!     XXX: FIXME: single cell!
 WORD("(.)", dot_parens)
 	.long	dup, abs, less_hash, hash_s, swap, sign, hash_greater
 	EXIT_4TH
 
 
+!!! . - CORE 6.1.0180
 WORD(".", dot)
 	.long	dot_parens, type, space
+	EXIT_4TH
+
+
+!!! XXX: FIXME: single cell!
+WORD("(u.)", u_dot_parens)
+	.long	less_hash, hash_s, hash_greater
+	EXIT_4TH
+
+
+!!! U. - CORE 6.1.2320
+WORD("u.", u_dot)
+	.long	u_dot_parens, type, space
 	EXIT_4TH
 
 
