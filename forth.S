@@ -297,9 +297,10 @@ CONSTANT("rp0", rp0)	.long	rstack_bottom
 
 
 ASMWORD("sp@", sp_fetch)
+	mov	PSP, r0
 	SPILL_TOS
 	jmp	@NEXT
-	 mov	PSP, TOS
+	 mov	r0, TOS
 
 
 !!! Asm part of BYE that returns control to the C code that started
@@ -513,6 +514,19 @@ WORD("pad", pad)
 /**
  * Stack manipualtion
  */
+
+
+!!! DEPTH - CORE 6.1.1200
+!!!     ( -- +n )
+ASMWORD("depth", depth)
+	mov	PSP, r1
+	SPILL_TOS
+	mov.l	.L_depth_sp0, TOS
+	sub	r1, TOS
+	jmp	@NEXT
+	 shlr2	TOS
+	.align	2
+.L_depth_sp0:	.long	stack_bottom
 
 
 !!! "drop" - CORE 6.1.1260
