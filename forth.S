@@ -2148,8 +2148,9 @@ DOES_ASM(constant_does)
 !!! SEARCH-CURRENT is interim chimera until proper vocabularies are
 !!! provided.  For now we only have single wordlist, so.
 !!! 
-!!!     : search-current get-current search-wordlist ;
-!!! 
+!!!     : search-current ( c-addr u -- 0 | xt 1 | xt -1 )
+!!!         get-current search-wordlist ;
+!!!     
 WORD("search-current", search_current)
 	.long	latest
 1:	!! begin
@@ -2186,6 +2187,15 @@ WORD("search-current", search_current)
 	.long	two_drop	! the word we searched for
 	.long	lit, 0		! indicate failure
 	EXIT_4TH
+
+
+!!! FIND - CORE 6.1.1550
+!!!     ( c-addr -- caddr 0 | xt 1 | xt -1 )
+WORD("find", find)
+	.long	dup, count, search_current
+	.long	dup, zero_not_equals, OR_ELSE(9f)
+	.long	    rot, drop
+9:	EXIT_4TH
 
 
 !!! Common helper for ' and POSTPONE
