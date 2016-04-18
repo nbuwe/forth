@@ -920,20 +920,6 @@ ASMWORD("true", true)
 	 mov	#-1, TOS
 
 
-!!! "1" - nonstandard
-ASMWORD("1", one)
-	SPILL_TOS
-	jmp	@NEXT
-	 mov	#1, TOS
-
-
-!!! "2" - nonstandard
-ASMWORD("2", two)
-	SPILL_TOS
-	jmp	@NEXT
-	 mov	#2, TOS
-
-
 !!! "abs" - CORE 6.1.0690
 ASMWORD("abs", abs)
 	cmp/pz	TOS
