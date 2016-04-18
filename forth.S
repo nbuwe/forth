@@ -234,6 +234,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define THR14	"Interpreting a compile-only word"
 #define THR16	"Attempt to use zero-length string as a name"
 #define THR22	"Control structure mismatch"
+#define THR32	"Invalid name argument"
 
 /* XXX: for now, implement in terms of abort" */
 #define THROW(code) \
@@ -2610,6 +2611,39 @@ IMMWORD("+loop", plus_loop)
 	.long	compile, plus_loop_parens, resolve_back
 	.long	resolve_fwd
 	EXIT_4TH
+
+
+!!! VALUE - CORE EXT 6.2.2405
+WORD("value", value)
+	.long	create, immediate
+	.long	comma
+	.long	semicolon_code_parens
+DOES_4TH(value_does)
+	.long	state, fetch, OR_ELSE(1f)
+	    !! compilation
+	.long	    literal		! compile pfa as literal
+	.long	    compile, fetch
+	.long	    branch, 9f
+1:	    !! interpretation
+	.long	    fetch
+9:	EXIT_4TH
+
+
+!!! TO - CORE EXT 6.2.2295
+IMMWORD("to", to_4th)
+	.long	tick_parens
+	!! .long lit, 1, not_equals, THEN_THROW(32) ! not immediate
+	.long	drop
+	.long	to_body
+	!! like DOES> part of VALUE above but with ! instead of @ 
+	.long	state, fetch, OR_ELSE(1f)
+	    !! compilation
+	.long	    literal		! compile pfa as literal
+	.long	    compile, store
+	.long	    branch, 9f
+1:	    !! interpretation
+	.long	    store
+9:	EXIT_4TH
 
 
 !!! ====================================================================
