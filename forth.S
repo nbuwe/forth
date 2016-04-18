@@ -2084,7 +2084,7 @@ WORD("number?", is_number)
 	.long	two_drop, two_drop
 	.long	r_from, drop
 	.long	r_from, base, store
-	.long	lit, 0
+	.long	false
 	EXIT_4TH
 
 
@@ -2234,7 +2234,7 @@ WORD("search-current", search_current)
 
 	!! we reached the end of the vocabulary
 	.long	two_drop	! the word we searched for
-	.long	lit, 0		! indicate failure
+	.long	false		! indicate failure
 	EXIT_4TH
 
 
@@ -2289,13 +2289,13 @@ WORD("?comp", question_comp)
 
 !!! [ - CORE 6.1.2500
 IMMWORD("[", left_bracket)
-	.long	lit, 0, state, store
+	.long	false, state, store
 	EXIT_4TH
 
 
 !!! ] - CORE 6.1.2540
 WORD("]", right_bracket)
-	.long	lit, -1, state, store
+	.long	true, state, store
 	EXIT_4TH
 
 
