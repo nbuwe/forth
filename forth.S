@@ -1735,20 +1735,26 @@ WORD("source", source)
 	.long	tib, number_tib, fetch
 	EXIT_4TH
 
-WORD("skip-spaces", skip_spaces)
+
+!!! Advance >IN to the first character that is not a delimiter or to
+!!! the end of SOURCE.
+!!!     ( delim -- )
+WORD("skip-delim", skip_delim)
+	.long	to_r		! stash delimiter away
 	.long	source, swap
-1:
-	.long	over			! #tib
-	.long	to_in, fetch, swap, less_than
+1:	!! begin 		\ buflen buf --
+	.long	over, to_in, fetch, swap, less_than
 	.long	OR_ELSE(9f)		! exit if >in greater/equal #tib
 	.long	dup, to_in, fetch, plus, c_fetch
-	.long	bl, equals
-	.long	OR_ELSE(9f)		! exit if not a space
+	.long	r_fetch, equals
+	.long	OR_ELSE(9f)		! exit if not a delimiter
 	.long	to_in, one_plus_store	! advance >in
-	.long	branch, 1b		! repeat
+	.long	branch, 1b		! again
 9:
-	.long	two_drop
+	.long	two_drop		! buflen and buf
+	.long	r_from, drop		! delimiter
 	EXIT_4TH
+
 
 !!! PARSE - CORE EXT 6.2.2008
 !!!     ( delim "ccc<delim>" -- str len )
@@ -1783,8 +1789,13 @@ WORD("parse", parse)
 
 	EXIT_4TH
 
+
+!!! Skip leading spaces and parse a space delimited word.  This is an
+!!! alternative to tradtional BL WORD that doesn't require copying the
+!!! result into a temporary space for counted space terminated string.
+!!!     ( -- str len )
 WORD("parse-word", parse_word)
-	.long	skip_spaces, bl, parse
+	.long	bl, skip_delim, bl, parse
 	EXIT_4TH
 
 
