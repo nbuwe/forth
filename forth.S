@@ -2435,25 +2435,29 @@ WORD("abort", abort_4th)
 	EXIT_4TH
 
 
-!!! (;CODE)
+!!! (;CODE) - set CFA of the latest word to the asm code that directly
+!!!     follows compiled (;code)
 WORD("(;code)", semicolon_code_parens)
 	.long	r_from, latest, name_from, store
+	EXIT_4TH		! to the caller's caller
+
+
+!!! (;ALIT) - set CFA of the latest word to the address compiled
+!!!     directly after this word.
+WORD("(;alit)", semicolon_alit_parens)
+	.long	r_from, fetch, latest, name_from, store
 	EXIT_4TH		! to the caller's caller
 
 
 !!! : - CORE 6.1.0450
 WORD(":", colon)
 	.long	create, smudge, right_bracket
-	.long	semicolon_code_parens
-	!! code field of colon definitions will point here
-	.local	colon_does
-colon_does:
-	mov.l	1f, r0
-	jmp	@r0
-	 nop
-	.align 2
-1:	.long	call_code
-
+	.long	semicolon_alit_parens, call_code
+	!! We prefer (;alit) to (;code) here since "call_code" must be
+	!! right next to EXIT and its "next_code" so that pc-relative
+	!! branch can reach it.  Alternatively, we can move the
+	!! definition of colon up there before EXIT, but I'd like to
+	!! segregate MD asm code and MI forth code as much as possible.
 
 
 !!! DOES> - CORE 6.1.1250
