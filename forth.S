@@ -1786,7 +1786,6 @@ WORD("parse", parse)
 	.long	nip			   ! get rid of delim
 	.long	source, drop, r_from, plus ! result address (via old >in)
 	.long	swap			   ! result length on top
-
 	EXIT_4TH
 
 
@@ -1796,6 +1795,20 @@ WORD("parse", parse)
 !!!     ( -- str len )
 WORD("parse-word", parse_word)
 	.long	bl, skip_delim, bl, parse
+	EXIT_4TH
+
+
+!!! WORD - CORE 6.1.2450
+!!!     ( char "<chars>ccc<char>" -- c-addr )
+WORD("word", word)
+	.long	dup, skip_delim, parse
+	!! str len --
+	.long	dup, to_r		! stash away count
+	.long	here, one_plus		! dst temp area, reserve count byte
+	.long	swap, cmove		! copy parsed string
+	.long	r_fetch, here, c_store	! write count
+	.long	bl, here, one_plus, r_from, plus, c_store ! space after string
+	.long	here
 	EXIT_4TH
 
 
