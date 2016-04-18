@@ -345,7 +345,7 @@ call_code:
 	!! and let next_code set vacant TOS to next word PFA
 
 
-!!! "exit" - CORE 6.1.1380
+!!! EXIT - CORE 6.1.1380
 ASMWORD("exit", exit_4th)
 	mov.l	@RSP+, IP	! pop return address
 	!! FALLTHROUGH to "NEXT"
@@ -529,19 +529,19 @@ ASMWORD("depth", depth)
 .L_depth_sp0:	.long	stack_bottom
 
 
-!!! "drop" - CORE 6.1.1260
+!!! DROP - CORE 6.1.1260
 ASMWORD("drop", drop)
 	jmp	@NEXT
 	 FILL_TOS
 
 
-!!! "dup - CORE 6.1.1290
+!!! DUP - CORE 6.1.1290
 ASMWORD("dup", dup)
 	jmp	@NEXT
 	 SPILL_TOS
 
 
-!!! "?dup" - CORE 6.1.0630
+!!! ?DUP - CORE 6.1.0630
 ASMWORD("?dup", question_dup)
 	tst	TOS, TOS
 	bt	1f
@@ -551,7 +551,7 @@ ASMWORD("?dup", question_dup)
 	 nop			! do nothing if zero
 
 
-!!! "over" - CORE 6.1.1990
+!!! OVER - CORE 6.1.1990
 ASMWORD("over", over)
 	mov.l	@PSP, r0
 	SPILL_TOS
@@ -559,7 +559,7 @@ ASMWORD("over", over)
 	 mov	r0, TOS
 
 
-!!! "swap" - CORE 6.1.2260
+!!! SWAP - CORE 6.1.2260
 ASMWORD("swap", swap)
 	mov.l	@PSP, r0
 	mov.l	TOS, @PSP
@@ -567,7 +567,7 @@ ASMWORD("swap", swap)
 	 mov	r0, TOS
 
 
-!!! "rot" - CORE 6.1.2160
+!!! ROT - CORE 6.1.2160
 ASMWORD("rot", rot)
 	mov.l	@PSP+, r0
 	mov.l	@PSP+, r1
@@ -630,13 +630,13 @@ ASMWORD("roll", roll)
 	jmp	@NEXT
 	 mov	r0, TOS
 
-!!! "2drop" - CORE 6.1.0370
+!!! 2DROP - CORE 6.1.0370
 ASMWORD("2drop", two_drop)
 	add	#4, PSP
 	jmp	@NEXT
 	 FILL_TOS
 
-!!! "2dup" - CORE 6.1.0380
+!!! 2DUP - CORE 6.1.0380
 ASMWORD("2dup", two_dup)
 	mov.l	@PSP, r0
 	SPILL_TOS
@@ -710,13 +710,13 @@ ASMWORD("2r>", two_r_fetch)
 	 mov.l	r0, @-PSP
 
 
-!!! "@" - CORE 6.1.0650
+!!! @ - CORE 6.1.0650
 ASMWORD("@", fetch)
 	jmp	@NEXT
 	 mov.l	@TOS, TOS
 
 
-!!! "!" - CORE 6.1.0010
+!!! ! - CORE 6.1.0010
 ASMWORD("!", store)
 	mov.l	@PSP+, r0	! value
 	mov.l	r0, @TOS	! store value
@@ -724,7 +724,7 @@ ASMWORD("!", store)
 	 FILL_TOS
 
 
-!!! "+!" - CORE 6.1.0130
+!!! +! - CORE 6.1.0130
 ASMWORD("+!", plus_store)
 	mov.l	@PSP+, r0	! value increment
 	mov.l	@TOS, r1	! fetch current value
@@ -734,7 +734,7 @@ ASMWORD("+!", plus_store)
 	 FILL_TOS
 
 
-!!! "1+!" - nonstandard
+!!! 1+! - nonstandard
 ASMWORD("1+!", one_plus_store)
 	mov.l	@TOS, r1	! fetch current value
 	add	#1, r1		! increment
@@ -766,20 +766,20 @@ ASMWORD("count", count)
 	 extu.b	r0, TOS		! zero-extend the count
 
 
-!!! "lit" - auxiliary for "literal" (CORE 6.1.1780)
+!!! LIT - auxiliary for LITERAL (CORE 6.1.1780)
 ASMWORD("lit", lit)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	@IP+, TOS
 
 
-!!! "branch" - auxiliary for "else" &co
+!!! BRANCH - auxiliary for ELSE &co
 ASMWORD("branch", branch)
 	jmp	@NEXT
 	 mov.l	@IP+, IP
 
 
-!!! "?branch" - auxiliary for "if" &co
+!!! ?BRANCH - auxiliary for IF &co
 ASMWORD("?branch", question_branch)
 	tst	TOS, TOS
 	bf/s	1f		! branch is taken when TOS is false(!)
@@ -800,7 +800,7 @@ ASMWORD("+?", plus_question)
 	 neg	TOS, TOS
 
 
-!!! (do) - auxiliary for "do"
+!!! (DO) - auxiliary for DO
 !!!     ( limit first -- R: addr limit current )
 WORD("(do)", do_parens)
 	.long	r_from			! next cell after compiled "(do)"
@@ -815,7 +815,7 @@ WORD("(do)", do_parens)
 	EXIT_4TH
 
 
-!!! (?do) - auxiliary for "?do";
+!!! (?DO) - auxiliary for ?DO
 !!!     like "do", but does nothing if first == limit
 WORD("(?do)", question_do_parens)
 	.long	two_dup, equals, OR_ELSE(0f)
@@ -906,21 +906,21 @@ WORD("unloop", unloop)
 	EXIT_4TH
 
 
-!!! "false" - CORE-EXT 6.2.1485
+!!! FALSE - CORE-EXT 6.2.1485
 ASMWORD("false", false)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	#0, TOS
 
 
-!!! "true" - CORE-EXT 6.2.2298
+!!! TRUE - CORE-EXT 6.2.2298
 ASMWORD("true", true)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	#-1, TOS
 
 
-!!! "abs" - CORE 6.1.0690
+!!! ABS - CORE 6.1.0690
 ASMWORD("abs", abs)
 	cmp/pz	TOS
 	bt	1f
@@ -929,20 +929,20 @@ ASMWORD("abs", abs)
 	 nop
 
 
-!!! "negate" - CORE 6.1.1910
+!!! NEGATE - CORE 6.1.1910
 ASMWORD("negate", negate)
 	jmp	@NEXT
 	 neg	TOS, TOS
 
 
-!!! "+" - CORE 6.1.0120
+!!! + - CORE 6.1.0120
 ASMWORD("+", plus)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 add	r0, TOS
 
 
-!!! "-" - CORE 6.1.0160
+!!! - - CORE 6.1.0160
 ASMWORD("-", minus)
 	mov.l	@PSP+, r0
 	sub	TOS, r0
@@ -950,7 +950,7 @@ ASMWORD("-", minus)
 	 mov	r0, TOS
 
 
-!!! "*" - CORE 6.1.0090
+!!! * - CORE 6.1.0090
 ASMWORD("*", star)
 	mov.l	@PSP+, r0
 	mul.l	r0, TOS
@@ -958,7 +958,7 @@ ASMWORD("*", star)
 	 sts	macl, TOS
 
 
-!!! "/" - CORE 6.1.0230
+!!! / - CORE 6.1.0230
 !!!	sdivsi3 tweaked to return result in TOS
 ASMWORD("/", slash)
 	tst	TOS, TOS
@@ -985,13 +985,13 @@ ASMWORD("/", slash)
 	 mov	#0, TOS
 
 
-!!! "mod" - CORE 6.1.1890
+!!! MOD - CORE 6.1.1890
 WORD("mod", mod)
 	.long two_dup, slash, star, minus
 	EXIT_4TH
 
 
-!!! "/mod" - CORE 6.1.0240
+!!! /MOD - CORE 6.1.0240
 WORD("/mod", slash_mod)
 	.long two_dup, slash
 	.long tuck, star
@@ -1033,31 +1033,31 @@ WORD("u/mod", u_slash_mod)
 	EXIT_4TH
 
 
-!!! "1+" - CORE 6.1.0290
+!!! 1+ - CORE 6.1.0290
 ASMWORD("1+", one_plus)
 	jmp	@NEXT
 	 add	#1, TOS
 
 
-!!! "1-" - CORE 6.1.0300
+!!! 1- - CORE 6.1.0300
 ASMWORD("1-", one_minus)
 	jmp	@NEXT
 	 add	#-1, TOS
 
 
-!!! "2*" - CORE 6.1.0320
+!!! 2* - CORE 6.1.0320
 ASMWORD("2*", two_star)
 	jmp	@NEXT
 	 shal	TOS
 
 
-!!! "2/" - CORE 6.1.0330
+!!! 2/ - CORE 6.1.0330
 ASMWORD("2/", two_slash)
 	jmp	@NEXT
 	 shar	TOS
 
 
-!!! "0<" - CORE 6.1.0250
+!!! 0< - CORE 6.1.0250
 ASMWORD("0<", zero_less)
 	mov	#0, r0
 	cmp/gt	TOS, r0
@@ -1066,7 +1066,7 @@ ASMWORD("0<", zero_less)
 	 neg	TOS, TOS
 
 
-!!! "0>" - CORE-EXT 6.2.0280
+!!! 0> - CORE-EXT 6.2.0280
 ASMWORD("0>", zero_greater)
 	cmp/pl	TOS
 	movt	TOS
@@ -1074,7 +1074,7 @@ ASMWORD("0>", zero_greater)
 	 neg	TOS, TOS
 
 
-!!! "0=" - CORE 6.1.0270
+!!! 0= - CORE 6.1.0270
 ASMWORD("0=", zero_equals)
 	tst	TOS, TOS
 	movt	TOS
@@ -1082,7 +1082,7 @@ ASMWORD("0=", zero_equals)
 	 neg	TOS, TOS
 
 
-!!! "0<>" - CORE-EXT 6.2.0260
+!!! 0<> - CORE-EXT 6.2.0260
 ASMWORD("0<>", zero_not_equals)
 	tst	TOS, TOS
 	movt	TOS
@@ -1091,7 +1091,7 @@ ASMWORD("0<>", zero_not_equals)
 	 not	TOS, TOS
 
 
-!!! "<" - CORE 6.1.0480
+!!! < - CORE 6.1.0480
 ASMWORD("<", less_than)
 	mov.l	@PSP+, r0
 	cmp/gt	r0, TOS
@@ -1100,7 +1100,7 @@ ASMWORD("<", less_than)
 	 neg	TOS, TOS
 
 
-!!! ">" - CORE 6.1.0540
+!!! > - CORE 6.1.0540
 ASMWORD(">", greater_than)
 	mov.l	@PSP+, r0
 	cmp/gt	TOS, r0
@@ -1109,7 +1109,7 @@ ASMWORD(">", greater_than)
 	 neg	TOS, TOS
 
 
-!!! "=" - CORE 6.1.0530
+!!! = - CORE 6.1.0530
 ASMWORD("=", equals)
 	mov.l	@PSP+, r0
 	cmp/eq	TOS, r0
@@ -1118,7 +1118,7 @@ ASMWORD("=", equals)
 	 neg	TOS, TOS
 
 
-!!! "<>" - CORE-EXT 6.2.0500
+!!! <> - CORE-EXT 6.2.0500
 ASMWORD("<>", not_equals)
 	mov.l	@PSP+, r0
 	cmp/eq	TOS, r0
@@ -1128,19 +1128,19 @@ ASMWORD("<>", not_equals)
 	 not	TOS, TOS
 
 
-!!! "<=" - nonstandard
+!!! <= - nonstandard
 WORD("<=", less_than_equals)
 	.long	greater_than, zero_equals
 	EXIT_4TH
 
 
-!!! ">=" - nonstandard
+!!! >= - nonstandard
 WORD(">=", greater_than_equals)
 	.long	less_than, zero_equals
 	EXIT_4TH
 
 
-!!! "u<" - CORE 6.1.2340
+!!! U< - CORE 6.1.2340
 ASMWORD("u<", u_less_than)
 	mov.l	@PSP+, r0
 	cmp/hi	r0, TOS
@@ -1149,7 +1149,7 @@ ASMWORD("u<", u_less_than)
 	 neg	TOS, TOS
 
 
-!!! "u>" - CORE-EXT 6.2.2350
+!!! U> - CORE-EXT 6.2.2350
 ASMWORD("u>", u_greater_than)
 	mov.l	@PSP+, r0
 	cmp/hi	TOS, r0
@@ -1170,27 +1170,27 @@ WORD("within", within)
 	EXIT_4TH
 
 
-!!! "invert" - CORE 6.1.1720
+!!! INVERT - CORE 6.1.1720
 ASMWORD("invert", invert)
 	jmp	@NEXT
 	 not	TOS, TOS
 
 
-!!! "and" - CORE 6.1.0720
+!!! AND - CORE 6.1.0720
 ASMWORD("and", and)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 and	r0, TOS
 
 
-!!! "or" - CORE 6.1.1980
+!!! OR - CORE 6.1.1980
 ASMWORD("or", or)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 or	r0, TOS
 
 
-!!! "xor" - CORE 6.1.2490
+!!! XOR - CORE 6.1.2490
 ASMWORD("xor", xor)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
@@ -1256,7 +1256,7 @@ ASMWORD("min", min)
 !!!   address.
 
 
-!!! "2LIT" - auxiliary for "2LITERAL" DOUBLE 8.6.1.0390
+!!! 2LIT - auxiliary for "2LITERAL" DOUBLE 8.6.1.0390
 ASMWORD("2lit", two_lit)
 	SPILL_TOS
 	mov.l	@IP+, TOS	! lower address goes to the top
@@ -1284,7 +1284,7 @@ ASMWORD("2!", two_store)
 	 add	#12, PSP
 
 
-!!! "s>d" - CORE 6.1.2170
+!!! S>D - CORE 6.1.2170
 ASMWORD("s>d", s2d)
 	SPILL_TOS		! least significant cell is below
 	shll	TOS		! shift sign into the T bit
@@ -1519,7 +1519,7 @@ ASMWORD("move", move)
 !!! ====================================================================
 !!! I/O - Common
 
-!!! "base" - CORE 6.1.0750
+!!! BASE - CORE 6.1.0750
 VARIABLE("base", base)
 	.long 10
 
@@ -1539,11 +1539,11 @@ WORD("hex", hex)
 !!! ====================================================================
 !!! I/O - Output
 
-!!! "bl" - CORE 6.1.0770
+!!! BL - CORE 6.1.0770
 CONSTANT("bl", bl) .long 0x20
 
 
-!!! "emit" - CORE 6.1.1320
+!!! EMIT - CORE 6.1.1320
 ASMWORD("emit", emit)
 	mov.l	1f, r0
 	mov	TOS, r4
@@ -1555,19 +1555,19 @@ ASMWORD("emit", emit)
 1:	.long	_C_LABEL(emit_impl)
 
 
-!!! "cr" - CORE 6.1.0990
+!!! CR - CORE 6.1.0990
 WORD("cr", cr)
 	.long	lit, '\n, emit
 	EXIT_4TH
 
 
-!!! "space" - CORE 6.1.2220
+!!! SPACE - CORE 6.1.2220
 WORD("space", space)
 	.long	bl, emit
 	EXIT_4TH
 
 
-!!! "spaces" - CORE 6.1.2230
+!!! SPACES - CORE 6.1.2230
 WORD("spaces", spaces)
 	.long	dup, zero_greater, OR_ELSE(9f)
 	.long	lit, 0, do_parens, 9f
@@ -1576,7 +1576,7 @@ WORD("spaces", spaces)
 9:	EXIT_4TH
 
 
-!!! "type" - CORE 6.1.2310
+!!! TYPE - CORE 6.1.2310
 ASMWORD("type", type)
 	mov.l	1f, r0
 	mov	TOS, r5
@@ -1682,7 +1682,7 @@ WORD(".s", dot_s)
 !!! ====================================================================
 !!! I/O - Input
 
-!!! "accept" - CORE 6.1.0695
+!!! ACCEPT - CORE 6.1.0695
 ASMWORD("accept", accept_4th)	! XXX: avoid name clash with accept(2)
 	mov.l	1f, r0
 	mov	TOS, r5
