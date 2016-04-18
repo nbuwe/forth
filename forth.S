@@ -1941,12 +1941,14 @@ WORD("base-0", base_zero)
 1:	.long	    drop, lit, '0, lit, '9 + 1
 9:	EXIT_4TH
 
+
 !!! ( base  - 'a' upper) range of alphabetic digits; for within 
 WORD("base-a", base_a)
 	.long	lit, 10, minus, lit, 'a, tuck, plus
 	EXIT_4TH
 
-!!! ( char base - value true | false )
+
+!!! ( char base -- value true | false )
 WORD("digit?", is_digit)
 	.long	swap, to_r	! stash away the char
 
@@ -1974,8 +1976,9 @@ WORD("digit?", is_digit)
 	.long	drop, r_from, drop, false
 	EXIT_4TH
 
+
 !!! >NUMBER - CORE 6.1.0570
-!!! ( ud1 s1 l1 - ud2 s2 l2)
+!!!     ( ud1 s1 l1 -- ud2 s2 l2)
 WORD(">number", to_number)
 	.long	two_dup, to_r, to_r	! stash away initial string
 	.long	over, plus, swap	! pointer loop range
@@ -2008,7 +2011,7 @@ WORD(">number", to_number)
 	EXIT_4TH
 
 
-!!! addr len - 0 | n 1 | d 2
+!!! str len -- 0 | n 1 | d 2
 WORD("number?", is_number)
 	.long	base, fetch, to_r ! save base in case of a sigil
 	.long	false, to_r	  ! minus sign
@@ -2081,6 +2084,16 @@ WORD("number?", is_number)
 	.long	r_from, drop
 	.long	r_from, base, store
 	.long	lit, 0
+	EXIT_4TH
+
+
+!!! CONVERT - CORE EXT 6.2.0970
+!!!     ( ud1 cstr -- ud2 caddr )
+WORD("convert", convert)
+	.long	char_plus	! skip the count byte of cstr
+	.long	lit, 256	! provide fake length
+	.long	to_number	! convert
+	.long	drop		! remainder of the fake length
 	EXIT_4TH
 
 
