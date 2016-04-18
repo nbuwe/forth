@@ -1871,6 +1871,28 @@ IMMWORD("abort\"", abort_quote)
 	EXIT_4TH
 
 
+!!! Like (s") but with counted string
+WORD("(c\")", c_quote_parens)
+	.long	r_from, dup
+	.long	count, plus, aligned, to_r	! skip string
+	EXIT_4TH
+
+
+!!! C" - CORE EXT 6.2.0855
+!!!     ( "ccc<quote" -- )
+!!! Like COMPILE" above, but with counted string
+IMMWORD("c\"", c_quote)
+	.long	lit, '\", parse	! XXX: handle failure
+	!! XXX: throw if string is too long
+	!! compile: (c") <count> <count bytes of string>
+	.long	compile, c_quote_parens
+	.long	dup, c_comma	! string count
+	.long	here, swap	! copy destination
+	.long	dup, allot	! reserve space
+	.long	cmove, align	! copy string
+	EXIT_4TH
+
+
 /*
  * >NUMBER and related words
  */
