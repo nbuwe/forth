@@ -37,10 +37,7 @@ terminal_input_buffer:
 	.type	terminal_input_buffer, @object
 	.size	terminal_input_buffer, 4096 ! XXX, compute
 
-word_buf:	      ! buffer for the counted string returned by WORD
-	.space	256
-
-
+	
 !!! ====================================================================
 /**
  *
