@@ -94,7 +94,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 	rts
 	 mov.l	@r15+, r8
 
-	.align	2
+	.p2align 2
 .L_next:	.long	next_code
 .L_abort_body:	.long	abort_4th_body
 
@@ -157,7 +157,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
  * PFA of the defined word will be in TOS
  */
 #define DOES_ASM(label)		  \
-	.align	2		; \
+	.p2align 2		; \
 	.type	label@function	; \
   label:			;
 
@@ -189,12 +189,12 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define NFA_LABEL(label) label/**/$nfa
 
 #define NAME_FIELD(name, flags, label)    \
-	.align	2, 0			; \
+	.p2align 2, 0			; \
 	.local	NFA_LABEL(label)	; \
   NFA_LABEL(label):			  \
 	.byte	flags | (2f-1f)		; \
 1:	.ascii	name			; \
-2:	.align	2, 0
+2:	.p2align 2, 0
 
 
 #define DEFWORD(name, flags, defcode, label)	  \
@@ -224,7 +224,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 #define QUOTESTR(word, str)				  \
 	/* .long */ word/**/_quote_parens, (22f - 21f)	; \
 21:	.ascii	str					; \
-22:	.align	2, 0 /* force new directive with ; */	;
+22:	.p2align 2, 0 /* force new directive with ; */	;
 
 #define SQ(str)		QUOTESTR(s, str)	/* s"     */
 #define DOTQ(str)	QUOTESTR(dot, str)	/* ."     */
@@ -254,7 +254,7 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 
 	.data			! XXX: need writable+executable
 
-	.align	2
+	.p2align 2
 	.global	heap
 heap:
 
@@ -311,7 +311,7 @@ ASMWORD("(bye)", bye_parens)
 	jmp	@r0
 	 nop
 
-	.align 2
+	.p2align 2
 .L_return:
 	.long	.L_BYE_RETURNS_HERE
 
@@ -337,7 +337,7 @@ ASMWORD("execute", execute)
  */
 
 	!! This should eventually become the DOES> part of ":"
-	.align	2
+	.p2align 2
 call_code:
 	mov.l	IP, @-RSP	! save caller's IP
 	bra	.L_next_code_no_spill
@@ -526,7 +526,7 @@ ASMWORD("depth", depth)
 	sub	r1, TOS
 	jmp	@NEXT
 	 shlr2	TOS
-	.align	2
+	.p2align 2
 .L_depth_sp0:	.long	stack_bottom
 
 
@@ -1373,7 +1373,7 @@ ASMWORD("sm/rem", sm_slash_rem)
 	add	#12, sp
 	jmp	@NEXT
 	 nop
-	.align	2
+	.p2align 2
 1:	.long	_C_LABEL(__divmoddi4)
 
 
@@ -1487,7 +1487,7 @@ ASMWORD("fill", fill)
 	 FILL_TOS
 	jmp	@NEXT
 	 nop
-	.align	2
+	.p2align 2
 1:	.long	memset
 
 
@@ -1524,7 +1524,7 @@ ASMWORD("move", move)
 	 FILL_TOS
 	jmp	@NEXT
 	 nop
-	.align	2
+	.p2align 2
 1:	.long	memmove
 
 
@@ -1563,7 +1563,7 @@ ASMWORD("emit", emit)
 	 FILL_TOS
 	jmp	@NEXT
 	 nop
-	.align	2
+	.p2align 2
 1:	.long	_C_LABEL(emit_impl)
 
 
@@ -1597,7 +1597,7 @@ ASMWORD("type", type)
 	 FILL_TOS
 	jmp	@NEXT
 	 nop
-	.align	2
+	.p2align 2
 1:	.long	_C_LABEL(type_impl)
 
 
@@ -1704,7 +1704,7 @@ ASMWORD("accept", accept_4th)	! XXX: avoid name clash with accept(2)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	r0, TOS		! push +n2 returned by the C code
-	.align	2
+	.p2align 2
 1:	.long	_C_LABEL(accept_impl)
 
 
