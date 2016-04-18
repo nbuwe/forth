@@ -1493,6 +1493,26 @@ ASMWORD("fill", fill)
 1:	.long	memset
 
 
+!!! ERASE - CORE EXT 6.2.1350
+!!!     ( c-addr u -- )
+WORD("erase", erase)
+	.long	dup, zero_equals, OR_ELSE(1f)
+	.long	    two_drop, exit_4th
+1:	
+	.long	    lit, 0, fill
+	EXIT_4TH
+
+
+!!! BLANK - STRING 17.6.1.0780
+!!!     ( c-addr u -- )
+WORD("blank", blank)
+	.long	dup, zero_equals, OR_ELSE(1f)
+	.long	    two_drop, exit_4th
+1:	
+	.long	    bl, fill
+	EXIT_4TH
+
+
 !!! MOVE - CORE 6.1.1900
 !!!     ( src dst len -- )
 ASMWORD("move", move)
