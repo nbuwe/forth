@@ -13,12 +13,21 @@ main()
 {
     int32_t *psp;
     int32_t *p;
+    int32_t *bottom;
 
     psp = start_forth();
 
-    printf("-- STACK:\n");
-    for (p = psp; p < stack_bottom; ++p) {
-	printf("0x%08x  %d\n", *p, *p);
+    /* skip placeholder for invalid TOS of an empty stack */
+    bottom = stack_bottom - 1;
+
+    if (psp < bottom) {
+	printf("-- STACK:\n");
+	for (p = psp; p < bottom; ++p) {
+	    printf("0x%08x  %d\n", *p, *p);
+	}
+    }
+    else {
+	printf("-- STACK: <empty>\n");
     }
     
     return 0;
