@@ -1990,8 +1990,8 @@ WORD("number?", is_number)
 
 .L_base_sigil:
 	.long	drop		    ! sigil
-	.long	swap, lit, 1, plus  ! ++address
-	.long	swap, lit, 1, minus ! --length
+	.long	swap, one_plus	    ! ++address
+	.long	swap, one_minus	    ! --length
 
 	!! if there's just one char, it cannot be a minus sign
 	.long	dup, lit, 1, greater_than, OR_ELSE(.L_check_number)
@@ -2002,8 +2002,8 @@ WORD("number?", is_number)
 
 	.long	r_from, drop, true, to_r ! note that we have a minus
 
-	.long	swap, lit, 1, plus  ! ++address
-	.long	swap, lit, 1, minus ! --length
+	.long	swap, one_plus		! ++address
+	.long	swap, one_minus		! --length
 
 .L_check_number:
 	!! try to convert to number -> ud addr len
@@ -2310,7 +2310,7 @@ WORD("interpret", interpret)
 .L_word_found:
 	.long	two_swap, two_drop
 
-	.long	lit, 1, plus, OR_ELSE(3f)
+	.long	one_plus, OR_ELSE(3f)
 
 		!! immediate
 	.long	    execute
