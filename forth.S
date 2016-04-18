@@ -1656,6 +1656,23 @@ WORD("u.", u_dot)
 	EXIT_4TH
 
 
+!!! .S - TOOLS 15.6.1.0220
+WORD(".s", dot_s)
+	.long	sp_fetch, sp0, equals, OR_ELSE(0f), exit_4th; 0:;
+	!! 
+	.long	dup			! spill TOS to memory
+	.long	sp_fetch, cell_plus	! below spilled TOS 
+	.long	sp0, cell_minus		! skip invalid TOS of an empty stack
+	.long	do_parens, 9f
+1:	!!
+	.long	i_4th, cell_minus, fetch, dot
+	.long	lit, 0, cell_minus
+	.long	plus_loop_parens, 1b
+9:
+	.long	drop
+	EXIT_4TH
+
+
 !!! ====================================================================
 !!! I/O - Input
 
