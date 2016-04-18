@@ -568,6 +568,7 @@ ASMWORD("swap", swap)
 
 
 !!! ROT - CORE 6.1.2160
+!!!     ( x3 x2 x1 -- x2 x1 x3 )
 ASMWORD("rot", rot)
 	mov.l	@PSP+, r0
 	mov.l	@PSP+, r1
@@ -576,7 +577,9 @@ ASMWORD("rot", rot)
 	jmp	@NEXT
 	 mov	r1, TOS
 
-!!! -ROT - non-standard
+
+!!! -ROT - non-standard, inverse of ROT
+!!!     ( x3 x2 x1 -- x1 x3 x2 )
 ASMWORD("-rot", minus_rot)
 	mov.l	@PSP+, r1
 	mov.l	@PSP+, r2
@@ -587,25 +590,32 @@ ASMWORD("-rot", minus_rot)
 
 
 !!! NIP - CORE EXT 6.2.1930
+!!!     ( x1 x2 -- x2 )
 ASMWORD("nip", nip)
 	jmp	@NEXT
 	 add	#4, PSP
 
+
 !!! TUCK - CORE EXT 6.2.2300
+!!!     ( x1 x2 -- x2 x1 x2 )
 ASMWORD("tuck", tuck)
 	mov.l	@PSP+, r0
 	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
 
+
 !!! PICK - CORE EXT 6.2.2030
+!!!     ( xu ... x1 x0 u -- xu ... x1 x0 xu )
 ASMWORD("pick", pick)
 	mov	PSP, r0
 	shll2	TOS
 	jmp	@NEXT
 	 mov.l	@(r0, TOS), TOS
 
+
 !!! ROLL - CORE EXT 6.2.2150
+!!!     ( xu xu-1 ... x0 u -- xu-1 ... x0 xu )
 ASMWORD("roll", roll)
 #  define DST r2
 #  define SRC r3
@@ -629,6 +639,7 @@ ASMWORD("roll", roll)
 
 	jmp	@NEXT
 	 mov	r0, TOS
+
 
 !!! 2DROP - CORE 6.1.0370
 ASMWORD("2drop", two_drop)
