@@ -2632,8 +2632,16 @@ DOES_4TH(value_does)
 !!! TO - CORE EXT 6.2.2295
 IMMWORD("to", to_4th)
 	.long	tick_parens
-	!! .long lit, 1, not_equals, THEN_THROW(32) ! not immediate
+#if 1
 	.long	drop
+#else
+	.long	lit, 1, not_equals, question_branch, 0f
+	.long	    drop, THROW(32)
+0:
+#endif
+	.long	dup, fetch, lit, value_does, not_equals, OR_ELSE(0f)
+	.long	    drop, THROW(32)
+0:
 	.long	to_body
 	!! like DOES> part of VALUE above but with ! instead of @ 
 	.long	state, fetch, OR_ELSE(1f)
