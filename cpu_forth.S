@@ -1,5 +1,3 @@
-/* $Id$ */
-
 #include <machine/asm.h>
 
 #define TOS	r8	/* top of parameter stack lives in a register */
