@@ -55,9 +55,11 @@ WORD("space", space)
 
 !!! SPACES - CORE 6.1.2230
 WORD("spaces", spaces)
-	.long	dup, zero_greater, OR_ELSE(9f)
+	.long	dup, zero_greater, zero_equals, OR_ELSE(0f)
+	.long	    drop, exit_4th
+0:
 	.long	lit, 0, do_parens, 9f
-1:	.long	space
+1:	.long	    space
 	.long	loop_parens, 1b
 9:	EXIT_4TH
 
