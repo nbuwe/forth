@@ -605,7 +605,121 @@ ASMWORD("2r>", two_r_fetch)
 	 mov.l	r0, @-PSP
 
 
+/**
+ * Comparison
+ */
 
+!!! 0< - CORE 6.1.0250
+ASMWORD("0<", zero_less)
+	mov	#0, r0
+	cmp/gt	TOS, r0
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
+!!! 0> - CORE-EXT 6.2.0280
+ASMWORD("0>", zero_greater)
+	cmp/pl	TOS
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
+!!! 0= - CORE 6.1.0270
+ASMWORD("0=", zero_equals)
+	tst	TOS, TOS
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
+!!! 0<> - CORE-EXT 6.2.0260
+ASMWORD("0<>", zero_not_equals)
+	tst	TOS, TOS
+	movt	TOS
+	neg	TOS, TOS
+	jmp	@NEXT
+	 not	TOS, TOS
+
+
+!!! < - CORE 6.1.0480
+ASMWORD("<", less_than)
+	mov.l	@PSP+, r0
+	cmp/gt	r0, TOS
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
+!!! > - CORE 6.1.0540
+ASMWORD(">", greater_than)
+	mov.l	@PSP+, r0
+	cmp/gt	TOS, r0
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
+!!! = - CORE 6.1.0530
+ASMWORD("=", equals)
+	mov.l	@PSP+, r0
+	cmp/eq	TOS, r0
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
+!!! <> - CORE-EXT 6.2.0500
+ASMWORD("<>", not_equals)
+	mov.l	@PSP+, r0
+	cmp/eq	TOS, r0
+	movt	TOS
+	neg	TOS, TOS
+	jmp	@NEXT
+	 not	TOS, TOS
+
+
+!!! <= - nonstandard
+WORD("<=", less_than_equals)
+	.long	greater_than, zero_equals
+	EXIT_4TH
+
+
+!!! >= - nonstandard
+WORD(">=", greater_than_equals)
+	.long	less_than, zero_equals
+	EXIT_4TH
+
+
+!!! U< - CORE 6.1.2340
+ASMWORD("u<", u_less_than)
+	mov.l	@PSP+, r0
+	cmp/hi	r0, TOS
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
+!!! U> - CORE-EXT 6.2.2350
+ASMWORD("u>", u_greater_than)
+	mov.l	@PSP+, r0
+	cmp/hi	TOS, r0
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
+!!! WITHIN - CORE EXT 6.2.2440
+!!!     ( test low high -- flag )
+!!!     code from the ANS A.6.2.2440
+WORD("within", within)
+	.long	over, minus	! high - low
+	.long	to_r
+	.long	minus		! test - low
+	.long	r_from
+	.long	u_less_than
+	EXIT_4TH
 
 
 /**
@@ -1079,119 +1193,6 @@ ASMWORD("2*", two_star)
 ASMWORD("2/", two_slash)
 	jmp	@NEXT
 	 shar	TOS
-
-
-!!! 0< - CORE 6.1.0250
-ASMWORD("0<", zero_less)
-	mov	#0, r0
-	cmp/gt	TOS, r0
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
-!!! 0> - CORE-EXT 6.2.0280
-ASMWORD("0>", zero_greater)
-	cmp/pl	TOS
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
-!!! 0= - CORE 6.1.0270
-ASMWORD("0=", zero_equals)
-	tst	TOS, TOS
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
-!!! 0<> - CORE-EXT 6.2.0260
-ASMWORD("0<>", zero_not_equals)
-	tst	TOS, TOS
-	movt	TOS
-	neg	TOS, TOS
-	jmp	@NEXT
-	 not	TOS, TOS
-
-
-!!! < - CORE 6.1.0480
-ASMWORD("<", less_than)
-	mov.l	@PSP+, r0
-	cmp/gt	r0, TOS
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
-!!! > - CORE 6.1.0540
-ASMWORD(">", greater_than)
-	mov.l	@PSP+, r0
-	cmp/gt	TOS, r0
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
-!!! = - CORE 6.1.0530
-ASMWORD("=", equals)
-	mov.l	@PSP+, r0
-	cmp/eq	TOS, r0
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
-!!! <> - CORE-EXT 6.2.0500
-ASMWORD("<>", not_equals)
-	mov.l	@PSP+, r0
-	cmp/eq	TOS, r0
-	movt	TOS
-	neg	TOS, TOS
-	jmp	@NEXT
-	 not	TOS, TOS
-
-
-!!! <= - nonstandard
-WORD("<=", less_than_equals)
-	.long	greater_than, zero_equals
-	EXIT_4TH
-
-
-!!! >= - nonstandard
-WORD(">=", greater_than_equals)
-	.long	less_than, zero_equals
-	EXIT_4TH
-
-
-!!! U< - CORE 6.1.2340
-ASMWORD("u<", u_less_than)
-	mov.l	@PSP+, r0
-	cmp/hi	r0, TOS
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
-!!! U> - CORE-EXT 6.2.2350
-ASMWORD("u>", u_greater_than)
-	mov.l	@PSP+, r0
-	cmp/hi	TOS, r0
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
-!!! WITHIN - CORE EXT 6.2.2440
-!!!     ( test low high -- flag )
-!!!     code from the ANS A.6.2.2440
-WORD("within", within)
-	.long	over, minus	! high - low
-	.long	to_r
-	.long	minus		! test - low
-	.long	r_from
-	.long	u_less_than
-	EXIT_4TH
 
 
 !!! INVERT - CORE 6.1.1720
