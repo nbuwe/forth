@@ -286,12 +286,24 @@ ASMWORD("(quit)", quit_parens)
 	 nop
 
 
-!!! Where the stacks are.  (ABORT) and (QUIT) just above use this
-!!! directly in assembler.
+!!! Where the stacks are.  (ABORT) and (QUIT) just above use these
+!!! directly in assembler as literals.
 CONSTANT("sp0", sp0)	.long	stack_bottom
 CONSTANT("rp0", rp0)	.long	rstack_bottom
 
 
+!!! Current stack pointer.
+!!! 
+!!! XXX: Both SP@ and SP0 don't try to hide the fact that we keep TOS
+!!! in a register.  This has implications in MI forth code, e.g. in .S
+!!! or DEPTH.  
+!!! 
+!!! The cell just above SP0 is not part of stack - it's a place to
+!!! spill invalid TOS register when we push the first value onto the
+!!! stack.  The TOS is in a register, so to spill it into memory, DUP
+!!! it.
+!!! 
+!!!     ( -- sp )
 ASMWORD("sp@", sp_fetch)
 	mov	PSP, r0
 	SPILL_TOS
@@ -356,8 +368,8 @@ next_code:
 	 add	r0, TOS		! TOS = PFA (for code to consume)
 
 
-!!! tail-call - note that the difference from EXIT is whether the
-!!! order of CFA := @IP and IP := @RSP+
+!!! tail-call - note that the difference from EXIT is the order of
+!!! CFA := @IP and IP := @RSP+
 !!!
 !!! This makes it possible to add a wrapper around words that examine
 !!! the cell after them, like LIT, BRANCH, etc.  Just make the tail
