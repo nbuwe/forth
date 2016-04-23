@@ -35,7 +35,7 @@ terminal_input_buffer:
 	.type	terminal_input_buffer, @object
 	.size	terminal_input_buffer, 4096 ! XXX, compute
 
-	
+
 !!! ====================================================================
 /**
  *
@@ -260,7 +260,7 @@ heap:
 	!! Name Field
 .LASTNFA = .		! init .LASTNFA for subsequent DEFWORDs
 	.byte	0x80	! empty name, immediate (just in case?)
-	!! Link Field 
+	!! Link Field
 	.p2align 2, 0
 	.long	0	! terminate the LFA-linked list
 	!! Code Field
@@ -294,11 +294,11 @@ CONSTANT("rp0", rp0)	.long	rstack_bottom
 
 !!! Current stack pointer.
 !!!     ( -- sp )
-!!! 
+!!!
 !!! XXX: Both SP@ and SP0 don't try to hide the fact that we keep TOS
 !!! in a register.  This has implications in MI forth code, e.g. in .S
-!!! or DEPTH.  
-!!! 
+!!! or DEPTH.
+!!!
 !!! The cell just above SP0 is not part of stack - it's a place to
 !!! spill invalid TOS register when we push the first value onto the
 !!! stack.  The TOS is in a register, so to spill it into memory, DUP
@@ -330,7 +330,7 @@ ASMWORD("breakpoint", breakpoint)
 
 !!! EXECUTE - CORE 6.1.1370
 !!!     ( i*x xt -- j*x )
-!!! 
+!!!
 !!! With indirect threaded code the execution token (xt) is the
 !!! address of the code field (CFA).  See also next_code.
 ASMWORD("execute", execute)
@@ -414,18 +414,21 @@ ASMWORD("depth", depth)
 
 
 !!! DROP - CORE 6.1.1260
+!!!     ( x -- )
 ASMWORD("drop", drop)
 	jmp	@NEXT
 	 FILL_TOS
 
 
 !!! DUP - CORE 6.1.1290
+!!!     ( x -- x x )
 ASMWORD("dup", dup)
 	jmp	@NEXT
 	 SPILL_TOS
 
 
 !!! ?DUP - CORE 6.1.0630
+!!!     ( x -- 0 | x x )
 ASMWORD("?dup", question_dup)
 	tst	TOS, TOS
 	bt	1f
@@ -436,6 +439,7 @@ ASMWORD("?dup", question_dup)
 
 
 !!! OVER - CORE 6.1.1990
+!!!     ( x1 x2 -- x1 x2 x1 )
 ASMWORD("over", over)
 	mov.l	@PSP, r0
 	SPILL_TOS
@@ -444,6 +448,7 @@ ASMWORD("over", over)
 
 
 !!! SWAP - CORE 6.1.2260
+!!!     ( x1 x2 -- x2 x1 )
 ASMWORD("swap", swap)
 	mov.l	@PSP, r0
 	mov.l	TOS, @PSP
@@ -452,7 +457,7 @@ ASMWORD("swap", swap)
 
 
 !!! ROT - CORE 6.1.2160
-!!!     ( x3 x2 x1 -- x2 x1 x3 )
+!!!     ( x1 x2 x3 -- x2 x3 x1 )
 ASMWORD("rot", rot)
 	mov.l	@PSP+, r0
 	mov.l	@PSP+, r1
@@ -463,7 +468,7 @@ ASMWORD("rot", rot)
 
 
 !!! -ROT - non-standard, inverse of ROT
-!!!     ( x3 x2 x1 -- x1 x3 x2 )
+!!!     ( x1 x2 x3 -- x3 x1 x2 )
 ASMWORD("-rot", minus_rot)
 	mov.l	@PSP+, r1
 	mov.l	@PSP+, r2
@@ -526,12 +531,15 @@ ASMWORD("roll", roll)
 
 
 !!! 2DROP - CORE 6.1.0370
+!!!     ( x1 x2 -- )
 ASMWORD("2drop", two_drop)
 	add	#4, PSP
 	jmp	@NEXT
 	 FILL_TOS
 
+
 !!! 2DUP - CORE 6.1.0380
+!!!     ( x1 x2 -- x1 x2 x1 x2 )
 ASMWORD("2dup", two_dup)
 	mov.l	@PSP, r0
 	SPILL_TOS
@@ -540,6 +548,7 @@ ASMWORD("2dup", two_dup)
 
 
 !!! 2SWAP - CORE 6.1.0430
+!!!     ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
 ASMWORD("2swap", two_swap)
 	mov.l	@PSP, r1
 	mov.l	@(4, PSP), r2
@@ -552,6 +561,7 @@ ASMWORD("2swap", two_swap)
 
 
 !!! 2OVER - CORE 6.1.0400
+!!!     ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )
 ASMWORD("2over", two_over)
 	mov.l	@(4, PSP), r0
 	mov.l	@(8, PSP), r1
@@ -562,12 +572,15 @@ ASMWORD("2over", two_over)
 
 
 !!! >R - CORE 6.1.0580
+!!!     ( x -- ) ( R: -- x )
 ASMWORD(">r", to_r)
 	mov.l	TOS, @-RSP
 	jmp	@NEXT
 	 FILL_TOS
 
+
 !!! R> - CORE 6.1.2060
+!!!     ( -- x ) ( R: x -- )
 ASMWORD("r>", r_from)
 	SPILL_TOS
 	jmp	@NEXT
@@ -575,12 +588,15 @@ ASMWORD("r>", r_from)
 
 
 !!! R@ - CORE 6.1.2070
+!!!     ( -- x ) ( R: x -- x )
 ASMWORD("r@", r_fetch)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	@RSP, TOS
 
+
 !!! 2>R CORE EXT 6.2.0340
+!!!     ( -- x1 x2 ) ( R: x1 x2 -- )
 ASMWORD("2>r", two_to_r)
 	mov.l	@PSP+, r0
 	mov.l	r0, @-RSP
@@ -588,7 +604,9 @@ ASMWORD("2>r", two_to_r)
 	jmp	@NEXT
 	 FILL_TOS
 
-!!! 2R> - CORE EXT 6.2.0410 
+
+!!! 2R> - CORE EXT 6.2.0410
+!!!     ( -- x1 x2 ) ( R: x1 x2 -- )
 ASMWORD("2r>", two_r_from)
 	SPILL_TOS
 	mov.l	@RSP+, TOS
@@ -596,7 +614,9 @@ ASMWORD("2r>", two_r_from)
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
 
+
 !!! 2R@ - CORE EXT 6.2.0415
+!!!     ( -- x1 x2 ) ( R: x1 x2 -- x1 x2 )
 ASMWORD("2r>", two_r_fetch)
 	SPILL_TOS
 	mov.l	@RSP, TOS
