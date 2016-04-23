@@ -396,137 +396,9 @@ DOES_ASM(asm_does)		! code field of asm words points here
 	 FILL_TOS
 
 
-
-/**
- * Address alignment
- */
-
-!!! ALIGNED - CORE 6.1.0706 
-WORD("aligned", aligned)
-	.long	lit, 3, plus, lit, -4, and
-	EXIT_4TH
-
-!!! CELL+ - CORE 6.1.0880
-WORD("cell+", cell_plus)
-	.long	lit, 4, plus
-	EXIT_4TH
-
-!!! CELL- - nonstandard
-WORD("cell-", cell_minus)
-	.long	lit, 4, minus
-	EXIT_4TH
-
-!!! CELLS - CORE 6.1.0890
-WORD("cells", cells)
-	.long	two_star, two_star
-	EXIT_4TH
-
-!!! CHAR+ - CORE 6.1.0897
-WORD("char+", char_plus)
-	.long	one_plus
-	EXIT_4TH
-
-!!! CHARS - CORE 6.1.0898
-WORD("chars", chars)
-	!! nop
-	EXIT_4TH
-
-
-/**
- * Definition structure.
- *
- * A word is identified by its CFA (tick &c).  This is implicit source
- * or destination of ">" if omitted.
- */
-
-!!! >BODY - CORE 6.1.0550
-WORD(">body", to_body)
-	.long	cell_plus
-	EXIT_4TH
-
-WORD("body>", body_from)
-	.long	cell_minus
-	EXIT_4TH
-
-WORD(">link", to_link)
-	.long	cell_minus
-	EXIT_4TH
-
-WORD("link>", link_from)
-	.long	cell_plus
-	EXIT_4TH
-
-WORD("name-count", name_count)
-	.long	count, lit, 0x1f, and ! upper bits are for flags
-	EXIT_4TH
-
-WORD("n>link", n_to_link)
-	.long	name_count, plus, aligned
-	EXIT_4TH
-
-WORD("name>", name_from)
-	.long	n_to_link, link_from
-	EXIT_4TH
-
-
-/**
- * Data-space words
- */
-
-	/*
-	 * The value of HERE.  I'm not yet sure we need to keep this
-	 * in a register.  We can free r13 for it if we need to.  NEXT
-	 * that currently uses r13 can be stored in "pr", in which
-	 * case the "jmp @NEXT" becomes just "rts".  We will have to
-	 * resotre "pr" after calls to C, but that's not a very large
-	 * price to pay.
-	 *
-	 * For now do this in pure forth to minimize asm code.
-	 */
-VARIABLE("dp", dp)
-	.long	.L_DATA_SPACE
-
-!!! HERE - CORE 6.1.1650
-WORD("here", here)
-	.long	dp, fetch
-	EXIT_4TH
-
-WORD("dp!", dp_store)
-	.long	dp, store
-	EXIT_4TH
-
-!!! ALIGN - CORE 6.1.0705
-WORD("align", align)
-	.long	here, aligned, dp_store
-	EXIT_4TH
-
-!!! ALLOT - CORE 6.1.0710
-WORD("allot", allot)
-	.long	here, plus, dp_store
-	EXIT_4TH
-
-!!! , - CORE 6.1.0150
-WORD(",", comma)
-	.long	here, lit, 4, allot, store
-	EXIT_4TH
-
-!!! C, - CORE 6.1.0860
-WORD("c,", c_comma)
-	.long	here, lit, 1, allot, c_store
-	EXIT_4TH
-
-!!! PAD - CORE EXT 6.2.2000
-!!!     As far as I understand user can use memory below pad, while
-!!!     the system uses the area between DP and PAD as hold space.
-WORD("pad", pad)
-	.long	here, lit, 128, plus
-	EXIT_4TH
-
-
 /**
  * Stack manipualtion
  */
-
 
 !!! DEPTH - CORE 6.1.1200
 !!!     ( -- +n )
@@ -731,6 +603,135 @@ ASMWORD("2r>", two_r_fetch)
 	mov.l	@(4, RSP), r0
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
+
+
+
+
+
+/**
+ * Address alignment
+ */
+
+!!! ALIGNED - CORE 6.1.0706 
+WORD("aligned", aligned)
+	.long	lit, 3, plus, lit, -4, and
+	EXIT_4TH
+
+!!! CELL+ - CORE 6.1.0880
+WORD("cell+", cell_plus)
+	.long	lit, 4, plus
+	EXIT_4TH
+
+!!! CELL- - nonstandard
+WORD("cell-", cell_minus)
+	.long	lit, 4, minus
+	EXIT_4TH
+
+!!! CELLS - CORE 6.1.0890
+WORD("cells", cells)
+	.long	two_star, two_star
+	EXIT_4TH
+
+!!! CHAR+ - CORE 6.1.0897
+WORD("char+", char_plus)
+	.long	one_plus
+	EXIT_4TH
+
+!!! CHARS - CORE 6.1.0898
+WORD("chars", chars)
+	!! nop
+	EXIT_4TH
+
+
+/**
+ * Definition structure.
+ *
+ * A word is identified by its CFA (tick &c).  This is implicit source
+ * or destination of ">" if omitted.
+ */
+
+!!! >BODY - CORE 6.1.0550
+WORD(">body", to_body)
+	.long	cell_plus
+	EXIT_4TH
+
+WORD("body>", body_from)
+	.long	cell_minus
+	EXIT_4TH
+
+WORD(">link", to_link)
+	.long	cell_minus
+	EXIT_4TH
+
+WORD("link>", link_from)
+	.long	cell_plus
+	EXIT_4TH
+
+WORD("name-count", name_count)
+	.long	count, lit, 0x1f, and ! upper bits are for flags
+	EXIT_4TH
+
+WORD("n>link", n_to_link)
+	.long	name_count, plus, aligned
+	EXIT_4TH
+
+WORD("name>", name_from)
+	.long	n_to_link, link_from
+	EXIT_4TH
+
+
+/**
+ * Data-space words
+ */
+
+	/*
+	 * The value of HERE.  I'm not yet sure we need to keep this
+	 * in a register.  We can free r13 for it if we need to.  NEXT
+	 * that currently uses r13 can be stored in "pr", in which
+	 * case the "jmp @NEXT" becomes just "rts".  We will have to
+	 * resotre "pr" after calls to C, but that's not a very large
+	 * price to pay.
+	 *
+	 * For now do this in pure forth to minimize asm code.
+	 */
+VARIABLE("dp", dp)
+	.long	.L_DATA_SPACE
+
+!!! HERE - CORE 6.1.1650
+WORD("here", here)
+	.long	dp, fetch
+	EXIT_4TH
+
+WORD("dp!", dp_store)
+	.long	dp, store
+	EXIT_4TH
+
+!!! ALIGN - CORE 6.1.0705
+WORD("align", align)
+	.long	here, aligned, dp_store
+	EXIT_4TH
+
+!!! ALLOT - CORE 6.1.0710
+WORD("allot", allot)
+	.long	here, plus, dp_store
+	EXIT_4TH
+
+!!! , - CORE 6.1.0150
+WORD(",", comma)
+	.long	here, lit, 4, allot, store
+	EXIT_4TH
+
+!!! C, - CORE 6.1.0860
+WORD("c,", c_comma)
+	.long	here, lit, 1, allot, c_store
+	EXIT_4TH
+
+!!! PAD - CORE EXT 6.2.2000
+!!!     As far as I understand user can use memory below pad, while
+!!!     the system uses the area between DP and PAD as hold space.
+WORD("pad", pad)
+	.long	here, lit, 128, plus
+	EXIT_4TH
 
 
 !!! @ - CORE 6.1.0650
