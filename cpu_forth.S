@@ -293,6 +293,7 @@ CONSTANT("rp0", rp0)	.long	rstack_bottom
 
 
 !!! Current stack pointer.
+!!!     ( -- sp )
 !!! 
 !!! XXX: Both SP@ and SP0 don't try to hide the fact that we keep TOS
 !!! in a register.  This has implications in MI forth code, e.g. in .S
@@ -302,8 +303,6 @@ CONSTANT("rp0", rp0)	.long	rstack_bottom
 !!! spill invalid TOS register when we push the first value onto the
 !!! stack.  The TOS is in a register, so to spill it into memory, DUP
 !!! it.
-!!! 
-!!!     ( -- sp )
 ASMWORD("sp@", sp_fetch)
 	mov	PSP, r0
 	SPILL_TOS
@@ -330,10 +329,15 @@ ASMWORD("breakpoint", breakpoint)
 
 
 !!! EXECUTE - CORE 6.1.1370
+!!!     ( i*x xt -- j*x )
+!!! 
+!!! With indirect threaded code the execution token (xt) is the
+!!! address of the code field (CFA).  See also next_code.
 ASMWORD("execute", execute)
 	mov.l	@TOS+, r0	! fetch code address and advance to PFA
 	jmp	@r0
 	 nop
+
 
 /*
  * What follows is the very core of the threaded code interpreter.
@@ -388,7 +392,7 @@ ASMWORD("(goto)", goto_parens)
 
 	!! This should eventually become the DOES> part of CODE
 DOES_ASM(asm_does)		! code field of asm words points here
-	jmp	@TOS		! consume TOS
+	jmp	@TOS		! PFA: word's body is its asm code
 	 FILL_TOS
 
 
