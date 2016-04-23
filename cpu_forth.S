@@ -328,28 +328,40 @@ ASMWORD("breakpoint", breakpoint)
 	 nop
 
 
+/**
+ * Threaded code interpreter.
+ *
+ * Executing a word means calling it's code with it's body at the top
+ * of the parameter stack.
+ *
+ * The real core of the interpreter is "next_code" that interprets
+ * endless stream of words.  Some of those words are forth definitions
+ * that begin with "call_code" in their code field and end with EXIT.
+ * That diverts execution by saving/restoring IP before proceeding to
+ * "next_code".
+ */
+
 !!! EXECUTE - CORE 6.1.1370
 !!!     ( i*x xt -- j*x )
 !!!
 !!! With indirect threaded code the execution token (xt) is the
 !!! address of the code field (CFA).  See also next_code.
 ASMWORD("execute", execute)
-	mov.l	@TOS+, r0	! fetch code address and advance to PFA
-	jmp	@r0
+	mov.l	@TOS+, r0	! fetch code address and advance TOS to PFA
+	jmp	@r0		! call word's code on word's body
 	 nop
 
 
-/*
- * What follows is the very core of the threaded code interpreter.
- *
- * It might make sense to move the following few bits of asm code
- * elsewhere so that it completely fits into a cache line or two
- * without intervening word headers &c.
- */
+!!! Code field of asm words points here.
+!!! This should eventually become the DOES> part of CODE
+DOES_ASM(asm_does)
+	jmp	@TOS		! PFA: word's body is its asm code
+	 FILL_TOS		! PFA is consumed
 
-	!! This should eventually become the DOES> part of ":"
-	.p2align 2
-call_code:
+
+!!! Code field of colon definitions (i.e. forth words)  points here.
+!!! This should eventually become the DOES> part of ":"
+DOES_ASM(call_code)
 	mov.l	IP, @-RSP	! save caller's IP
 	bra	.L_next_code_no_spill
 	 mov	TOS, IP		! set my IP (consume PFA from TOS)
@@ -358,6 +370,7 @@ call_code:
 
 
 !!! EXIT - CORE 6.1.1380
+!!!     ( -- ) ( R: nest-sys -- )
 ASMWORD("exit", exit_4th)
 	mov.l	@RSP+, IP	! pop return address
 	!! FALLTHROUGH to "NEXT"
@@ -388,12 +401,6 @@ ASMWORD("(goto)", goto_parens)
 	mov	#4, TOS		!
 	jmp	@r1		! execute word's code
 	 add	r0, TOS		! TOS = PFA (for code to consume)
-
-
-	!! This should eventually become the DOES> part of CODE
-DOES_ASM(asm_does)		! code field of asm words points here
-	jmp	@TOS		! PFA: word's body is its asm code
-	 FILL_TOS
 
 
 /**
