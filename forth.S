@@ -2,6 +2,130 @@
  * Machine-independent words in threaded code.
  */
 
+
+/**
+ * Stack manipualtion
+ */
+
+.ifnotdef question_dup
+!!! ?DUP - CORE 6.1.0630
+!!!     ( x -- 0 | x x )
+WORD("?dup", question_dup)
+	.long	dup, zero_not_equals, OR_ELSE(9f)
+	.long	    dup
+9:	EXIT_4TH
+.endif
+
+
+.ifnotdef nip
+!!! NIP - CORE EXT 6.2.1930
+!!!     ( x1 x2 -- x2 )
+WORD("nip", nip)
+	.long	swap, drop
+	EXIT_4TH
+.endif
+
+
+.ifnotdef tuck
+!!! TUCK - CORE EXT 6.2.2300
+!!!     ( x1 x2 -- x2 x1 x2 )
+WORD("tuck", tuck)
+	.long	swap, over
+	EXIT_4TH
+.endif
+
+
+.ifnotdef rot
+!!! ROT - CORE 6.1.2160
+!!!     ( x1 x2 x3 -- x2 x3 x1 )
+WORD("rot", rot)
+	.long	lit, 2, roll
+	EXIT_4TH
+.endif
+
+
+.ifnotdef minus_rot
+!!! -ROT - non-standard, inverse of ROT
+!!!     ( x1 x2 x3 -- x3 x1 x2 )
+WORD("-rot", minus_rot)
+	.long	rot, rot
+	EXIT_4TH
+.endif
+
+
+.ifnotdef two_drop
+!!! 2DROP - CORE 6.1.0370
+!!!     ( x1 x2 -- )
+WORD("2drop", two_drop)
+	.long	drop, drop
+	EXIT_4TH
+.endif
+
+
+.ifnotdef two_dup
+!!! 2DUP - CORE 6.1.0380
+!!!     ( x1 x2 -- x1 x2 x1 x2 )
+WORD("2dup", two_dup)
+	.long	over, over
+	EXIT_4TH
+.endif
+
+
+.ifnotdef two_swap
+!!! 2SWAP - CORE 6.1.0430
+!!!     ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
+WORD("2swap", two_swap)
+	.long	lit, 3, roll, lit, 3, roll
+	EXIT_4TH
+.endif
+
+
+.ifnotdef two_over
+!!! 2OVER - CORE 6.1.0400
+!!!     ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )
+WORD("2over", two_over)
+	.long	lit, 3, pick, lit, 3, pick
+	EXIT_4TH
+.endif
+
+
+.ifnotdef depth
+!!! DEPTH - CORE 6.1.1200
+!!!     ( -- +n )
+WORD("depth", depth)
+	.long	sp_fetch, sp0, minus
+	.long	lit, 1, cells, slash
+	EXIT_4TH
+.endif
+
+
+.ifnotdef two_to_r
+!!! 2>R CORE EXT 6.2.0340
+!!!     ( -- x1 x2 ) ( R: x1 x2 -- )
+WORD("2>r", two_to_r)
+	.long	swap, to_r, to_r
+	EXIT_4TH
+.endif
+
+
+.ifnotdef two_r_from
+!!! 2R> - CORE EXT 6.2.0410
+!!!     ( -- x1 x2 ) ( R: x1 x2 -- )
+WORD("2r>", two_r_from)
+	.long	r_from, r_from, swap
+	EXIT_4TH
+.endif
+
+
+.ifnotdef two_r_fetch
+!!! 2R@ - CORE EXT 6.2.0415
+!!!     ( -- x1 x2 ) ( R: x1 x2 -- x1 x2 )
+WORD("2r>", two_r_fetch)
+	.long	two_r_from, two_dup, two_to_r
+	EXIT_4TH
+.endif
+
+
 !!! ====================================================================
 !!! I/O - Common
 

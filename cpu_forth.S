@@ -1,5 +1,12 @@
 #include <machine/asm.h>
 
+/*
+ * Should we provide just the bare minimum of asm words to test MI
+ * forth implementations and simplify porting, or more asm words to
+ * get a bit more speed once initial porting is done?
+ */
+#undef MORE_ASM_WORDS
+
 #define TOS	r8	/* top of parameter stack lives in a register */
 #define PSP	r9	/* parameter stack pointer */
 #define RSP	r10	/* return stack pointer */
@@ -407,19 +414,6 @@ ASMWORD("(goto)", goto_parens)
  * Stack manipualtion
  */
 
-!!! DEPTH - CORE 6.1.1200
-!!!     ( -- +n )
-ASMWORD("depth", depth)
-	mov	PSP, r1
-	SPILL_TOS
-	mov.l	.L_depth_sp0, TOS
-	sub	r1, TOS
-	jmp	@NEXT
-	 shlr2	TOS
-	.p2align 2
-.L_depth_sp0:	.long	stack_bottom
-
-
 !!! DROP - CORE 6.1.1260
 !!!     ( x -- )
 ASMWORD("drop", drop)
@@ -434,6 +428,7 @@ ASMWORD("dup", dup)
 	 SPILL_TOS
 
 
+#ifdef MORE_ASM_WORDS
 !!! ?DUP - CORE 6.1.0630
 !!!     ( x -- 0 | x x )
 ASMWORD("?dup", question_dup)
@@ -443,15 +438,7 @@ ASMWORD("?dup", question_dup)
 	 SPILL_TOS		! dup if non-zero
 1:	jmp	@NEXT
 	 nop			! do nothing if zero
-
-
-!!! OVER - CORE 6.1.1990
-!!!     ( x1 x2 -- x1 x2 x1 )
-ASMWORD("over", over)
-	mov.l	@PSP, r0
-	SPILL_TOS
-	jmp 	@NEXT
-	 mov	r0, TOS
+#endif
 
 
 !!! SWAP - CORE 6.1.2260
@@ -463,6 +450,36 @@ ASMWORD("swap", swap)
 	 mov	r0, TOS
 
 
+!!! OVER - CORE 6.1.1990
+!!!     ( x1 x2 -- x1 x2 x1 )
+ASMWORD("over", over)
+	mov.l	@PSP, r0
+	SPILL_TOS
+	jmp 	@NEXT
+	 mov	r0, TOS
+
+
+#ifdef MORE_ASM_WORDS
+!!! NIP - CORE EXT 6.2.1930
+!!!     ( x1 x2 -- x2 )
+ASMWORD("nip", nip)
+	jmp	@NEXT
+	 add	#4, PSP
+#endif
+
+
+#ifdef MORE_ASM_WORDS
+!!! TUCK - CORE EXT 6.2.2300
+!!!     ( x1 x2 -- x2 x1 x2 )
+ASMWORD("tuck", tuck)
+	mov.l	@PSP+, r0
+	SPILL_TOS
+	jmp	@NEXT
+	 mov.l	r0, @-PSP
+#endif
+
+
+#ifdef MORE_ASM_WORDS
 !!! ROT - CORE 6.1.2160
 !!!     ( x1 x2 x3 -- x2 x3 x1 )
 ASMWORD("rot", rot)
@@ -472,8 +489,10 @@ ASMWORD("rot", rot)
 	mov.l	TOS, @-PSP
 	jmp	@NEXT
 	 mov	r1, TOS
+#endif
 
 
+#ifdef MORE_ASM_WORDS
 !!! -ROT - non-standard, inverse of ROT
 !!!     ( x1 x2 x3 -- x3 x1 x2 )
 ASMWORD("-rot", minus_rot)
@@ -483,22 +502,7 @@ ASMWORD("-rot", minus_rot)
 	mov.l	r2, @-PSP
 	jmp	@NEXT
 	 mov	r1, TOS
-
-
-!!! NIP - CORE EXT 6.2.1930
-!!!     ( x1 x2 -- x2 )
-ASMWORD("nip", nip)
-	jmp	@NEXT
-	 add	#4, PSP
-
-
-!!! TUCK - CORE EXT 6.2.2300
-!!!     ( x1 x2 -- x2 x1 x2 )
-ASMWORD("tuck", tuck)
-	mov.l	@PSP+, r0
-	SPILL_TOS
-	jmp	@NEXT
-	 mov.l	r0, @-PSP
+#endif
 
 
 !!! PICK - CORE EXT 6.2.2030
@@ -537,14 +541,17 @@ ASMWORD("roll", roll)
 	 mov	r0, TOS
 
 
+#ifdef MORE_ASM_WORDS
 !!! 2DROP - CORE 6.1.0370
 !!!     ( x1 x2 -- )
 ASMWORD("2drop", two_drop)
 	add	#4, PSP
 	jmp	@NEXT
 	 FILL_TOS
+#endif
 
 
+#ifdef MORE_ASM_WORDS
 !!! 2DUP - CORE 6.1.0380
 !!!     ( x1 x2 -- x1 x2 x1 x2 )
 ASMWORD("2dup", two_dup)
@@ -552,8 +559,10 @@ ASMWORD("2dup", two_dup)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
+#endif
 
 
+#ifdef MORE_ASM_WORDS
 !!! 2SWAP - CORE 6.1.0430
 !!!     ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
 ASMWORD("2swap", two_swap)
@@ -565,8 +574,10 @@ ASMWORD("2swap", two_swap)
 	mov.l	r3, @PSP
 	jmp	@NEXT
 	 mov	r2, TOS
+#endif
 
 
+#ifdef MORE_ASM_WORDS
 !!! 2OVER - CORE 6.1.0400
 !!!     ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )
 ASMWORD("2over", two_over)
@@ -576,6 +587,22 @@ ASMWORD("2over", two_over)
 	mov.l	r1, @-PSP
 	jmp	@NEXT
 	 mov	r0, TOS
+#endif
+
+
+#ifdef MORE_ASM_WORDS
+!!! DEPTH - CORE 6.1.1200
+!!!     ( -- +n )
+ASMWORD("depth", depth)
+	mov	PSP, r1
+	SPILL_TOS
+	mov.l	.L_depth_sp0, TOS
+	sub	r1, TOS
+	jmp	@NEXT
+	 shlr2	TOS
+	.p2align 2
+.L_depth_sp0:	.long	stack_bottom
+#endif
 
 
 !!! >R - CORE 6.1.0580
@@ -602,6 +629,7 @@ ASMWORD("r@", r_fetch)
 	 mov.l	@RSP, TOS
 
 
+#ifdef MORE_ASM_WORDS
 !!! 2>R CORE EXT 6.2.0340
 !!!     ( -- x1 x2 ) ( R: x1 x2 -- )
 ASMWORD("2>r", two_to_r)
@@ -610,8 +638,10 @@ ASMWORD("2>r", two_to_r)
 	mov.l	TOS, @-RSP
 	jmp	@NEXT
 	 FILL_TOS
+#endif
 
 
+#ifdef MORE_ASM_WORDS
 !!! 2R> - CORE EXT 6.2.0410
 !!!     ( -- x1 x2 ) ( R: x1 x2 -- )
 ASMWORD("2r>", two_r_from)
@@ -620,8 +650,10 @@ ASMWORD("2r>", two_r_from)
 	mov.l	@RSP+, r0
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
+#endif
 
 
+#ifdef MORE_ASM_WORDS
 !!! 2R@ - CORE EXT 6.2.0415
 !!!     ( -- x1 x2 ) ( R: x1 x2 -- x1 x2 )
 ASMWORD("2r>", two_r_fetch)
@@ -630,6 +662,7 @@ ASMWORD("2r>", two_r_fetch)
 	mov.l	@(4, RSP), r0
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
+#endif
 
 
 /**
