@@ -99,33 +99,6 @@ WORD("depth", depth)
 .endif
 
 
-.ifnotdef two_to_r
-!!! 2>R CORE EXT 6.2.0340
-!!!     ( -- x1 x2 ) ( R: x1 x2 -- )
-WORD("2>r", two_to_r)
-	.long	swap, to_r, to_r
-	EXIT_4TH
-.endif
-
-
-.ifnotdef two_r_from
-!!! 2R> - CORE EXT 6.2.0410
-!!!     ( -- x1 x2 ) ( R: x1 x2 -- )
-WORD("2r>", two_r_from)
-	.long	r_from, r_from, swap
-	EXIT_4TH
-.endif
-
-
-.ifnotdef two_r_fetch
-!!! 2R@ - CORE EXT 6.2.0415
-!!!     ( -- x1 x2 ) ( R: x1 x2 -- x1 x2 )
-WORD("2r>", two_r_fetch)
-	.long	two_r_from, two_dup, two_to_r
-	EXIT_4TH
-.endif
-
-
 /**
  * Comparison
  */

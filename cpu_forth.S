@@ -629,7 +629,6 @@ ASMWORD("r@", r_fetch)
 	 mov.l	@RSP, TOS
 
 
-#ifdef MORE_ASM_WORDS
 !!! 2>R CORE EXT 6.2.0340
 !!!     ( -- x1 x2 ) ( R: x1 x2 -- )
 ASMWORD("2>r", two_to_r)
@@ -638,10 +637,8 @@ ASMWORD("2>r", two_to_r)
 	mov.l	TOS, @-RSP
 	jmp	@NEXT
 	 FILL_TOS
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! 2R> - CORE EXT 6.2.0410
 !!!     ( -- x1 x2 ) ( R: x1 x2 -- )
 ASMWORD("2r>", two_r_from)
@@ -650,10 +647,8 @@ ASMWORD("2r>", two_r_from)
 	mov.l	@RSP+, r0
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! 2R@ - CORE EXT 6.2.0415
 !!!     ( -- x1 x2 ) ( R: x1 x2 -- x1 x2 )
 ASMWORD("2r>", two_r_fetch)
@@ -662,7 +657,6 @@ ASMWORD("2r>", two_r_fetch)
 	mov.l	@(4, RSP), r0
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
-#endif
 
 
 /**
