@@ -410,6 +410,7 @@ ASMWORD("(goto)", goto_parens)
 	 add	r0, TOS		! TOS = PFA (for code to consume)
 
 
+
 /**
  * Stack manipualtion
  */
@@ -659,6 +660,7 @@ ASMWORD("2r@", two_r_fetch)
 	 mov.l	r0, @-PSP
 
 
+
 /**
  * Comparison
  */
@@ -762,6 +764,233 @@ ASMWORD("u>", u_greater_than)
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
+
+
+
+/**
+ * Arithmetic and bit-wise operations
+ */
+
+!!! FALSE - CORE-EXT 6.2.1485
+ASMWORD("false", false)
+	SPILL_TOS
+	jmp	@NEXT
+	 mov	#0, TOS
+
+
+!!! TRUE - CORE-EXT 6.2.2298
+ASMWORD("true", true)
+	SPILL_TOS
+	jmp	@NEXT
+	 mov	#-1, TOS
+
+
+!!! ABS - CORE 6.1.0690
+ASMWORD("abs", abs)
+	cmp/pz	TOS
+	bt	1f
+	neg	TOS, TOS
+1:	jmp	@NEXT
+	 nop
+
+
+!!! NEGATE - CORE 6.1.1910
+ASMWORD("negate", negate)
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
+!!! + - CORE 6.1.0120
+ASMWORD("+", plus)
+	mov.l	@PSP+, r0
+	jmp	@NEXT
+	 add	r0, TOS
+
+
+!!! - - CORE 6.1.0160
+ASMWORD("-", minus)
+	mov.l	@PSP+, r0
+	sub	TOS, r0
+	jmp	@NEXT
+	 mov	r0, TOS
+
+
+!!! * - CORE 6.1.0090
+ASMWORD("*", star)
+	mov.l	@PSP+, r0
+	mul.l	r0, TOS
+	jmp	@NEXT
+	 sts	macl, TOS
+
+
+!!! / - CORE 6.1.0230
+!!!	sdivsi3 tweaked to return result in TOS
+ASMWORD("/", slash)
+	tst	TOS, TOS
+	mov	TOS, r1		! r1 = divisor
+	bt/s	.L_divide_by_zero
+	 FILL_TOS		! TOS = dividend
+
+	mov	#0, r2		! this is a fast way to set ...
+	div0s	r2, TOS		! ... T := sign(dividend)
+	subc	r3, r3		! sign-extend dividend into 64 bit {TOS, r3}
+	subc	r2, TOS		! if dividend < 0 convert to 1-complement
+
+	div0s	r1, r3		! setup division {TOS, r3} / r1
+	.rept /* DIVSTEP */ 32 /* times { */
+	rotcl	TOS		! feed bits of TOS into division via T
+	div1	r1, r3
+	.endr /* } */
+	rotcl	TOS		! quotient in 1-complement
+	jmp	@NEXT
+	 addc	r2, TOS		! if quotient < 0 convert to 2-complement
+
+  .L_divide_by_zero:
+	jmp	@NEXT
+	 mov	#0, TOS
+
+
+!!! MOD - CORE 6.1.1890
+WORD("mod", mod)
+	.long two_dup, slash, star, minus
+	EXIT_4TH
+
+
+!!! /MOD - CORE 6.1.0240
+WORD("/mod", slash_mod)
+	.long two_dup, slash
+	.long tuck, star
+	.long lit, 2, roll
+	.long swap, minus
+	.long swap
+	EXIT_4TH
+
+	
+!!! U/ - nonstandard unsigned division
+!!!	udivsi3 adjusted for register usage
+ASMWORD("u/", u_slash)
+	tst	TOS, TOS
+	mov	TOS, r1		! r1 = divisor
+	bt/s	.L_u_divide_by_zero
+	 FILL_TOS		! TOS = dividend
+
+	mov	#0, r0
+	div0u
+	.rept /* DIVSTEP */ 32 /* times { */
+	rotcl	TOS		! feed bits of dividend into division via T
+	div1	r1, r0
+	.endr /* } */
+	jmp	@NEXT
+	 rotcl	TOS
+
+  .L_u_divide_by_zero:
+	jmp	@NEXT
+	 mov	#0, TOS
+
+
+!!! U/MOD - nonstandard unsigned division with remainder
+WORD("u/mod", u_slash_mod)
+	.long two_dup, u_slash
+	.long tuck, star
+	.long lit, 2, roll
+	.long swap, minus
+	.long swap
+	EXIT_4TH
+
+
+!!! 1+ - CORE 6.1.0290
+ASMWORD("1+", one_plus)
+	jmp	@NEXT
+	 add	#1, TOS
+
+
+!!! 1- - CORE 6.1.0300
+ASMWORD("1-", one_minus)
+	jmp	@NEXT
+	 add	#-1, TOS
+
+
+!!! 2* - CORE 6.1.0320
+ASMWORD("2*", two_star)
+	jmp	@NEXT
+	 shal	TOS
+
+
+!!! 2/ - CORE 6.1.0330
+ASMWORD("2/", two_slash)
+	jmp	@NEXT
+	 shar	TOS
+
+
+!!! INVERT - CORE 6.1.1720
+ASMWORD("invert", invert)
+	jmp	@NEXT
+	 not	TOS, TOS
+
+
+!!! AND - CORE 6.1.0720
+ASMWORD("and", and)
+	mov.l	@PSP+, r0
+	jmp	@NEXT
+	 and	r0, TOS
+
+
+!!! OR - CORE 6.1.1980
+ASMWORD("or", or)
+	mov.l	@PSP+, r0
+	jmp	@NEXT
+	 or	r0, TOS
+
+
+!!! XOR - CORE 6.1.2490
+ASMWORD("xor", xor)
+	mov.l	@PSP+, r0
+	jmp	@NEXT
+	 xor	r0, TOS
+
+
+!! LSHIFT - CORE 6.1.1805
+ASMWORD("lshift", lshift)
+	extu.b	TOS, r1		! shift amount (ensure positive)
+	mov.l	@PSP+, TOS	! the number to shift
+	jmp	@NEXT
+	 shld	r1, TOS
+
+
+!! RSHIFT - CORE 6.1.2162
+ASMWORD("rshift", rshift)
+	extu.b	TOS, r1		! shift amount (ensure positive)
+	mov.l	@PSP+, TOS	! the number to shift
+	neg	r1, r1		! negative means shift right
+	jmp	@NEXT
+	 shld	r1, TOS
+
+
+!!! MAX - CORE 6.1.1870
+ASMWORD("max", max)
+	mov.l	@PSP+, r0
+	cmp/ge	r0, TOS		! TOS > r0?
+	bt	0f
+
+	jmp	@NEXT
+	 mov	r0, TOS
+
+0:	jmp	@NEXT
+	 nop
+
+
+!!! MIN - CORE 6.1.1880
+ASMWORD("min", min)
+	mov.l	@PSP+, r0
+	cmp/ge	TOS, r0		! TOS < r0?
+	bt	0f
+
+	jmp	@NEXT
+	 mov	r0, TOS
+
+0:	jmp	@NEXT
+	 nop
+
 
 
 /**
@@ -1084,227 +1313,6 @@ WORD("unloop", unloop)
 	.long	r_from, drop		! leave address
 	.long	to_r			! restore return address
 	EXIT_4TH
-
-
-!!! FALSE - CORE-EXT 6.2.1485
-ASMWORD("false", false)
-	SPILL_TOS
-	jmp	@NEXT
-	 mov	#0, TOS
-
-
-!!! TRUE - CORE-EXT 6.2.2298
-ASMWORD("true", true)
-	SPILL_TOS
-	jmp	@NEXT
-	 mov	#-1, TOS
-
-
-!!! ABS - CORE 6.1.0690
-ASMWORD("abs", abs)
-	cmp/pz	TOS
-	bt	1f
-	neg	TOS, TOS
-1:	jmp	@NEXT
-	 nop
-
-
-!!! NEGATE - CORE 6.1.1910
-ASMWORD("negate", negate)
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
-!!! + - CORE 6.1.0120
-ASMWORD("+", plus)
-	mov.l	@PSP+, r0
-	jmp	@NEXT
-	 add	r0, TOS
-
-
-!!! - - CORE 6.1.0160
-ASMWORD("-", minus)
-	mov.l	@PSP+, r0
-	sub	TOS, r0
-	jmp	@NEXT
-	 mov	r0, TOS
-
-
-!!! * - CORE 6.1.0090
-ASMWORD("*", star)
-	mov.l	@PSP+, r0
-	mul.l	r0, TOS
-	jmp	@NEXT
-	 sts	macl, TOS
-
-
-!!! / - CORE 6.1.0230
-!!!	sdivsi3 tweaked to return result in TOS
-ASMWORD("/", slash)
-	tst	TOS, TOS
-	mov	TOS, r1		! r1 = divisor
-	bt/s	.L_divide_by_zero
-	 FILL_TOS		! TOS = dividend
-
-	mov	#0, r2		! this is a fast way to set ...
-	div0s	r2, TOS		! ... T := sign(dividend)
-	subc	r3, r3		! sign-extend dividend into 64 bit {TOS, r3}
-	subc	r2, TOS		! if dividend < 0 convert to 1-complement
-
-	div0s	r1, r3		! setup division {TOS, r3} / r1
-	.rept /* DIVSTEP */ 32 /* times { */
-	rotcl	TOS		! feed bits of TOS into division via T
-	div1	r1, r3
-	.endr /* } */
-	rotcl	TOS		! quotient in 1-complement
-	jmp	@NEXT
-	 addc	r2, TOS		! if quotient < 0 convert to 2-complement
-
-  .L_divide_by_zero:
-	jmp	@NEXT
-	 mov	#0, TOS
-
-
-!!! MOD - CORE 6.1.1890
-WORD("mod", mod)
-	.long two_dup, slash, star, minus
-	EXIT_4TH
-
-
-!!! /MOD - CORE 6.1.0240
-WORD("/mod", slash_mod)
-	.long two_dup, slash
-	.long tuck, star
-	.long lit, 2, roll
-	.long swap, minus
-	.long swap
-	EXIT_4TH
-
-	
-!!! U/ - nonstandard unsigned division
-!!!	udivsi3 adjusted for register usage
-ASMWORD("u/", u_slash)
-	tst	TOS, TOS
-	mov	TOS, r1		! r1 = divisor
-	bt/s	.L_u_divide_by_zero
-	 FILL_TOS		! TOS = dividend
-
-	mov	#0, r0
-	div0u
-	.rept /* DIVSTEP */ 32 /* times { */
-	rotcl	TOS		! feed bits of dividend into division via T
-	div1	r1, r0
-	.endr /* } */
-	jmp	@NEXT
-	 rotcl	TOS
-
-  .L_u_divide_by_zero:
-	jmp	@NEXT
-	 mov	#0, TOS
-
-
-!!! U/MOD - nonstandard unsigned division with remainder
-WORD("u/mod", u_slash_mod)
-	.long two_dup, u_slash
-	.long tuck, star
-	.long lit, 2, roll
-	.long swap, minus
-	.long swap
-	EXIT_4TH
-
-
-!!! 1+ - CORE 6.1.0290
-ASMWORD("1+", one_plus)
-	jmp	@NEXT
-	 add	#1, TOS
-
-
-!!! 1- - CORE 6.1.0300
-ASMWORD("1-", one_minus)
-	jmp	@NEXT
-	 add	#-1, TOS
-
-
-!!! 2* - CORE 6.1.0320
-ASMWORD("2*", two_star)
-	jmp	@NEXT
-	 shal	TOS
-
-
-!!! 2/ - CORE 6.1.0330
-ASMWORD("2/", two_slash)
-	jmp	@NEXT
-	 shar	TOS
-
-
-!!! INVERT - CORE 6.1.1720
-ASMWORD("invert", invert)
-	jmp	@NEXT
-	 not	TOS, TOS
-
-
-!!! AND - CORE 6.1.0720
-ASMWORD("and", and)
-	mov.l	@PSP+, r0
-	jmp	@NEXT
-	 and	r0, TOS
-
-
-!!! OR - CORE 6.1.1980
-ASMWORD("or", or)
-	mov.l	@PSP+, r0
-	jmp	@NEXT
-	 or	r0, TOS
-
-
-!!! XOR - CORE 6.1.2490
-ASMWORD("xor", xor)
-	mov.l	@PSP+, r0
-	jmp	@NEXT
-	 xor	r0, TOS
-
-
-!! LSHIFT - CORE 6.1.1805
-ASMWORD("lshift", lshift)
-	extu.b	TOS, r1		! shift amount (ensure positive)
-	mov.l	@PSP+, TOS	! the number to shift
-	jmp	@NEXT
-	 shld	r1, TOS
-
-
-!! RSHIFT - CORE 6.1.2162
-ASMWORD("rshift", rshift)
-	extu.b	TOS, r1		! shift amount (ensure positive)
-	mov.l	@PSP+, TOS	! the number to shift
-	neg	r1, r1		! negative means shift right
-	jmp	@NEXT
-	 shld	r1, TOS
-
-
-!!! MAX - CORE 6.1.1870
-ASMWORD("max", max)
-	mov.l	@PSP+, r0
-	cmp/ge	r0, TOS		! TOS > r0?
-	bt	0f
-
-	jmp	@NEXT
-	 mov	r0, TOS
-
-0:	jmp	@NEXT
-	 nop
-
-
-!!! MIN - CORE 6.1.1880
-ASMWORD("min", min)
-	mov.l	@PSP+, r0
-	cmp/ge	TOS, r0		! TOS < r0?
-	bt	0f
-
-	jmp	@NEXT
-	 mov	r0, TOS
-
-0:	jmp	@NEXT
-	 nop
 
 
 !!! ====================================================================
