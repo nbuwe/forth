@@ -120,6 +120,25 @@ WORD("0<>", zero_not_equals)
 .endif
 
 
+.ifnotdef less_than_equals
+!!! <= - nonstandard
+!!!     ( n1 n2 -- flag )
+WORD("<=", less_than_equals)
+	.long	greater_than, not
+	EXIT_4TH
+.endif
+
+
+.ifnotdef greater_than_equals
+!!! >= - nonstandard
+!!!     ( n1 n2 -- flag )
+WORD(">=", greater_than_equals)
+	.long	less_than, not
+	EXIT_4TH
+.endif
+
+
+
 !!! ====================================================================
 !!! I/O - Common
 

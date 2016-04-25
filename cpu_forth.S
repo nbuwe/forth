@@ -744,20 +744,6 @@ ASMWORD(">", greater_than)
 	 neg	TOS, TOS
 
 
-!!! <= - nonstandard
-!!!     ( n1 n2 -- flag )
-WORD("<=", less_than_equals)
-	.long	greater_than, zero_equals
-	EXIT_4TH
-
-
-!!! >= - nonstandard
-!!!     ( n1 n2 -- flag )
-WORD(">=", greater_than_equals)
-	.long	less_than, zero_equals
-	EXIT_4TH
-
-
 !!! U< - CORE 6.1.2340
 !!!     ( u1 u2 -- flag )
 ASMWORD("u<", u_less_than)
