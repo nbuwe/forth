@@ -126,6 +126,27 @@ WORD("2r>", two_r_fetch)
 .endif
 
 
+/**
+ * Comparison
+ */
+
+!!! NOT - non standard (see discussion in A.6.1.1720 INVERT)
+!!! Negate the sense of a flag, not necessarily a well-formed flag.
+!!!     ( x -- flag)
+WORD("not", not)
+	.long	zero_equals
+	EXIT_4TH
+
+
+.ifnotdef zero_not_equals
+!!! 0<> - CORE-EXT 6.2.0260
+!!!     ( x -- flag )
+WORD("0<>", zero_not_equals)
+	.long	zero_equals, not
+	EXIT_4TH
+.endif
+
+
 !!! ====================================================================
 !!! I/O - Common
 

@@ -669,24 +669,8 @@ ASMWORD("2r>", two_r_fetch)
  * Comparison
  */
 
-!!! 0< - CORE 6.1.0250
-ASMWORD("0<", zero_less)
-	mov	#0, r0
-	cmp/gt	TOS, r0
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
-!!! 0> - CORE-EXT 6.2.0280
-ASMWORD("0>", zero_greater)
-	cmp/pl	TOS
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
 !!! 0= - CORE 6.1.0270
+!!!     ( x -- flag )
 ASMWORD("0=", zero_equals)
 	tst	TOS, TOS
 	movt	TOS
@@ -694,13 +678,35 @@ ASMWORD("0=", zero_equals)
 	 neg	TOS, TOS
 
 
+#ifdef MORE_ASM_WORDS
 !!! 0<> - CORE-EXT 6.2.0260
+!!!     ( x -- flag )
 ASMWORD("0<>", zero_not_equals)
 	tst	TOS, TOS
 	movt	TOS
 	neg	TOS, TOS
 	jmp	@NEXT
 	 not	TOS, TOS
+#endif
+
+
+!!! 0> - CORE-EXT 6.2.0280
+!!!     ( x -- flag )
+ASMWORD("0>", zero_greater)
+	cmp/pl	TOS
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
+!!! 0< - CORE 6.1.0250
+!!!     ( x -- flag )
+ASMWORD("0<", zero_less)
+	mov	#0, r0
+	cmp/gt	TOS, r0
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
 
 
 !!! < - CORE 6.1.0480
