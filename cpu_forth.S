@@ -703,25 +703,8 @@ ASMWORD("0<", zero_less)
 	 neg	TOS, TOS
 
 
-!!! < - CORE 6.1.0480
-ASMWORD("<", less_than)
-	mov.l	@PSP+, r0
-	cmp/gt	r0, TOS
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
-!!! > - CORE 6.1.0540
-ASMWORD(">", greater_than)
-	mov.l	@PSP+, r0
-	cmp/gt	TOS, r0
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
 !!! = - CORE 6.1.0530
+!!!     ( x1 x2 -- flag )
 ASMWORD("=", equals)
 	mov.l	@PSP+, r0
 	cmp/eq	TOS, r0
@@ -731,6 +714,7 @@ ASMWORD("=", equals)
 
 
 !!! <> - CORE-EXT 6.2.0500
+!!!     ( x1 x2 -- flag )
 ASMWORD("<>", not_equals)
 	mov.l	@PSP+, r0
 	cmp/eq	TOS, r0
@@ -740,19 +724,42 @@ ASMWORD("<>", not_equals)
 	 not	TOS, TOS
 
 
+!!! < - CORE 6.1.0480
+!!!     ( n1 n2 -- flag )
+ASMWORD("<", less_than)
+	mov.l	@PSP+, r0
+	cmp/gt	r0, TOS
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
+!!! > - CORE 6.1.0540
+!!!     ( n1 n2 -- flag )
+ASMWORD(">", greater_than)
+	mov.l	@PSP+, r0
+	cmp/gt	TOS, r0
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
 !!! <= - nonstandard
+!!!     ( n1 n2 -- flag )
 WORD("<=", less_than_equals)
 	.long	greater_than, zero_equals
 	EXIT_4TH
 
 
 !!! >= - nonstandard
+!!!     ( n1 n2 -- flag )
 WORD(">=", greater_than_equals)
 	.long	less_than, zero_equals
 	EXIT_4TH
 
 
 !!! U< - CORE 6.1.2340
+!!!     ( u1 u2 -- flag )
 ASMWORD("u<", u_less_than)
 	mov.l	@PSP+, r0
 	cmp/hi	r0, TOS
@@ -762,6 +769,7 @@ ASMWORD("u<", u_less_than)
 
 
 !!! U> - CORE-EXT 6.2.2350
+!!!     ( u1 u2 -- flag )
 ASMWORD("u>", u_greater_than)
 	mov.l	@PSP+, r0
 	cmp/hi	TOS, r0
