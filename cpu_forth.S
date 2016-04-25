@@ -651,7 +651,7 @@ ASMWORD("2r>", two_r_from)
 
 !!! 2R@ - CORE EXT 6.2.0415
 !!!     ( -- x1 x2 ) ( R: x1 x2 -- x1 x2 )
-ASMWORD("2r>", two_r_fetch)
+ASMWORD("2r@", two_r_fetch)
 	SPILL_TOS
 	mov.l	@RSP, TOS
 	mov.l	@(4, RSP), r0
