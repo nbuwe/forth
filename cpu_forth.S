@@ -764,18 +764,6 @@ ASMWORD("u>", u_greater_than)
 	 neg	TOS, TOS
 
 
-!!! WITHIN - CORE EXT 6.2.2440
-!!!     ( test low high -- flag )
-!!!     code from the ANS A.6.2.2440
-WORD("within", within)
-	.long	over, minus	! high - low
-	.long	to_r
-	.long	minus		! test - low
-	.long	r_from
-	.long	u_less_than
-	EXIT_4TH
-
-
 /**
  * Address alignment
  */
