@@ -902,6 +902,19 @@ ASMWORD("+", plus)
 	ASMEND(plus)
 
 
+!!! +? - nonstandard: add with overflow check
+!!!     used by LOOP to efficiently detect loop terminataion
+!!!     ( n1|u1 n2|u2 -- n3|u3 flag )
+ASMWORD("+?", plus_question)
+	mov.l	@PSP+, r0
+	addv	r0, TOS
+	SPILL_TOS
+	movt	TOS
+	jmp	@NEXT
+	 neg	TOS, TOS
+	ASMEND(plus_question)
+
+
 !!! - - CORE 6.1.0160
 !!!     ( n1|u1 n2|u2 -- n3|u3 )
 ASMWORD("-", minus)
@@ -1281,17 +1294,6 @@ ASMWORD("?branch", question_branch)
 1:	jmp	@NEXT
 	 add	#4, IP		! skip branch address
 	ASMEND(question_branch)
-
-
-!!! Add with overflow check
-ASMWORD("+?", plus_question)
-	mov.l	@PSP+, r0
-	addv	r0, TOS
-	SPILL_TOS
-	movt	TOS
-	jmp	@NEXT
-	 neg	TOS, TOS
-	ASMEND(plus_question)
 
 
 !!! (DO) - auxiliary for DO
