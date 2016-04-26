@@ -359,6 +359,7 @@ WORD("1+!", one_plus_store)
 WORD("count", count)
 	.long	dup, c_fetch
 	.long	swap, one_plus
+	.long	swap
 	EXIT_4TH
 .endif
 
