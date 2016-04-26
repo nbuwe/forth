@@ -436,17 +436,20 @@ WORD("allot", allot)
 	.long	here, plus, dp_store
 	EXIT_4TH
 
+
 !!! , - CORE 6.1.0150
 !!!     ( x -- )
 WORD(",", comma)
-	.long	here, lit, 4, allot, store
+	.long	here, lit, 1, cells, allot, store
 	EXIT_4TH
+
 
 !!! C, - CORE 6.1.0860
 !!!     ( char -- )
 WORD("c,", c_comma)
-	.long	here, lit, 1, allot, c_store
+	.long	here, lit, 1, chars, allot, c_store
 	EXIT_4TH
+
 
 !!! PAD - CORE EXT 6.2.2000
 !!!     As far as I understand user can use memory below pad, while
