@@ -139,6 +139,30 @@ WORD(">=", greater_than_equals)
 .endif
 
 
+.ifnotdef max
+!!! MAX - CORE 6.1.1870
+!!!     ( n1 n2 -- n3 )
+WORD("max", max)
+	.long	two_dup, greater_than, OR_ELSE(0f)
+	.long	    drop, exit_4th
+0:	!!	else
+	.long	    nip
+	EXIT_4TH
+.endif
+
+
+.ifnotdef min
+!!! MIN - CORE 6.1.1880
+!!!     ( n1 n2 -- n3 )
+WORD("min", min)
+	.long	two_dup, less_than, OR_ELSE(0f)
+	.long	    drop, exit_4th
+0:	!!	else
+	.long	    nip
+	EXIT_4TH
+.endif
+
+
 !!! WITHIN - CORE EXT 6.2.2440
 !!!     ( test low high -- flag )
 !!!     code from the ANS A.6.2.2440
@@ -233,30 +257,6 @@ WORD("u/mod", u_slash_mod)
 	.long lit, 2, roll
 	.long swap, minus
 	.long swap
-	EXIT_4TH
-.endif
-
-
-.ifnotdef max
-!!! MAX - CORE 6.1.1870
-!!!     ( n1 n2 -- n3 )
-WORD("max", max)
-	.long	two_dup, greater_than, OR_ELSE(0f)
-	.long	    drop, exit_4th
-0:	!!	else
-	.long	    nip
-	EXIT_4TH
-.endif
-
-
-.ifnotdef min
-!!! MIN - CORE 6.1.1880
-!!!     ( n1 n2 -- n3 )
-WORD("min", min)
-	.long	two_dup, less_than, OR_ELSE(0f)
-	.long	    drop, exit_4th
-0:	!!	else
-	.long	    nip
 	EXIT_4TH
 .endif
 
