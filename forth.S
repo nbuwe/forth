@@ -322,6 +322,57 @@ WORD("chars", chars)
 
 
 
+/**
+ * Data-space words
+ */
+
+VARIABLE("dp", dp)
+	.long	.L_DATA_SPACE
+
+!!! HERE - CORE 6.1.1650
+!!!   ( -- addr )
+WORD("here", here)
+	.long	dp, fetch
+	EXIT_4TH
+
+WORD("dp!", dp_store)
+	.long	dp, store
+	EXIT_4TH
+
+!!! ALIGN - CORE 6.1.0705
+!!!     ( -- )
+WORD("align", align)
+	.long	here, aligned, dp_store
+	EXIT_4TH
+
+!!! ALLOT - CORE 6.1.0710
+!!!     ( n -- )
+WORD("allot", allot)
+	.long	here, plus, dp_store
+	EXIT_4TH
+
+!!! , - CORE 6.1.0150
+!!!     ( x -- )
+WORD(",", comma)
+	.long	here, lit, 4, allot, store
+	EXIT_4TH
+
+!!! C, - CORE 6.1.0860
+!!!     ( char -- )
+WORD("c,", c_comma)
+	.long	here, lit, 1, allot, c_store
+	EXIT_4TH
+
+!!! PAD - CORE EXT 6.2.2000
+!!!     As far as I understand user can use memory below pad, while
+!!!     the system uses the area between DP and PAD as hold space.
+!!!     ( -- c-addr )
+WORD("pad", pad)
+	.long	here, lit, 128, plus
+	EXIT_4TH
+
+
+
 !!! ====================================================================
 !!! I/O - Common
 
