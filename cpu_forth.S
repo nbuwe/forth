@@ -1365,12 +1365,150 @@ ASMWORD("move", move)
 	ASMEND(move)
 
 
+!!! ====================================================================
+!!! Double-cell numbers
+
+!!! 3.1.4.1 Double-cell integers
+!!! 
+!!!   On the stack, the cell containing the most significant part of a
+!!!   double-cell integer shall be above the cell containing the least
+!!!   significant part.
+
+!!! E.3.1 Big endian vs. little endian
+!!! 
+!!!   When a cell pair is moved from the stack to memory with 2!, the
+!!!   cell that was on top of the stack is placed at the lower memory
+!!!   address.
+
+
+!!! 2@ - CORE 6.1.0350
+ASMWORD("2@", two_fetch)
+	mov.l	@(4, TOS), r0
+	mov.l	@TOS, TOS	! lower address goes to the top
+	jmp	@NEXT
+	 mov.l	r0, @-PSP
+	ASMEND(two_fetch)
+
+
+!!! 2! - CORE 6.1.0310
+ASMWORD("2!", two_store)
+	mov.l	@PSP, r0	! top -> lower address
+	mov.l	@(4, PSP), r1
+	mov.l	r0, @TOS
+	mov.l	r1, @(4, TOS)
+	mov.l	@(8, PSP), TOS	! fill tos
+	jmp	@NEXT
+	 add	#12, PSP
+	ASMEND(two_store)
+
+
+!!! S>D - CORE 6.1.2170
+ASMWORD("s>d", s2d)
+	SPILL_TOS		! least significant cell is below
+	shll	TOS		! shift sign into the T bit
+	jmp	@NEXT
+	 subc	TOS, TOS	! most significant cell = 0 - T
+	ASMEND(s2d)
+
+
+!!! D>S - DOUBLE 8.6.1.1140
+WORD("d>s", d2s)
+	.long	drop
+	EXIT_4TH
+
+
+!!! DNEGATE - DOUBLE 8.6.1.1230
+WORD("dnegate", dnegate)
+	mov.l	@PSP, r0	! lower cell
+	clrt
+	negc	r0, r0
+	negc	TOS, TOS
+	jmp	@NEXT
+	 mov.l	r0, @PSP
+
+
+!!! D+ - DOUBLE 8.6.1.1040 
+ASMWORD("d+", d_plus)
+	mov.l	@PSP+, r2	! lo(d2)
+	mov.l	@PSP+, r1	! hi(d1)
+	mov.l	@PSP+, r0	! lo(d1)
+	clrt
+	addc	r0, r2		! lo
+	addc	r1, TOS		! hi
+	jmp	@NEXT
+	 mov.l	r2, @-PSP
+	ASMEND(d_plus)
+
+
+!!! M* - CORE 6.1.1810
+!!!     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
+ASMWORD("m*", m_star)
+	mov.l	@PSP+, r0
+	dmuls.l	r0, TOS
+	sts	macl, r0
+	mov.l	r0, @-PSP
+	jmp	@NEXT
+	 sts	mach, TOS
+	ASMEND(m_star)
+
+
+!!! UM* - CORE 6.1.2360
+!!!     ( n1 n2 -- d ) unsigned mixed multiplication (32x32 -> 64)
+ASMWORD("um*", um_star)
+	mov.l	@PSP+, r0
+	dmulu.l	r0, TOS
+	sts	macl, r0
+	mov.l	r0, @-PSP
+	jmp	@NEXT
+	 sts	mach, TOS
+	ASMEND(um_star)
+
+
+!!! SM/REM - CORE 6.1.2214
+!!!     ( d1 n1 -- n2 n3 ) mixed signed division/remainder (64/32 -> 32)
+ASMWORD("sm/rem", sm_slash_rem)
+	mov.l	1f, r0
+	mov.l	@PSP+, r5	! hi(d1)
+	mov.l	@PSP+, r4	! lo(d1)
+	mov	TOS, r6		! lo(n1) = n1
+	mov	TOS, r7
+	shll	r7
+	subc	r7, r7		! hi(n1) = sign(n1)
+	add	#-12, sp	! 4 for pointer (argument), 8 for value
+	mov.l	sp, @sp
+	jsr	@r0
+	 nop
+	mov.l	r0, @-PSP	! lo(div)
+	mov.l	@(8, sp), TOS	! lo(rem)
+	add	#12, sp
+	jmp	@NEXT
+	 nop
+	.p2align 2
+1:	.long	_C_LABEL(__divmoddi4)
+	ASMEND(sm_slash_rem)
+
+
+
+/**
+ * Control structure helpers
+ */
+
 !!! LIT - auxiliary for LITERAL (CORE 6.1.1780)
 ASMWORD("lit", lit)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	@IP+, TOS
 	ASMEND(lit)
+
+
+!!! 2LIT - auxiliary for 2LITERAL (DOUBLE 8.6.1.0390)
+ASMWORD("2lit", two_lit)
+	SPILL_TOS
+	mov.l	@IP+, TOS	! lower address goes to the top
+	mov.l	@IP+, r0
+	jmp	@NEXT
+	 mov.l	r0, @-PSP
+	ASMEND(two_lit)
 
 
 !!! BRANCH - auxiliary for ELSE &co
@@ -1498,139 +1636,6 @@ WORD("unloop", unloop)
 	.long	r_from, drop		! leave address
 	.long	to_r			! restore return address
 	EXIT_4TH
-
-
-!!! ====================================================================
-!!! Double-cell numbers
-
-!!! 3.1.4.1 Double-cell integers
-!!! 
-!!!   On the stack, the cell containing the most significant part of a
-!!!   double-cell integer shall be above the cell containing the least
-!!!   significant part.
-
-!!! E.3.1 Big endian vs. little endian
-!!! 
-!!!   When a cell pair is moved from the stack to memory with 2!, the
-!!!   cell that was on top of the stack is placed at the lower memory
-!!!   address.
-
-
-!!! 2LIT - auxiliary for "2LITERAL" DOUBLE 8.6.1.0390
-ASMWORD("2lit", two_lit)
-	SPILL_TOS
-	mov.l	@IP+, TOS	! lower address goes to the top
-	mov.l	@IP+, r0
-	jmp	@NEXT
-	 mov.l	r0, @-PSP
-	ASMEND(two_lit)
-
-
-!!! 2@ - CORE 6.1.0350
-ASMWORD("2@", two_fetch)
-	mov.l	@(4, TOS), r0
-	mov.l	@TOS, TOS	! lower address goes to the top
-	jmp	@NEXT
-	 mov.l	r0, @-PSP
-	ASMEND(two_fetch)
-
-
-!!! 2! - CORE 6.1.0310
-ASMWORD("2!", two_store)
-	mov.l	@PSP, r0	! top -> lower address
-	mov.l	@(4, PSP), r1
-	mov.l	r0, @TOS
-	mov.l	r1, @(4, TOS)
-	mov.l	@(8, PSP), TOS	! fill tos
-	jmp	@NEXT
-	 add	#12, PSP
-	ASMEND(two_store)
-
-
-!!! S>D - CORE 6.1.2170
-ASMWORD("s>d", s2d)
-	SPILL_TOS		! least significant cell is below
-	shll	TOS		! shift sign into the T bit
-	jmp	@NEXT
-	 subc	TOS, TOS	! most significant cell = 0 - T
-	ASMEND(s2d)
-
-
-!!! D>S - DOUBLE 8.6.1.1140
-WORD("d>s", d2s)
-	.long	drop
-	EXIT_4TH
-
-
-!!! DNEGATE - DOUBLE 8.6.1.1230
-WORD("dnegate", dnegate)
-	mov.l	@PSP, r0	! lower cell
-	clrt
-	negc	r0, r0
-	negc	TOS, TOS
-	jmp	@NEXT
-	 mov.l	r0, @PSP
-
-
-!!! D+ - DOUBLE 8.6.1.1040 
-ASMWORD("d+", d_plus)
-	mov.l	@PSP+, r2	! lo(d2)
-	mov.l	@PSP+, r1	! hi(d1)
-	mov.l	@PSP+, r0	! lo(d1)
-	clrt
-	addc	r0, r2		! lo
-	addc	r1, TOS		! hi
-	jmp	@NEXT
-	 mov.l	r2, @-PSP
-	ASMEND(d_plus)
-
-
-!!! M* - CORE 6.1.1810
-!!!     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
-ASMWORD("m*", m_star)
-	mov.l	@PSP+, r0
-	dmuls.l	r0, TOS
-	sts	macl, r0
-	mov.l	r0, @-PSP
-	jmp	@NEXT
-	 sts	mach, TOS
-	ASMEND(m_star)
-
-
-!!! UM* - CORE 6.1.2360
-!!!     ( n1 n2 -- d ) unsigned mixed multiplication (32x32 -> 64)
-ASMWORD("um*", um_star)
-	mov.l	@PSP+, r0
-	dmulu.l	r0, TOS
-	sts	macl, r0
-	mov.l	r0, @-PSP
-	jmp	@NEXT
-	 sts	mach, TOS
-	ASMEND(um_star)
-
-
-!!! SM/REM - CORE 6.1.2214
-!!!     ( d1 n1 -- n2 n3 ) mixed signed division/remainder (64/32 -> 32)
-ASMWORD("sm/rem", sm_slash_rem)
-	mov.l	1f, r0
-	mov.l	@PSP+, r5	! hi(d1)
-	mov.l	@PSP+, r4	! lo(d1)
-	mov	TOS, r6		! lo(n1) = n1
-	mov	TOS, r7
-	shll	r7
-	subc	r7, r7		! hi(n1) = sign(n1)
-	add	#-12, sp	! 4 for pointer (argument), 8 for value
-	mov.l	sp, @sp
-	jsr	@r0
-	 nop
-	mov.l	r0, @-PSP	! lo(div)
-	mov.l	@(8, sp), TOS	! lo(rem)
-	add	#12, sp
-	jmp	@NEXT
-	 nop
-	.p2align 2
-1:	.long	_C_LABEL(__divmoddi4)
-	ASMEND(sm_slash_rem)
 
 
 /* Machine-independent words in threaded code. */
