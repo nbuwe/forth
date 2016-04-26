@@ -1147,7 +1147,12 @@ ASMWORD("chars", chars)
 
 
 
+/**
+ * Fetch and store
+ */
+
 !!! @ - CORE 6.1.0650
+!!!     ( a-addr -- x )
 ASMWORD("@", fetch)
 	jmp	@NEXT
 	 mov.l	@TOS, TOS
@@ -1155,6 +1160,7 @@ ASMWORD("@", fetch)
 
 
 !!! ! - CORE 6.1.0010
+!!!     ( x a-addr -- )
 ASMWORD("!", store)
 	mov.l	@PSP+, r0	! value
 	mov.l	r0, @TOS	! store value
@@ -1163,7 +1169,9 @@ ASMWORD("!", store)
 	ASMEND(store)
 
 
+#ifdef MORE_ASM_WORDS
 !!! +! - CORE 6.1.0130
+!!!     ( n|u a-addr -- )
 ASMWORD("+!", plus_store)
 	mov.l	@PSP+, r0	! value increment
 	mov.l	@TOS, r1	! fetch current value
@@ -1172,9 +1180,12 @@ ASMWORD("+!", plus_store)
 	jmp	@NEXT
 	 FILL_TOS
 	ASMEND(plus_store)
+#endif
 
 
+#ifdef MORE_ASM_WORDS
 !!! 1+! - nonstandard
+!!!     ( a-addr -- )
 ASMWORD("1+!", one_plus_store)
 	mov.l	@TOS, r1	! fetch current value
 	add	#1, r1		! increment
@@ -1182,9 +1193,11 @@ ASMWORD("1+!", one_plus_store)
 	jmp	@NEXT
 	 FILL_TOS
 	ASMEND(one_plus_store)
+#endif
 
 
 !!! C@ - CORE 6.1.0870
+!!!     ( c-addr -- char )
 ASMWORD("c@", c_fetch)
 	mov.b	@TOS, TOS	! loaded byte is sign-extended
 	jmp	@NEXT
@@ -1193,6 +1206,7 @@ ASMWORD("c@", c_fetch)
 
 
 !!! C! - CORE 6.1.0850
+!!!     ( char c-addr -- )
 ASMWORD("c!", c_store)
 	mov.l	@PSP+, r0	! value
 	mov.b	r0, @TOS	! store value

@@ -323,6 +323,33 @@ WORD("chars", chars)
 
 
 /**
+ * Fetch and store
+ */
+
+.ifnotdef plus_store
+!!! +! - CORE 6.1.0130
+!!!     ( n|u a-addr -- )
+WORD("+!", plus_store)
+	.long	dup, fetch
+	.long	rot, plus
+	.long	swap, store
+	EXIT_4TH
+.endif
+
+
+.ifnotdef one_plus_store
+!!! 1+! - nonstandard
+!!!     ( a-addr -- )
+WORD("1+!", one_plus_store)
+	.long	dup, fetch
+	.long	one_plus
+	.long	swap, store
+	EXIT_4TH
+.endif
+
+
+
+/**
  * Data-space words
  */
 
