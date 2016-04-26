@@ -262,6 +262,66 @@ WORD("u/mod", u_slash_mod)
 
 
 
+/**
+ * Address alignment
+ * XXX: This is 32-bit specific for now.
+ */
+
+.ifnotdef aligned
+!!! ALIGNED - CORE 6.1.0706
+!!!     ( addr -- a-addr )
+WORD("aligned", aligned)
+	.long	lit, 3, plus, lit, -4, and
+	EXIT_4TH
+.endif
+
+
+.ifnotdef cell_plus
+!!! CELL+ - CORE 6.1.0880
+!!!     ( a-addr1 -- a-addr2 )
+WORD("cell+", cell_plus)
+	.long	lit, 4, plus
+	EXIT_4TH
+.endif
+
+
+.ifnotdef cell_minus
+!!! CELL- - nonstandard
+!!!     ( a-addr1 -- a-addr2 )
+WORD("cell-", cell_minus)
+	.long	lit, 4, minus
+	EXIT_4TH
+.endif
+
+
+.ifnotdef cells
+!!! CELLS - CORE 6.1.0890
+!!!     ( n1 -- n2 )
+WORD("cells", cells)
+	.long	two_star, two_star
+	EXIT_4TH
+.endif
+
+
+.ifnotdef char_plus
+!!! CHAR+ - CORE 6.1.0897
+!!!     ( c-addr1 -- c-addr2 )
+WORD("char+", char_plus)
+	.long	one_plus
+	EXIT_4TH
+.endif
+
+
+.ifnotdef chars
+!!! CHARS - CORE 6.1.0898
+!!!     ( n1 -- n2 )
+WORD("chars", chars)
+	!! nop
+	EXIT_4TH
+.endif
+
+
+
 !!! ====================================================================
 !!! I/O - Common
 

@@ -1084,35 +1084,55 @@ ASMWORD("rshift", rshift)
  * Address alignment
  */
 
-!!! ALIGNED - CORE 6.1.0706 
-WORD("aligned", aligned)
-	.long	lit, 3, plus, lit, -4, and
-	EXIT_4TH
+#ifdef MORE_ASM_WORDS
+!!! ALIGNED - CORE 6.1.0706
+!!!     ( addr -- a-addr )
+ASMWORD("aligned", aligned)
+	ASMEND(aligned)
+#endif
 
+
+#ifdef MORE_ASM_WORDS
 !!! CELL+ - CORE 6.1.0880
-WORD("cell+", cell_plus)
-	.long	lit, 4, plus
-	EXIT_4TH
+!!!     ( a-addr1 -- a-addr2 )
+ASMWORD("cell+", cell_plus)
+	ASMEND(cell_plus)
+#endif
 
+
+#ifdef MORE_ASM_WORDS
 !!! CELL- - nonstandard
-WORD("cell-", cell_minus)
-	.long	lit, 4, minus
-	EXIT_4TH
+!!!     ( a-addr1 -- a-addr2 )
+ASMWORD("cell-", cell_minus)
+	ASMEND(cell_minus)
+#endif
 
+
+#ifdef MORE_ASM_WORDS
 !!! CELLS - CORE 6.1.0890
-WORD("cells", cells)
-	.long	two_star, two_star
-	EXIT_4TH
+!!!     ( n1 -- n2 )
+ASMWORD("cells", cells)
+	ASMEND(cells)
+#endif
 
+
+#ifndef MORE_ASM_WORDS
 !!! CHAR+ - CORE 6.1.0897
-WORD("char+", char_plus)
-	.long	one_plus
-	EXIT_4TH
+!!!     ( c-addr1 -- c-addr2 )
+ASMWORD("char+", char_plus)
+	ASMEND(char_plus)
+#endif
 
+
+#ifdef MORE_ASM_WORDS
 !!! CHARS - CORE 6.1.0898
-WORD("chars", chars)
-	!! nop
-	EXIT_4TH
+!!!     ( n1 -- n2 )
+ASMWORD("chars", chars)
+	jmp	@NEXT
+	 nop
+	ASMEND(chars)
+#endif
+
 
 
 /**
