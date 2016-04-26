@@ -771,20 +771,24 @@ ASMWORD("u>", u_greater_than)
  * Arithmetic and bit-wise operations
  */
 
+#ifdef MORE_ASM_WORDS
 !!! FALSE - CORE-EXT 6.2.1485
 !!!     ( -- false )
 ASMWORD("false", false)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	#0, TOS
+#endif
 
 
+#ifdef MORE_ASM_WORDS
 !!! TRUE - CORE-EXT 6.2.2298
 !!!     ( -- true )
 ASMWORD("true", true)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	#-1, TOS
+#endif
 
 
 !!! NEGATE - CORE 6.1.1910
@@ -794,6 +798,7 @@ ASMWORD("negate", negate)
 	 neg	TOS, TOS
 
 
+#ifdef MORE_ASM_WORDS
 !!! ABS - CORE 6.1.0690
 !!!     ( n -- u )
 ASMWORD("abs", abs)
@@ -802,6 +807,7 @@ ASMWORD("abs", abs)
 	neg	TOS, TOS
 1:	jmp	@NEXT
 	 nop
+#endif
 
 
 !!! + - CORE 6.1.0120
@@ -821,18 +827,22 @@ ASMWORD("-", minus)
 	 mov	r0, TOS
 
 
+#if MORE_ASM_WORDS
 !!! 1+ - CORE 6.1.0290
 !!!     ( n1|u1 -- n2|u2 )
 ASMWORD("1+", one_plus)
 	jmp	@NEXT
 	 add	#1, TOS
+#endif
 
 
+#if MORE_ASM_WORDS
 !!! 1- - CORE 6.1.0300
 !!!     ( n1|u1 -- n2|u2 )
 ASMWORD("1-", one_minus)
 	jmp	@NEXT
 	 add	#-1, TOS
+#endif
 
 
 !!! * - CORE 6.1.0090
@@ -872,26 +882,6 @@ ASMWORD("/", slash)
 	 mov	#0, TOS
 
 
-!!! MOD - CORE 6.1.1890
-!!!     NB: on SH3 division is symmetric
-!!!     ( n1 n2 -- n3 )
-WORD("mod", mod)
-	.long two_dup, slash, star, minus
-	EXIT_4TH
-
-
-!!! /MOD - CORE 6.1.0240
-!!!     NB: on SH3 division is symmetric
-!!!     ( n1 n2 -- n3 n4 )
-WORD("/mod", slash_mod)
-	.long two_dup, slash
-	.long tuck, star
-	.long lit, 2, roll
-	.long swap, minus
-	.long swap
-	EXIT_4TH
-
-	
 !!! U/ - nonstandard unsigned division
 !!!     ( u1 u2 -- u3 )
 ASMWORD("u/", u_slash)
@@ -912,17 +902,6 @@ ASMWORD("u/", u_slash)
   .L_u_divide_by_zero:
 	jmp	@NEXT
 	 mov	#0, TOS
-
-
-!!! U/MOD - nonstandard unsigned division with remainder
-!!!     ( u1 u2 -- u3 u4 )
-WORD("u/mod", u_slash_mod)
-	.long two_dup, u_slash
-	.long tuck, star
-	.long lit, 2, roll
-	.long swap, minus
-	.long swap
-	EXIT_4TH
 
 
 !!! 2* - CORE 6.1.0320
@@ -989,6 +968,7 @@ ASMWORD("rshift", rshift)
 	 shld	r1, TOS
 
 
+#ifdef MORE_ASM_WORDS
 !!! MAX - CORE 6.1.1870
 !!!     ( n1 n2 -- n3 )
 ASMWORD("max", max)
@@ -1001,8 +981,10 @@ ASMWORD("max", max)
 
 0:	jmp	@NEXT
 	 nop
+#endif
 
 
+#ifdef MORE_ASM_WORDS
 !!! MIN - CORE 6.1.1880
 !!!     ( n1 n2 -- n3 )
 ASMWORD("min", min)
@@ -1015,6 +997,7 @@ ASMWORD("min", min)
 
 0:	jmp	@NEXT
 	 nop
+#endif
 
 
 

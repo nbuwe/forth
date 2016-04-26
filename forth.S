@@ -99,6 +99,7 @@ WORD("depth", depth)
 .endif
 
 
+
 /**
  * Comparison
  */
@@ -148,6 +149,116 @@ WORD("within", within)
 	.long	r_from
 	.long	u_less_than
 	EXIT_4TH
+
+
+
+/**
+ * Arithmetic and bit-wise operations
+ */
+
+.ifnotdef false
+!!! FALSE - CORE-EXT 6.2.1485
+!!!     ( -- false )
+WORD("false", false)
+	.long	lit, 0
+	EXIT_4TH
+.endif
+
+
+.ifnotdef true
+!!! TRUE - CORE-EXT 6.2.2298
+!!!     ( -- true )
+WORD("true", true)
+	.long	lit, -1
+	EXIT_4TH
+.endif
+
+
+.ifnotdef abs
+!!! ABS - CORE 6.1.0690
+!!!     ( n -- u )
+WORD("abs", abs)
+	.long	dup, zero_less, OR_ELSE(9f)
+	.long	    negate
+9:	EXIT_4TH
+.endif
+
+
+.ifnotdef one_plus
+!!! 1+ - CORE 6.1.0290
+!!!     ( n1|u1 -- n2|u2 )
+WORD("1+", one_plus)
+	.long	lit, 1, plus
+	EXIT_4TH
+.endif
+
+
+.ifnotdef one_minus
+!!! 1- - CORE 6.1.0300
+!!!     ( n1|u1 -- n2|u2 )
+WORD("1-", one_minus)
+	.long	lit, 1, minus
+	EXIT_4TH
+.endif
+
+
+.ifnotdef mod
+!!! MOD - CORE 6.1.1890
+!!!     ( n1 n2 -- n3 )
+WORD("mod", mod)
+	.long two_dup, slash, star, minus
+	EXIT_4TH
+.endif
+
+
+.ifnotdef slash_mod
+!!! /MOD - CORE 6.1.0240
+!!!     ( n1 n2 -- n3 n4 )
+WORD("/mod", slash_mod)
+	.long two_dup, slash
+	.long tuck, star
+	.long lit, 2, roll
+	.long swap, minus
+	.long swap
+	EXIT_4TH
+.endif
+
+
+.ifnotdef u_slash_mod
+!!! U/MOD - nonstandard unsigned division with remainder
+!!!     ( u1 u2 -- u3 u4 )
+WORD("u/mod", u_slash_mod)
+	.long two_dup, u_slash
+	.long tuck, star
+	.long lit, 2, roll
+	.long swap, minus
+	.long swap
+	EXIT_4TH
+.endif
+
+
+.ifnotdef max
+!!! MAX - CORE 6.1.1870
+!!!     ( n1 n2 -- n3 )
+WORD("max", max)
+	.long	two_dup, greater_than, OR_ELSE(0f)
+	.long	    drop, exit_4th
+0:	!!	else
+	.long	    nip
+	EXIT_4TH
+.endif
+
+
+.ifnotdef min
+!!! MIN - CORE 6.1.1880
+!!!     ( n1 n2 -- n3 )
+WORD("min", min)
+	.long	two_dup, less_than, OR_ELSE(0f)
+	.long	    drop, exit_4th
+0:	!!	else
+	.long	    nip
+	EXIT_4TH
+.endif
 
 
 
