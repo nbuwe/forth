@@ -1116,43 +1116,6 @@ WORD("chars", chars)
 
 
 /**
- * Definition structure.
- *
- * A word is identified by its CFA (tick &c).  This is implicit source
- * or destination of ">" if omitted.
- */
-
-!!! >BODY - CORE 6.1.0550
-WORD(">body", to_body)
-	.long	cell_plus
-	EXIT_4TH
-
-WORD("body>", body_from)
-	.long	cell_minus
-	EXIT_4TH
-
-WORD(">link", to_link)
-	.long	cell_minus
-	EXIT_4TH
-
-WORD("link>", link_from)
-	.long	cell_plus
-	EXIT_4TH
-
-WORD("name-count", name_count)
-	.long	count, lit, 0x1f, and ! upper bits are for flags
-	EXIT_4TH
-
-WORD("n>link", n_to_link)
-	.long	name_count, plus, aligned
-	EXIT_4TH
-
-WORD("name>", name_from)
-	.long	n_to_link, link_from
-	EXIT_4TH
-
-
-/**
  * Data-space words
  */
 
