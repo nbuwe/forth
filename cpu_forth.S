@@ -1088,6 +1088,10 @@ ASMWORD("rshift", rshift)
 !!! ALIGNED - CORE 6.1.0706
 !!!     ( addr -- a-addr )
 ASMWORD("aligned", aligned)
+	add	#3, TOS
+	mov	#-4, r0
+	jmp	@NEXT
+	 and	r0, TOS
 	ASMEND(aligned)
 #endif
 
@@ -1096,6 +1100,8 @@ ASMWORD("aligned", aligned)
 !!! CELL+ - CORE 6.1.0880
 !!!     ( a-addr1 -- a-addr2 )
 ASMWORD("cell+", cell_plus)
+	jmp	@NEXT
+	 add	#4, TOS
 	ASMEND(cell_plus)
 #endif
 
@@ -1104,6 +1110,8 @@ ASMWORD("cell+", cell_plus)
 !!! CELL- - nonstandard
 !!!     ( a-addr1 -- a-addr2 )
 ASMWORD("cell-", cell_minus)
+	jmp	@NEXT
+	 add	#-4, TOS
 	ASMEND(cell_minus)
 #endif
 
@@ -1112,14 +1120,18 @@ ASMWORD("cell-", cell_minus)
 !!! CELLS - CORE 6.1.0890
 !!!     ( n1 -- n2 )
 ASMWORD("cells", cells)
+	jmp	@NEXT
+	 shll2	TOS
 	ASMEND(cells)
 #endif
 
 
-#ifndef MORE_ASM_WORDS
+#ifdef MORE_ASM_WORDS
 !!! CHAR+ - CORE 6.1.0897
 !!!     ( c-addr1 -- c-addr2 )
 ASMWORD("char+", char_plus)
+	jmp	@NEXT
+	 add	#1, TOS
 	ASMEND(char_plus)
 #endif
 
