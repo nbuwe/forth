@@ -1382,6 +1382,7 @@ ASMWORD("move", move)
 
 
 !!! S>D - CORE 6.1.2170
+!!!     ( n -- d )
 ASMWORD("s>d", s2d)
 	SPILL_TOS		! least significant cell is below
 	shll	TOS		! shift sign into the T bit
@@ -1391,12 +1392,14 @@ ASMWORD("s>d", s2d)
 
 
 !!! D>S - DOUBLE 8.6.1.1140
+!!!     ( d -- n )
 WORD("d>s", d2s)
 	.long	drop
 	EXIT_4TH
 
 
 !!! DNEGATE - DOUBLE 8.6.1.1230
+!!!     ( d1 -- d2 )
 WORD("dnegate", dnegate)
 	mov.l	@PSP, r0	! lower cell
 	clrt
@@ -1407,6 +1410,7 @@ WORD("dnegate", dnegate)
 
 
 !!! D+ - DOUBLE 8.6.1.1040 
+!!!     ( d1|ud1 d2|ud2 -- d3|ud3 )
 ASMWORD("d+", d_plus)
 	mov.l	@PSP+, r2	! lo(d2)
 	mov.l	@PSP+, r1	! hi(d1)
@@ -1468,6 +1472,7 @@ ASMWORD("sm/rem", sm_slash_rem)
 
 
 !!! 2@ - CORE 6.1.0350
+!!!     ( a-addr -- x1 x2 )
 ASMWORD("2@", two_fetch)
 	mov.l	@(4, TOS), r0
 	mov.l	@TOS, TOS	! lower address goes to the top
@@ -1477,6 +1482,7 @@ ASMWORD("2@", two_fetch)
 
 
 !!! 2! - CORE 6.1.0310
+!!!     ( x1 x2 a-addr -- )
 ASMWORD("2!", two_store)
 	mov.l	@PSP, r0	! top -> lower address
 	mov.l	@(4, PSP), r1
