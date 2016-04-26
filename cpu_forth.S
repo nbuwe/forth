@@ -772,6 +772,7 @@ ASMWORD("u>", u_greater_than)
  */
 
 !!! FALSE - CORE-EXT 6.2.1485
+!!!     ( -- false )
 ASMWORD("false", false)
 	SPILL_TOS
 	jmp	@NEXT
@@ -779,13 +780,22 @@ ASMWORD("false", false)
 
 
 !!! TRUE - CORE-EXT 6.2.2298
+!!!     ( -- true )
 ASMWORD("true", true)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	#-1, TOS
 
 
+!!! NEGATE - CORE 6.1.1910
+!!!     ( n1 -- n2 )
+ASMWORD("negate", negate)
+	jmp	@NEXT
+	 neg	TOS, TOS
+
+
 !!! ABS - CORE 6.1.0690
+!!!     ( n -- u )
 ASMWORD("abs", abs)
 	cmp/pz	TOS
 	bt	1f
@@ -794,13 +804,8 @@ ASMWORD("abs", abs)
 	 nop
 
 
-!!! NEGATE - CORE 6.1.1910
-ASMWORD("negate", negate)
-	jmp	@NEXT
-	 neg	TOS, TOS
-
-
 !!! + - CORE 6.1.0120
+!!!     ( n1|u1 n2|u2 -- n3|u3 )
 ASMWORD("+", plus)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
@@ -808,6 +813,7 @@ ASMWORD("+", plus)
 
 
 !!! - - CORE 6.1.0160
+!!!     ( n1|u1 n2|u2 -- n3|u3 )
 ASMWORD("-", minus)
 	mov.l	@PSP+, r0
 	sub	TOS, r0
@@ -815,7 +821,22 @@ ASMWORD("-", minus)
 	 mov	r0, TOS
 
 
+!!! 1+ - CORE 6.1.0290
+!!!     ( n1|u1 -- n2|u2 )
+ASMWORD("1+", one_plus)
+	jmp	@NEXT
+	 add	#1, TOS
+
+
+!!! 1- - CORE 6.1.0300
+!!!     ( n1|u1 -- n2|u2 )
+ASMWORD("1-", one_minus)
+	jmp	@NEXT
+	 add	#-1, TOS
+
+
 !!! * - CORE 6.1.0090
+!!!     ( n1|u1 n2|u2 -- n3|u3 )
 ASMWORD("*", star)
 	mov.l	@PSP+, r0
 	mul.l	r0, TOS
@@ -824,7 +845,8 @@ ASMWORD("*", star)
 
 
 !!! / - CORE 6.1.0230
-!!!	sdivsi3 tweaked to return result in TOS
+!!!     NB: on SH3 division is symmetric
+!!!     ( n1 n2 -- n3 )
 ASMWORD("/", slash)
 	tst	TOS, TOS
 	mov	TOS, r1		! r1 = divisor
@@ -851,12 +873,16 @@ ASMWORD("/", slash)
 
 
 !!! MOD - CORE 6.1.1890
+!!!     NB: on SH3 division is symmetric
+!!!     ( n1 n2 -- n3 )
 WORD("mod", mod)
 	.long two_dup, slash, star, minus
 	EXIT_4TH
 
 
 !!! /MOD - CORE 6.1.0240
+!!!     NB: on SH3 division is symmetric
+!!!     ( n1 n2 -- n3 n4 )
 WORD("/mod", slash_mod)
 	.long two_dup, slash
 	.long tuck, star
@@ -867,7 +893,7 @@ WORD("/mod", slash_mod)
 
 	
 !!! U/ - nonstandard unsigned division
-!!!	udivsi3 adjusted for register usage
+!!!     ( u1 u2 -- u3 )
 ASMWORD("u/", u_slash)
 	tst	TOS, TOS
 	mov	TOS, r1		! r1 = divisor
@@ -889,6 +915,7 @@ ASMWORD("u/", u_slash)
 
 
 !!! U/MOD - nonstandard unsigned division with remainder
+!!!     ( u1 u2 -- u3 u4 )
 WORD("u/mod", u_slash_mod)
 	.long two_dup, u_slash
 	.long tuck, star
@@ -898,37 +925,29 @@ WORD("u/mod", u_slash_mod)
 	EXIT_4TH
 
 
-!!! 1+ - CORE 6.1.0290
-ASMWORD("1+", one_plus)
-	jmp	@NEXT
-	 add	#1, TOS
-
-
-!!! 1- - CORE 6.1.0300
-ASMWORD("1-", one_minus)
-	jmp	@NEXT
-	 add	#-1, TOS
-
-
 !!! 2* - CORE 6.1.0320
+!!!     ( x1 -- x2 )
 ASMWORD("2*", two_star)
 	jmp	@NEXT
 	 shal	TOS
 
 
 !!! 2/ - CORE 6.1.0330
+!!!     ( x1 -- x2 )
 ASMWORD("2/", two_slash)
 	jmp	@NEXT
 	 shar	TOS
 
 
 !!! INVERT - CORE 6.1.1720
+!!!     ( x1 -- x2 )
 ASMWORD("invert", invert)
 	jmp	@NEXT
 	 not	TOS, TOS
 
 
 !!! AND - CORE 6.1.0720
+!!!     ( x1 x2 -- x3 )
 ASMWORD("and", and)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
@@ -936,6 +955,7 @@ ASMWORD("and", and)
 
 
 !!! OR - CORE 6.1.1980
+!!!     ( x1 x2 -- x3 )
 ASMWORD("or", or)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
@@ -943,6 +963,7 @@ ASMWORD("or", or)
 
 
 !!! XOR - CORE 6.1.2490
+!!!     ( x1 x2 -- x3 )
 ASMWORD("xor", xor)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
@@ -950,6 +971,7 @@ ASMWORD("xor", xor)
 
 
 !! LSHIFT - CORE 6.1.1805
+!!!     ( x1 u -- x2 )
 ASMWORD("lshift", lshift)
 	extu.b	TOS, r1		! shift amount (ensure positive)
 	mov.l	@PSP+, TOS	! the number to shift
@@ -958,6 +980,7 @@ ASMWORD("lshift", lshift)
 
 
 !! RSHIFT - CORE 6.1.2162
+!!!     ( x1 u -- x2 )
 ASMWORD("rshift", rshift)
 	extu.b	TOS, r1		! shift amount (ensure positive)
 	mov.l	@PSP+, TOS	! the number to shift
@@ -967,6 +990,7 @@ ASMWORD("rshift", rshift)
 
 
 !!! MAX - CORE 6.1.1870
+!!!     ( n1 n2 -- n3 )
 ASMWORD("max", max)
 	mov.l	@PSP+, r0
 	cmp/ge	r0, TOS		! TOS > r0?
@@ -980,6 +1004,7 @@ ASMWORD("max", max)
 
 
 !!! MIN - CORE 6.1.1880
+!!!     ( n1 n2 -- n3 )
 ASMWORD("min", min)
 	mov.l	@PSP+, r0
 	cmp/ge	TOS, r0		! TOS < r0?
