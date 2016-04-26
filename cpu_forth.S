@@ -1215,6 +1215,7 @@ ASMWORD("c!", c_store)
 	ASMEND(c_store)
 
 
+#ifdef MORE_ASM_WORDS
 !!! 2@ - CORE 6.1.0350
 !!!     ( a-addr -- x1 x2 )
 ASMWORD("2@", two_fetch)
@@ -1223,8 +1224,10 @@ ASMWORD("2@", two_fetch)
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
 	ASMEND(two_fetch)
+#endif
 
 
+#ifdef MORE_ASM_WORDS
 !!! 2! - CORE 6.1.0310
 !!!     ( x1 x2 a-addr -- )
 ASMWORD("2!", two_store)
@@ -1236,6 +1239,7 @@ ASMWORD("2!", two_store)
 	jmp	@NEXT
 	 add	#12, PSP
 	ASMEND(two_store)
+#endif
 
 
 

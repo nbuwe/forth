@@ -348,6 +348,28 @@ WORD("1+!", one_plus_store)
 .endif
 
 
+.ifnotdef two_fetch
+!!! 2@ - CORE 6.1.0350
+!!!     ( a-addr -- x1 x2 )
+WORD("2@", two_fetch)
+	.long	dup, cell_plus, fetch
+	.long	swap, fetch
+	EXIT_4TH
+.endif
+
+
+.ifnotdef two_store
+!!! 2! - CORE 6.1.0310
+!!!     ( x1 x2 a-addr -- )
+WORD("2!", two_store)
+	.long	dup, to_r
+	.long	store
+	.long	r_from, cell_plus
+	.long	store
+	EXIT_4TH
+.endif
+
+
 
 /**
  * Strings
