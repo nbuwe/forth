@@ -350,6 +350,41 @@ WORD("1+!", one_plus_store)
 
 
 /**
+ * Strings
+ */
+
+.ifnotdef count
+!!! COUNT - CORE 6.1.0980
+!!!     ( c-addr1 -- c-addr2 u )
+WORD("count", count)
+	.long	dup, c_fetch
+	.long	swap, one_plus
+	EXIT_4TH
+.endif
+
+
+!!! ERASE - CORE EXT 6.2.1350
+!!!     ( c-addr u -- )
+WORD("erase", erase)
+	.long	dup, zero_equals, OR_ELSE(0f)
+	.long	    two_drop, exit_4th
+0:
+	.long	    lit, 0, fill
+	EXIT_4TH
+
+
+!!! BLANK - STRING 17.6.1.0780
+!!!     ( c-addr u -- )
+WORD("blank", blank)
+	.long	dup, zero_equals, OR_ELSE(0f)
+	.long	    two_drop, exit_4th
+0:
+	.long	    bl, fill
+	EXIT_4TH
+
+
+
+/**
  * Data-space words
  */
 

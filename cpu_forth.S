@@ -1215,13 +1215,154 @@ ASMWORD("c!", c_store)
 	ASMEND(c_store)
 
 
+
+/**
+ * Strings
+ */
+
+#ifdef MORE_ASM_WORDS
 !!! COUNT - CORE 6.1.0980
+!!!     ( c-addr1 -- c-addr2 u )
 ASMWORD("count", count)
 	mov.b	@TOS+, r0	! fetch count (sign-extended), advance ptr
 	SPILL_TOS		! string contents address
 	jmp	@NEXT
 	 extu.b	r0, TOS		! zero-extend the count
 	ASMEND(count)
+#endif
+
+
+!!! CMOVE - STRING 17.6.1.0910
+!!!     ( src dst len -- )
+!!! NB: char-by-char left-to-right copy is required by the standard
+ASMWORD("cmove", cmove)
+	!!	TOS		! len
+	mov.l	@PSP, r1	! dst
+	mov.l	@(4, PSP), r0	! src
+
+	tst	TOS, TOS	! len == 0?
+	bt	9f
+
+1:	mov.b	@r0+, r2
+	mov.b	r2, @r1
+	dt	TOS
+	bf/s	1b
+	 add	#1, r1
+
+9:	add	#8, PSP
+	jmp	@NEXT
+	 FILL_TOS
+	ASMEND(cmove)
+
+
+!!! CMOVE> - STRING 17.6.1.0920
+!!!     ( src dst len -- )
+!!! NB: char-by-char right-to-left copy is required by the standard
+ASMWORD("cmove>", cmove_up)
+	!!	TOS		! len
+	mov.l	@PSP, r1	! dst
+	mov.l	@(4, PSP), r0	! src
+
+	tst	TOS, TOS	! len == 0?
+	bt	9f
+
+	add	TOS, r0
+	add	TOS, r1
+
+1:	add	#-1, r0
+	mov.b	@r0, r2
+	mov.b	r2, @-r1
+	dt	TOS
+	bf	1b
+
+9:	add	#8, PSP
+	jmp	@NEXT
+	 FILL_TOS
+	ASMEND(cmove_up)
+
+
+!!! COMPARE - STRING 17.6.1.0935
+!!!     ( c-addr1 u1 c-addr2 u2 -- n )
+ASMWORD("compare", compare)
+	!!	       TOS	! u2
+	mov.l	@PSP+, r7	! ca2
+	mov.l	@PSP+, r6	! u1
+	mov.l	@PSP+, r5	! ca1
+
+	tst	r6, r6		! u1 == 0?
+.Loop:
+	bf.s	.L_u1_pos
+	 tst	TOS, TOS	! u2 == 0?
+
+	movt	TOS		!  0 if u2 != 0; 1 if u2 == 0
+	jmp	@NEXT
+	 add	#-1, TOS	! -1 if u2 != 0; 0 if u2 == 0
+
+.L_u1_pos:
+	bf.s	.L_u1u2_pos
+	 nop
+	jmp	@NEXT
+	 mov	#1, TOS
+
+.L_u1u2_pos:
+	mov.b	@r5+, r0
+	add	#-1, r6
+
+	mov.b	@r7+, r1
+	add	#-1, TOS
+
+	extu.b	r0, r0
+	extu.b	r1, r1
+
+	cmp/eq	r0, r1
+	bt.s	.Loop
+	 tst	r6, r6
+
+	cmp/hi	r1, r0		! r0 > r1?
+	bt	1f
+
+	jmp	@NEXT
+	 mov	#-1, TOS	! *ca1 < *ca2
+
+1:	jmp	@NEXT
+	 mov	#1, TOS		! *ca1 > *ca2
+	ASMEND(compare)
+
+
+!!! FILL - CORE 6.1.1540
+!!!     ( c-addr u char -- )
+ASMWORD("fill", fill)
+	!! cheat, use memset(3)
+	mov.l	1f, r0
+	mov.l	@(4, PSP), r4	! dst
+	mov	TOS, r5		! char
+	mov.l	@PSP, r6	! len
+	add	#8, PSP
+	jsr	@r0
+	 FILL_TOS
+	jmp	@NEXT
+	 nop
+	.p2align 2
+1:	.long	memset
+	ASMEND(fill)
+
+
+!!! MOVE - CORE 6.1.1900
+!!!     ( src dst len -- )
+ASMWORD("move", move)
+	!! cheat, use memmove(3)
+	mov.l	1f, r0
+	mov.l	@PSP, r4	! dst
+	mov.l	@(4, PSP), r5	! src
+	mov	TOS, r6		! len
+	add	#8, PSP
+	jsr	@r0
+	 FILL_TOS
+	jmp	@NEXT
+	 nop
+	.p2align 2
+1:	.long	memmove
+	ASMEND(move)
 
 
 !!! LIT - auxiliary for LITERAL (CORE 6.1.1780)
@@ -1490,162 +1631,6 @@ ASMWORD("sm/rem", sm_slash_rem)
 	.p2align 2
 1:	.long	_C_LABEL(__divmoddi4)
 	ASMEND(sm_slash_rem)
-
-
-!!! ====================================================================
-!!! Strings
-
-
-!!! CMOVE - STRING 17.6.1.0910
-!!!     ( src dst len -- )
-!!! NB: char-by-char left-to-right copy is required by the standard
-ASMWORD("cmove", cmove)
-	!!	TOS		! len
-	mov.l	@PSP, r1	! dst
-	mov.l	@(4, PSP), r0	! src
-
-	tst	TOS, TOS	! len == 0?
-	bt	9f
-
-1:	mov.b	@r0+, r2
-	mov.b	r2, @r1
-	dt	TOS
-	bf/s	1b
-	 add	#1, r1
-
-9:	add	#8, PSP
-	jmp	@NEXT
-	 FILL_TOS
-	ASMEND(cmove)
-
-
-!!! CMOVE> - STRING 17.6.1.0920
-!!!     ( src dst len -- )
-!!! NB: char-by-char right-to-left copy is required by the standard
-ASMWORD("cmove>", cmove_up)
-	!!	TOS		! len
-	mov.l	@PSP, r1	! dst
-	mov.l	@(4, PSP), r0	! src
-
-	tst	TOS, TOS	! len == 0?
-	bt	9f
-
-	add	TOS, r0
-	add	TOS, r1
-
-1:	add	#-1, r0
-	mov.b	@r0, r2
-	mov.b	r2, @-r1
-	dt	TOS
-	bf	1b
-
-9:	add	#8, PSP
-	jmp	@NEXT
-	 FILL_TOS
-	ASMEND(cmove_up)
-
-
-!!! COMPARE - STRING 17.6.1.0935 
-ASMWORD("compare", compare)
-	!!	       TOS	! u2
-	mov.l	@PSP+, r7	! ca2
-	mov.l	@PSP+, r6	! u1
-	mov.l	@PSP+, r5	! ca1
-
-	tst	r6, r6		! u1 == 0?
-.Loop:
-	bf.s	.L_u1_pos
-	 tst	TOS, TOS	! u2 == 0?
-
-	movt	TOS		!  0 if u2 != 0; 1 if u2 == 0
-	jmp	@NEXT
-	 add	#-1, TOS	! -1 if u2 != 0; 0 if u2 == 0
-
-.L_u1_pos:
-	bf.s	.L_u1u2_pos
-	 nop
-	jmp	@NEXT
-	 mov	#1, TOS
-
-.L_u1u2_pos:
-	mov.b	@r5+, r0
-	add	#-1, r6
-
-	mov.b	@r7+, r1
-	add	#-1, TOS
-
-	extu.b	r0, r0
-	extu.b	r1, r1
-
-	cmp/eq	r0, r1
-	bt.s	.Loop
-	 tst	r6, r6
-
-	cmp/hi	r1, r0		! r0 > r1?
-	bt	1f
-
-	jmp	@NEXT
-	 mov	#-1, TOS	! *ca1 < *ca2
-
-1:	jmp	@NEXT
-	 mov	#1, TOS		! *ca1 > *ca2
-	ASMEND(compare)
-
-
-!!! FILL - CORE 6.1.1540
-!!!     ( c-addr u char -- )
-ASMWORD("fill", fill)
-	!! cheat, use memset(3)
-	mov.l	1f, r0
-	mov.l	@(4, PSP), r4	! dst
-	mov	TOS, r5		! char
-	mov.l	@PSP, r6	! len
-	add	#8, PSP
-	jsr	@r0
-	 FILL_TOS
-	jmp	@NEXT
-	 nop
-	.p2align 2
-1:	.long	memset
-	ASMEND(fill)
-
-
-!!! ERASE - CORE EXT 6.2.1350
-!!!     ( c-addr u -- )
-WORD("erase", erase)
-	.long	dup, zero_equals, OR_ELSE(1f)
-	.long	    two_drop, exit_4th
-1:	
-	.long	    lit, 0, fill
-	EXIT_4TH
-
-
-!!! BLANK - STRING 17.6.1.0780
-!!!     ( c-addr u -- )
-WORD("blank", blank)
-	.long	dup, zero_equals, OR_ELSE(1f)
-	.long	    two_drop, exit_4th
-1:	
-	.long	    bl, fill
-	EXIT_4TH
-
-
-!!! MOVE - CORE 6.1.1900
-!!!     ( src dst len -- )
-ASMWORD("move", move)
-	!! cheat, use memmove(3)
-	mov.l	1f, r0
-	mov.l	@PSP, r4	! dst
-	mov.l	@(4, PSP), r5	! src
-	mov	TOS, r6		! len
-	add	#8, PSP
-	jsr	@r0
-	 FILL_TOS
-	jmp	@NEXT
-	 nop
-	.p2align 2
-1:	.long	memmove
-	ASMEND(move)
 
 
 /* Machine-independent words in threaded code. */
