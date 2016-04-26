@@ -1381,27 +1381,6 @@ ASMWORD("move", move)
 !!!   address.
 
 
-!!! 2@ - CORE 6.1.0350
-ASMWORD("2@", two_fetch)
-	mov.l	@(4, TOS), r0
-	mov.l	@TOS, TOS	! lower address goes to the top
-	jmp	@NEXT
-	 mov.l	r0, @-PSP
-	ASMEND(two_fetch)
-
-
-!!! 2! - CORE 6.1.0310
-ASMWORD("2!", two_store)
-	mov.l	@PSP, r0	! top -> lower address
-	mov.l	@(4, PSP), r1
-	mov.l	r0, @TOS
-	mov.l	r1, @(4, TOS)
-	mov.l	@(8, PSP), TOS	! fill tos
-	jmp	@NEXT
-	 add	#12, PSP
-	ASMEND(two_store)
-
-
 !!! S>D - CORE 6.1.2170
 ASMWORD("s>d", s2d)
 	SPILL_TOS		! least significant cell is below
@@ -1486,6 +1465,27 @@ ASMWORD("sm/rem", sm_slash_rem)
 	.p2align 2
 1:	.long	_C_LABEL(__divmoddi4)
 	ASMEND(sm_slash_rem)
+
+
+!!! 2@ - CORE 6.1.0350
+ASMWORD("2@", two_fetch)
+	mov.l	@(4, TOS), r0
+	mov.l	@TOS, TOS	! lower address goes to the top
+	jmp	@NEXT
+	 mov.l	r0, @-PSP
+	ASMEND(two_fetch)
+
+
+!!! 2! - CORE 6.1.0310
+ASMWORD("2!", two_store)
+	mov.l	@PSP, r0	! top -> lower address
+	mov.l	@(4, PSP), r1
+	mov.l	r0, @TOS
+	mov.l	r1, @(4, TOS)
+	mov.l	@(8, PSP), TOS	! fill tos
+	jmp	@NEXT
+	 add	#12, PSP
+	ASMEND(two_store)
 
 
 
