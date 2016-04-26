@@ -124,6 +124,9 @@ ALTENTRY(test_enter)		! for gdb breakpoing only
 	.type	label/**/_code@function ; \
   label/**/_code:			;
 
+#define ASMEND(label) \
+	.size	label/**/_code, . - label/**/_code
+
 
 #define DEFCODE_4TH(label)	  \
 	/* Code Field */	  \
@@ -283,6 +286,7 @@ ASMWORD("(abort)", abort_parens)
 	mov.l	sp0_const, PSP	! reset parameter stack
 	jmp	@NEXT
 	 mov	#0, TOS		! clear TOS just in case
+	ASMEND(abort_parens)
 
 
 !!! Asm part of QUIT that resets return stack.
@@ -291,6 +295,7 @@ ASMWORD("(quit)", quit_parens)
 	mov.l	rp0_const, RSP	! reset return stack
 	jmp	@NEXT
 	 nop
+	ASMEND(quit_parens)
 
 
 !!! Where the stacks are.  (ABORT) and (QUIT) just above use these
@@ -315,6 +320,7 @@ ASMWORD("sp@", sp_fetch)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	r0, TOS
+	ASMEND(sp_fetch)
 
 
 !!! Asm part of BYE that returns control to the C code that started
@@ -327,12 +333,14 @@ ASMWORD("(bye)", bye_parens)
 	.p2align 2
 .L_return:
 	.long	.L_BYE_RETURNS_HERE
+	ASMEND(bye_parens)
 
 
 !!! nop to use as a gdb breakpoint
 ASMWORD("breakpoint", breakpoint)
 	jmp	@NEXT
 	 nop
+	ASMEND(breakpoint)
 
 
 /**
@@ -357,6 +365,7 @@ ASMWORD("execute", execute)
 	mov.l	@TOS+, r0	! fetch code address and advance TOS to PFA
 	jmp	@r0		! call word's code on word's body
 	 nop
+	ASMEND(execute)
 
 
 !!! Code field of asm words points here.
@@ -364,6 +373,7 @@ ASMWORD("execute", execute)
 DOES_ASM(asm_does)
 	jmp	@TOS		! PFA: word's body is its asm code
 	 FILL_TOS		! PFA is consumed
+	.size asm_does, .-asm_does
 
 
 !!! Code field of colon definitions (i.e. forth words)  points here.
@@ -374,6 +384,7 @@ DOES_ASM(call_code)
 	 mov	TOS, IP		! set my IP (consume PFA from TOS)
 	!! don't refill TOS here, just skip the spill in next_code
 	!! and let next_code set vacant TOS to next word PFA
+	.size call_code, .-call_code
 
 
 !!! EXIT - CORE 6.1.1380
@@ -390,6 +401,7 @@ next_code:
 	mov	#4, TOS		!
 	jmp	@r1		! execute word's code
 	 add	r0, TOS		! TOS = PFA (for code to consume)
+	ASMEND(exit_4th)
 
 
 !!! tail-call - note that the difference from EXIT is the order of
@@ -408,6 +420,7 @@ ASMWORD("(goto)", goto_parens)
 	mov	#4, TOS		!
 	jmp	@r1		! execute word's code
 	 add	r0, TOS		! TOS = PFA (for code to consume)
+	ASMEND(goto_parens)
 
 
 
@@ -420,6 +433,7 @@ ASMWORD("(goto)", goto_parens)
 ASMWORD("drop", drop)
 	jmp	@NEXT
 	 FILL_TOS
+	ASMEND(drop)
 
 
 !!! DUP - CORE 6.1.1290
@@ -427,6 +441,7 @@ ASMWORD("drop", drop)
 ASMWORD("dup", dup)
 	jmp	@NEXT
 	 SPILL_TOS
+	ASMEND(dup)
 
 
 #ifdef MORE_ASM_WORDS
@@ -439,6 +454,7 @@ ASMWORD("?dup", question_dup)
 	 SPILL_TOS		! dup if non-zero
 1:	jmp	@NEXT
 	 nop			! do nothing if zero
+	ASMEND(question_dup)
 #endif
 
 
@@ -449,6 +465,7 @@ ASMWORD("swap", swap)
 	mov.l	TOS, @PSP
 	jmp 	@NEXT
 	 mov	r0, TOS
+	ASMEND(swap)
 
 
 !!! OVER - CORE 6.1.1990
@@ -458,6 +475,7 @@ ASMWORD("over", over)
 	SPILL_TOS
 	jmp 	@NEXT
 	 mov	r0, TOS
+	ASMEND(over)
 
 
 #ifdef MORE_ASM_WORDS
@@ -466,6 +484,7 @@ ASMWORD("over", over)
 ASMWORD("nip", nip)
 	jmp	@NEXT
 	 add	#4, PSP
+	ASMEND(nip)
 #endif
 
 
@@ -477,6 +496,7 @@ ASMWORD("tuck", tuck)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
+	ASMEND(tuck)
 #endif
 
 
@@ -490,6 +510,7 @@ ASMWORD("rot", rot)
 	mov.l	TOS, @-PSP
 	jmp	@NEXT
 	 mov	r1, TOS
+	ASMEND(rot)
 #endif
 
 
@@ -503,6 +524,7 @@ ASMWORD("-rot", minus_rot)
 	mov.l	r2, @-PSP
 	jmp	@NEXT
 	 mov	r1, TOS
+	ASMEND(minus_rot)
 #endif
 
 
@@ -513,6 +535,7 @@ ASMWORD("pick", pick)
 	shll2	TOS
 	jmp	@NEXT
 	 mov.l	@(r0, TOS), TOS
+	ASMEND(pick)
 
 
 !!! ROLL - CORE EXT 6.2.2150
@@ -540,6 +563,7 @@ ASMWORD("roll", roll)
 
 	jmp	@NEXT
 	 mov	r0, TOS
+	ASMEND(roll)
 
 
 #ifdef MORE_ASM_WORDS
@@ -549,6 +573,7 @@ ASMWORD("2drop", two_drop)
 	add	#4, PSP
 	jmp	@NEXT
 	 FILL_TOS
+	ASMEND(two_drop)
 #endif
 
 
@@ -560,6 +585,7 @@ ASMWORD("2dup", two_dup)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
+	ASMEND(two_dup)
 #endif
 
 
@@ -575,6 +601,7 @@ ASMWORD("2swap", two_swap)
 	mov.l	r3, @PSP
 	jmp	@NEXT
 	 mov	r2, TOS
+	ASMEND(two_swap)
 #endif
 
 
@@ -588,6 +615,7 @@ ASMWORD("2over", two_over)
 	mov.l	r1, @-PSP
 	jmp	@NEXT
 	 mov	r0, TOS
+	ASMEND(two_over)
 #endif
 
 
@@ -603,6 +631,7 @@ ASMWORD("depth", depth)
 	 shlr2	TOS
 	.p2align 2
 .L_depth_sp0:	.long	stack_bottom
+	ASMEND(depth)
 #endif
 
 
@@ -612,6 +641,7 @@ ASMWORD(">r", to_r)
 	mov.l	TOS, @-RSP
 	jmp	@NEXT
 	 FILL_TOS
+	ASMEND(to_r)
 
 
 !!! R> - CORE 6.1.2060
@@ -620,6 +650,7 @@ ASMWORD("r>", r_from)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	@RSP+, TOS
+	ASMEND(r_from)
 
 
 !!! R@ - CORE 6.1.2070
@@ -628,6 +659,7 @@ ASMWORD("r@", r_fetch)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	@RSP, TOS
+	ASMEND(r_fetch)
 
 
 !!! 2>R CORE EXT 6.2.0340
@@ -638,6 +670,7 @@ ASMWORD("2>r", two_to_r)
 	mov.l	TOS, @-RSP
 	jmp	@NEXT
 	 FILL_TOS
+	ASMEND(two_to_r)
 
 
 !!! 2R> - CORE EXT 6.2.0410
@@ -648,6 +681,7 @@ ASMWORD("2r>", two_r_from)
 	mov.l	@RSP+, r0
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
+	ASMEND(two_r_from)
 
 
 !!! 2R@ - CORE EXT 6.2.0415
@@ -658,6 +692,7 @@ ASMWORD("2r@", two_r_fetch)
 	mov.l	@(4, RSP), r0
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
+	ASMEND(two_r_fetch)
 
 
 
@@ -672,6 +707,7 @@ ASMWORD("0=", zero_equals)
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
+	ASMEND(zero_equals)
 
 
 #ifdef MORE_ASM_WORDS
@@ -683,6 +719,7 @@ ASMWORD("0<>", zero_not_equals)
 	neg	TOS, TOS
 	jmp	@NEXT
 	 not	TOS, TOS
+	ASMEND(zero_not_equals)
 #endif
 
 
@@ -693,6 +730,7 @@ ASMWORD("0>", zero_greater)
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
+	ASMEND(zero_greater)
 
 
 !!! 0< - CORE 6.1.0250
@@ -703,6 +741,7 @@ ASMWORD("0<", zero_less)
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
+	ASMEND(zero_less)
 
 
 !!! = - CORE 6.1.0530
@@ -713,6 +752,7 @@ ASMWORD("=", equals)
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
+	ASMEND(equals)
 
 
 !!! <> - CORE-EXT 6.2.0500
@@ -724,6 +764,7 @@ ASMWORD("<>", not_equals)
 	neg	TOS, TOS
 	jmp	@NEXT
 	 not	TOS, TOS
+	ASMEND(not_equals)
 
 
 !!! < - CORE 6.1.0480
@@ -734,6 +775,7 @@ ASMWORD("<", less_than)
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
+	ASMEND(less_than)
 
 
 !!! > - CORE 6.1.0540
@@ -744,6 +786,7 @@ ASMWORD(">", greater_than)
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
+	ASMEND(greater_than)
 
 
 #ifdef MORE_ASM_WORDS
@@ -759,6 +802,7 @@ ASMWORD("max", max)
 
 0:	jmp	@NEXT
 	 nop
+	ASMEND(max)
 #endif
 
 
@@ -775,6 +819,7 @@ ASMWORD("min", min)
 
 0:	jmp	@NEXT
 	 nop
+	ASMEND(min)
 #endif
 
 
@@ -786,6 +831,7 @@ ASMWORD("u<", u_less_than)
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
+	ASMEND(u_less_than)
 
 
 !!! U> - CORE-EXT 6.2.2350
@@ -796,6 +842,7 @@ ASMWORD("u>", u_greater_than)
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
+	ASMEND(u_greater_than)
 
 
 
@@ -810,6 +857,7 @@ ASMWORD("false", false)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	#0, TOS
+	ASMEND(false)
 #endif
 
 
@@ -820,6 +868,7 @@ ASMWORD("true", true)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov	#-1, TOS
+	ASMEND(true)
 #endif
 
 
@@ -828,6 +877,7 @@ ASMWORD("true", true)
 ASMWORD("negate", negate)
 	jmp	@NEXT
 	 neg	TOS, TOS
+	ASMEND(negate)
 
 
 #ifdef MORE_ASM_WORDS
@@ -839,6 +889,7 @@ ASMWORD("abs", abs)
 	neg	TOS, TOS
 1:	jmp	@NEXT
 	 nop
+	ASMEND(abs)
 #endif
 
 
@@ -848,6 +899,7 @@ ASMWORD("+", plus)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 add	r0, TOS
+	ASMEND(plus)
 
 
 !!! - - CORE 6.1.0160
@@ -857,23 +909,26 @@ ASMWORD("-", minus)
 	sub	TOS, r0
 	jmp	@NEXT
 	 mov	r0, TOS
+	ASMEND(minus)
 
 
-#if MORE_ASM_WORDS
+#ifdef MORE_ASM_WORDS
 !!! 1+ - CORE 6.1.0290
 !!!     ( n1|u1 -- n2|u2 )
 ASMWORD("1+", one_plus)
 	jmp	@NEXT
 	 add	#1, TOS
+	ASMEND(one_plus)
 #endif
 
 
-#if MORE_ASM_WORDS
+#ifdef MORE_ASM_WORDS
 !!! 1- - CORE 6.1.0300
 !!!     ( n1|u1 -- n2|u2 )
 ASMWORD("1-", one_minus)
 	jmp	@NEXT
 	 add	#-1, TOS
+	ASMEND(one_minus)
 #endif
 
 
@@ -884,6 +939,7 @@ ASMWORD("*", star)
 	mul.l	r0, TOS
 	jmp	@NEXT
 	 sts	macl, TOS
+	ASMEND(star)
 
 
 !!! / - CORE 6.1.0230
@@ -912,6 +968,7 @@ ASMWORD("/", slash)
   .L_divide_by_zero:
 	jmp	@NEXT
 	 mov	#0, TOS
+	ASMEND(slash)
 
 
 !!! U/ - nonstandard unsigned division
@@ -934,6 +991,7 @@ ASMWORD("u/", u_slash)
   .L_u_divide_by_zero:
 	jmp	@NEXT
 	 mov	#0, TOS
+	ASMEND(u_slash)
 
 
 !!! 2* - CORE 6.1.0320
@@ -941,6 +999,7 @@ ASMWORD("u/", u_slash)
 ASMWORD("2*", two_star)
 	jmp	@NEXT
 	 shal	TOS
+	ASMEND(two_star)
 
 
 !!! 2/ - CORE 6.1.0330
@@ -948,6 +1007,7 @@ ASMWORD("2*", two_star)
 ASMWORD("2/", two_slash)
 	jmp	@NEXT
 	 shar	TOS
+	ASMEND(two_slash)
 
 
 !!! INVERT - CORE 6.1.1720
@@ -955,6 +1015,7 @@ ASMWORD("2/", two_slash)
 ASMWORD("invert", invert)
 	jmp	@NEXT
 	 not	TOS, TOS
+	ASMEND(invert)
 
 
 !!! AND - CORE 6.1.0720
@@ -963,6 +1024,7 @@ ASMWORD("and", and)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 and	r0, TOS
+	ASMEND(and)
 
 
 !!! OR - CORE 6.1.1980
@@ -971,6 +1033,7 @@ ASMWORD("or", or)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 or	r0, TOS
+	ASMEND(or)
 
 
 !!! XOR - CORE 6.1.2490
@@ -979,6 +1042,7 @@ ASMWORD("xor", xor)
 	mov.l	@PSP+, r0
 	jmp	@NEXT
 	 xor	r0, TOS
+	ASMEND(xor)
 
 
 !! LSHIFT - CORE 6.1.1805
@@ -988,6 +1052,7 @@ ASMWORD("lshift", lshift)
 	mov.l	@PSP+, TOS	! the number to shift
 	jmp	@NEXT
 	 shld	r1, TOS
+	ASMEND(lshift)
 
 
 !! RSHIFT - CORE 6.1.2162
@@ -998,6 +1063,7 @@ ASMWORD("rshift", rshift)
 	neg	r1, r1		! negative means shift right
 	jmp	@NEXT
 	 shld	r1, TOS
+	ASMEND(rshift)
 
 
 
@@ -1131,6 +1197,7 @@ WORD("pad", pad)
 ASMWORD("@", fetch)
 	jmp	@NEXT
 	 mov.l	@TOS, TOS
+	ASMEND(fetch)
 
 
 !!! ! - CORE 6.1.0010
@@ -1139,6 +1206,7 @@ ASMWORD("!", store)
 	mov.l	r0, @TOS	! store value
 	jmp	@NEXT
 	 FILL_TOS
+	ASMEND(store)
 
 
 !!! +! - CORE 6.1.0130
@@ -1149,6 +1217,7 @@ ASMWORD("+!", plus_store)
 	mov.l	r0, @TOS	! store new value
 	jmp	@NEXT
 	 FILL_TOS
+	ASMEND(plus_store)
 
 
 !!! 1+! - nonstandard
@@ -1158,6 +1227,7 @@ ASMWORD("1+!", one_plus_store)
 	mov.l	r1, @TOS	! store sum
 	jmp	@NEXT
 	 FILL_TOS
+	ASMEND(one_plus_store)
 
 
 !!! C@ - CORE 6.1.0870
@@ -1165,6 +1235,7 @@ ASMWORD("c@", c_fetch)
 	mov.b	@TOS, TOS	! loaded byte is sign-extended
 	jmp	@NEXT
 	 extu.b	TOS, TOS	! we want it zero-extended
+	ASMEND(c_fetch)
 
 
 !!! C! - CORE 6.1.0850
@@ -1173,6 +1244,7 @@ ASMWORD("c!", c_store)
 	mov.b	r0, @TOS	! store value
 	jmp	@NEXT
 	 FILL_TOS
+	ASMEND(c_store)
 
 
 !!! COUNT - CORE 6.1.0980
@@ -1181,6 +1253,7 @@ ASMWORD("count", count)
 	SPILL_TOS		! string contents address
 	jmp	@NEXT
 	 extu.b	r0, TOS		! zero-extend the count
+	ASMEND(count)
 
 
 !!! LIT - auxiliary for LITERAL (CORE 6.1.1780)
@@ -1188,12 +1261,14 @@ ASMWORD("lit", lit)
 	SPILL_TOS
 	jmp	@NEXT
 	 mov.l	@IP+, TOS
+	ASMEND(lit)
 
 
 !!! BRANCH - auxiliary for ELSE &co
 ASMWORD("branch", branch)
 	jmp	@NEXT
 	 mov.l	@IP+, IP
+	ASMEND(branch)
 
 
 !!! ?BRANCH - auxiliary for IF &co
@@ -1205,6 +1280,7 @@ ASMWORD("?branch", question_branch)
 	 mov.l	@IP+, IP	! take branch
 1:	jmp	@NEXT
 	 add	#4, IP		! skip branch address
+	ASMEND(question_branch)
 
 
 !!! Add with overflow check
@@ -1215,6 +1291,7 @@ ASMWORD("+?", plus_question)
 	movt	TOS
 	jmp	@NEXT
 	 neg	TOS, TOS
+	ASMEND(plus_question)
 
 
 !!! (DO) - auxiliary for DO
@@ -1284,6 +1361,7 @@ ASMWORD("i", i_4th)
 	mov.l	@(4, RSP), r0
 	jmp	@NEXT
 	 sub	r0, TOS
+	ASMEND(i_4th)
 #endif
 
 
@@ -1303,6 +1381,7 @@ ASMWORD("j", j_4th)
 	mov.l	@(16, RSP), r0
 	jmp	@NEXT
 	 sub	r0, TOS
+	ASMEND(j_4th)
 #endif
 
 
@@ -1346,6 +1425,7 @@ ASMWORD("2lit", two_lit)
 	mov.l	@IP+, r0
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
+	ASMEND(two_lit)
 
 
 !!! 2@ - CORE 6.1.0350
@@ -1354,6 +1434,7 @@ ASMWORD("2@", two_fetch)
 	mov.l	@TOS, TOS	! lower address goes to the top
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
+	ASMEND(two_fetch)
 
 
 !!! 2! - CORE 6.1.0310
@@ -1365,6 +1446,7 @@ ASMWORD("2!", two_store)
 	mov.l	@(8, PSP), TOS	! fill tos
 	jmp	@NEXT
 	 add	#12, PSP
+	ASMEND(two_store)
 
 
 !!! S>D - CORE 6.1.2170
@@ -1373,6 +1455,7 @@ ASMWORD("s>d", s2d)
 	shll	TOS		! shift sign into the T bit
 	jmp	@NEXT
 	 subc	TOS, TOS	! most significant cell = 0 - T
+	ASMEND(s2d)
 
 
 !!! D>S - DOUBLE 8.6.1.1140
@@ -1401,6 +1484,7 @@ ASMWORD("d+", d_plus)
 	addc	r1, TOS		! hi
 	jmp	@NEXT
 	 mov.l	r2, @-PSP
+	ASMEND(d_plus)
 
 
 !!! M* - CORE 6.1.1810
@@ -1412,6 +1496,7 @@ ASMWORD("m*", m_star)
 	mov.l	r0, @-PSP
 	jmp	@NEXT
 	 sts	mach, TOS
+	ASMEND(m_star)
 
 
 !!! UM* - CORE 6.1.2360
@@ -1423,6 +1508,7 @@ ASMWORD("um*", um_star)
 	mov.l	r0, @-PSP
 	jmp	@NEXT
 	 sts	mach, TOS
+	ASMEND(um_star)
 
 
 !!! SM/REM - CORE 6.1.2214
@@ -1446,6 +1532,7 @@ ASMWORD("sm/rem", sm_slash_rem)
 	 nop
 	.p2align 2
 1:	.long	_C_LABEL(__divmoddi4)
+	ASMEND(sm_slash_rem)
 
 
 !!! ====================================================================
@@ -1472,6 +1559,7 @@ ASMWORD("cmove", cmove)
 9:	add	#8, PSP
 	jmp	@NEXT
 	 FILL_TOS
+	ASMEND(cmove)
 
 
 !!! CMOVE> - STRING 17.6.1.0920
@@ -1497,6 +1585,7 @@ ASMWORD("cmove>", cmove_up)
 9:	add	#8, PSP
 	jmp	@NEXT
 	 FILL_TOS
+	ASMEND(cmove_up)
 
 
 !!! COMPARE - STRING 17.6.1.0935 
@@ -1543,6 +1632,7 @@ ASMWORD("compare", compare)
 
 1:	jmp	@NEXT
 	 mov	#1, TOS		! *ca1 > *ca2
+	ASMEND(compare)
 
 
 !!! FILL - CORE 6.1.1540
@@ -1560,6 +1650,7 @@ ASMWORD("fill", fill)
 	 nop
 	.p2align 2
 1:	.long	memset
+	ASMEND(fill)
 
 
 !!! ERASE - CORE EXT 6.2.1350
@@ -1597,6 +1688,7 @@ ASMWORD("move", move)
 	 nop
 	.p2align 2
 1:	.long	memmove
+	ASMEND(move)
 
 
 /* Machine-independent words in threaded code. */
