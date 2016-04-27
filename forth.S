@@ -970,7 +970,38 @@ WORD("(abort\")", abort_quote_parens)
 
 
 
-!!! XXX: TODO: Vocabularies
+/**
+ * Compilied "word" literals.
+ */
+
+!!! COMPILE, - CORE EXT 6.2.0945
+!!!     since this is a naive indirect threaded code implementation we
+!!!     can compile the xt/address directly
+WORD("compile,", compile_comma)
+	.long	comma
+	EXIT_4TH
+
+
+!!! COMPILE - Forth 83
+!!! 
+!!! Pick the next word (xt) and compile it.  Creatively abuses the
+!!! fact that for non-immediate word <w> the sequence 
+!!! 
+!!!     : ... compile <w> ... ;
+!!! 
+!!! within a colon definition will be compiled as-is and at run time
+!!! COMPILE can act like LIT, except it compiles its "literal", <w>,
+!!! instead of pushing it on to the stack.
+WORD("compile", compile)
+	.long	r_from, dup, cell_plus, to_r
+	.long	fetch, compile_comma
+	EXIT_4TH
+
+
+
+/**
+ * XXX: TODO: Vocabularies
+ */
 
 VARIABLE("current", current)
 	.long	. + 4
@@ -1181,6 +1212,10 @@ WORD("'", tick)
 
 
 
+/**
+ * Forth interpreter.
+ */
+
 !!! STATE - CORE 6.1.2250
 VARIABLE("state", state)
 	.long	0		! interpretation
@@ -1197,35 +1232,6 @@ WORD("]", right_bracket)
 	.long	true, state, store
 	EXIT_4TH
 
-
-!!! COMPILE, - CORE EXT 6.2.0945
-!!!     since this is a naive indirect threaded code implementation we
-!!!     can compile the xt/address directly
-WORD("compile,", compile_comma)
-	.long	comma
-	EXIT_4TH
-
-
-!!! COMPILE - Forth 83
-!!! 
-!!! Pick the next word (xt) and compile it.  Creatively abuses the
-!!! fact that for non-immediate word <w> the sequence 
-!!! 
-!!!     : ... compile <w> ... ;
-!!! 
-
-!!! within a colon definition will be compiled as-is and at run time
-!!! COMPILE can act like LIT, except it compiles its "literal", <w>,
-!!! instead of pushing it on to the stack.
-WORD("compile", compile)
-	.long	r_from, dup, cell_plus, to_r
-	.long	fetch, compile_comma
-	EXIT_4TH
-
-
-/**
- * Forth interpreter.
- */
 
 !!! interpret source until it's empty
 WORD("interpret", interpret)
