@@ -310,6 +310,23 @@ WORD("um/mod", um_slash_mod)
 	EXIT_4TH
 
 
+!!! */MOD - CORE 6.1.0110
+!!!     ( n1 n2 n3 -- n4 n5 )
+WORD("*/mod", star_slash_mod)
+	.long	to_r, m_star		! 32 * 32 -> 64 bit
+	.long	r_from, sm_slash_rem	! symmetric, to match /
+	EXIT_4TH
+
+
+!!! */ - CORE 6.1.0100
+!!!     ( n1 n2 n3 -- n4 )
+WORD("*/", star_slash)
+	.long	star_slash_mod
+	.long	swap, drop		! get rid of the remainder
+	EXIT_4TH
+
+
+
 /**
  * Address alignment
  * XXX: This is 32-bit specific for now.
