@@ -1504,6 +1504,8 @@ ASMWORD("sm/rem", sm_slash_rem)
  */
 
 !!! LIT - auxiliary for LITERAL (CORE 6.1.1780)
+!!!   Forth version may be used, but then CELL+ must be in asm.
+!!!   See forth definition.
 ASMWORD("lit", lit)
 	SPILL_TOS
 	jmp	@NEXT
@@ -1511,6 +1513,7 @@ ASMWORD("lit", lit)
 	ASMEND(lit)
 
 
+#ifdef MORE_ASM_WORDS
 !!! 2LIT - auxiliary for 2LITERAL (DOUBLE 8.6.1.0390)
 ASMWORD("2lit", two_lit)
 	SPILL_TOS
@@ -1519,6 +1522,7 @@ ASMWORD("2lit", two_lit)
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
 	ASMEND(two_lit)
+#endif
 
 
 !!! BRANCH - auxiliary for ELSE &co

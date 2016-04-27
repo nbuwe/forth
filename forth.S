@@ -919,6 +919,33 @@ WORD("convert", convert)
 
 
 /**
+ * Literals (though these are usually in asm).
+ */
+
+#if 0
+.ifnotdef lit
+!!! LIT - auxiliary for LITERAL (CORE 6.1.1780)
+!!!   To use this forth version you must provide asm version of CELL+
+!!!   to avoid recursive call to LIT from forth version of CELL+.
+WORD("lit", lit)
+	.long	r_from, dup, fetch
+	.long	swap, cell_plus, to_r
+	EXIT_4TH
+.endif
+#endif
+
+
+.ifnotdef two_lit
+!!! 2LIT - auxiliary for 2LITERAL (DOUBLE 8.6.1.0390)
+WORD("2lit", two_lit)
+	.long	r_from, dup, two_fetch
+	.long	rot, lit, 2, cells, plus, to_r
+	EXIT_4TH
+.endif
+
+
+
+/**
  * Compiled string literals:
  *
  *     (c") <cnt byte> <cnt bytes of string> [align]
