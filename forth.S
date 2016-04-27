@@ -1658,6 +1658,10 @@ IMMWORD("+loop", plus_loop)
 	EXIT_4TH
 
 
+/**
+ * Values (read-mostly and hence auto-fetching).
+ */
+
 !!! VALUE - CORE EXT 6.2.2405
 WORD("value", value)
 	.long	create, immediate
