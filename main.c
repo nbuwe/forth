@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+typedef uintptr_t cell_t;
+
 extern void *start_forth(/* unchecked */);
 extern int32_t stack_bottom[];
 
@@ -88,8 +90,8 @@ extern int64_t __divmoddi4(int64_t a, int64_t b, int64_t *rem);
 extern uint64_t __udivmoddi4(uint64_t a, uint64_t b, uint64_t *rem);
 
 
-void
-ms_slash_rem_impl(uint32_t *stack)
+cell_t *
+ms_slash_rem_impl(cell_t *stack)
 {
     int64_t dividend, quotient, remainder;
     int32_t divisor;
@@ -102,11 +104,13 @@ ms_slash_rem_impl(uint32_t *stack)
     stack[0] = (uint32_t)(quotient >> 32);
     stack[1] = (uint32_t)quotient;
     stack[2] = (uint32_t)remainder;
+
+    return stack;
 }
 
 
-void
-mu_slash_mod_impl(uint32_t *stack)
+cell_t *
+mu_slash_mod_impl(cell_t *stack)
 {
     uint64_t dividend, quotient, remainder;
     uint32_t divisor;
@@ -119,4 +123,6 @@ mu_slash_mod_impl(uint32_t *stack)
     stack[0] = (uint32_t)(quotient >> 32);
     stack[1] = (uint32_t)quotient;
     stack[2] = (uint32_t)remainder;
+
+    return stack;
 }

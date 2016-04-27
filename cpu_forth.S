@@ -126,6 +126,14 @@ ENTRY(start_forth)
 	.size	label/**/_code, . - label/**/_code
 
 
+#define DEFCODE_C(label)		  \
+	/* Code Field */		  \
+  NAMED_CELL(label)			; \
+	.long	c_does			; \
+	/* Parameter Field */	  	  \
+  NAMED_CELL(label/**/_fn)
+
+
 #define DEFCODE_4TH(label)	  \
 	/* Code Field */	  \
   NAMED_CELL(label)		; \
@@ -214,6 +222,7 @@ ENTRY(start_forth)
 #define WORD(name, label)	DEFWORD(name,     0, DEFCODE_4TH,   label)
 #define IMMWORD(name, label)	DEFWORD(name, IFLAG, DEFCODE_4TH,   label)
 #define ASMWORD(name, label)	DEFWORD(name,     0, DEFCODE_ASM,   label)
+#define CWORD(name, label)	DEFWORD(name,     0, DEFCODE_C,     label)
 #define CONSTANT(name, label)	DEFWORD(name,     0, DEFCODE_CONST, label)
 #define VARIABLE(name, label)	DEFWORD(name,     0, DEFCODE_VAR,   label)
 
@@ -372,6 +381,18 @@ DOES_ASM(asm_does)
 	jmp	@TOS		! PFA: word's body is its asm code
 	 FILL_TOS		! PFA is consumed
 	.size asm_does, .-asm_does
+
+
+!!! Code field of C words points here.  The body contains the C
+!!! funtion address.  Call it as PSP = (*PFA)(PSP);
+DOES_ASM(c_does)
+	mov.l	@TOS, TOS	! function pointer from word's body
+	jsr	@TOS
+	 mov	PSP, r4		! PSP as argument
+	mov	r0, PSP		! function may adjust PSP to push/pop cells
+	jmp	@NEXT
+	 FILL_TOS
+	.size c_does, .-c_does
 
 
 !!! Code field of colon definitions (i.e. forth words)  points here.
@@ -1470,39 +1491,6 @@ ASMWORD("um*", um_star)
 	jmp	@NEXT
 	 sts	mach, TOS
 	ASMEND(um_star)
-
-	
-!!! MS/REM - nonstandard
-!!!     Divide 64 by 32 bit, producing 32 bit remainder and 64 bit quotient.
-!!!     ( d1 n1 -- n2 d2 )
-ASMWORD("ms/rem", ms_slash_rem)
-	mov.l	1f, r0		! implementation in C
-	SPILL_TOS
-	jsr	@r0
-	 mov	PSP, r4		! point to divisor and dividend in memory
-	jmp	@NEXT
-	 FILL_TOS
-
-	.p2align 2
-1:	.long	ms_slash_rem_impl
-	ASMEND(ms_slash_rem)
-
-
-
-!!! MU/MOD - nonstandard
-!!!     Divide 64 by 32 bit, producing 32 bit remainder and 64 bit quotient.
-!!!     ( ud1 u1 -- u2 ud2 )
-ASMWORD("mu/mod", mu_slash_mod)
-	mov.l	1f, r0		! implementation in C
-	SPILL_TOS
-	jsr	@r0
-	 mov	PSP, r4		! point to divisor and dividend in memory
-	jmp	@NEXT
-	 FILL_TOS
-
-	.p2align 2
-1:	.long	mu_slash_mod_impl
-	ASMEND(mu_slash_mod)
 
 
 

@@ -261,12 +261,26 @@ WORD("u/mod", u_slash_mod)
 .endif
 
 
+!!! MS/REM - nonstandard
+!!!     Divide 64 by 32 bit, producing 32 bit remainder and 64 bit quotient.
+!!!     ( d1 n1 -- n2 d2 )
+CWORD("ms/rem", ms_slash_rem)
+	.long	ms_slash_rem_impl
+
+
 !!! SM/REM - CORE 6.1.2214
 !!!     ( d1 n1 -- n2 n3 )
 WORD("sm/rem", sm_slash_rem)
 	.long	ms_slash_rem	! (d1 n1 -- n2 d2; 64 bit quotient)
 	.long	drop		! truncate quotient to 32 bit
 	EXIT_4TH
+
+
+!!! MU/MOD - nonstandard
+!!!     Divide 64 by 32 bit, producing 32 bit remainder and 64 bit quotient.
+!!!     ( ud1 u1 -- u2 ud2 )
+CWORD("mu/mod", mu_slash_mod)
+	.long	mu_slash_mod_impl
 
 
 !!! UM/MOD - CORE 6.1.2370
