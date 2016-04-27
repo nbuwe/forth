@@ -1157,7 +1157,7 @@ WORD("find", find)
 9:	EXIT_4TH
 
 
-!!! Common helper for ' and POSTPONE
+!!! Common helper for ' and the like that does parse/search combo.
 !!!     ( "<spaces>name" -- 0 | xt 1 | xt -1 )
 WORD("(')", tick_parens)
 	.long	parse_word, question_dup
@@ -1174,9 +1174,11 @@ WORD("(')", tick_parens)
 
 
 !!! ' - CORE 6.1.0070
+!!!     ( "<spaces>name" -- xt )
 WORD("'", tick)
 	.long	tick_parens, drop ! immediate flag
 	EXIT_4TH
+
 
 
 !!! STATE - CORE 6.1.2250
