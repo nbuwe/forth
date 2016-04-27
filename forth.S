@@ -1179,13 +1179,6 @@ WORD("'", tick)
 	EXIT_4TH
 
 
-!!! ['] - CORE 6.1.2510
-IMMWORD("[']", tick_brackets)
-	.long	question_comp
-	.long	tick, literal
-	EXIT_4TH
-
-
 !!! STATE - CORE 6.1.2250
 VARIABLE("state", state)
 	.long	0		! interpretation
@@ -1217,42 +1210,21 @@ WORD("compile,", compile_comma)
 	EXIT_4TH
 
 
+!!! COMPILE - Forth 83
+!!! 
+!!! Pick the next word (xt) and compile it.  Creatively abuses the
+!!! fact that for non-immediate word <w> the sequence 
+!!! 
+!!!     : ... compile <w> ... ;
+!!! 
+
+!!! within a colon definition will be compiled as-is and at run time
+!!! COMPILE can act like LIT, except it compiles its "literal", <w>,
+!!! instead of pushing it on to the stack.
 WORD("compile", compile)
 	.long	r_from, dup, cell_plus, to_r
-	.long	fetch, comma
+	.long	fetch, compile_comma
 	EXIT_4TH
-
-
-!!! [COMPILE] - CORE EXT 6.2.2530
-IMMWORD("[compile]", compile_brackets)
-	.long	tick, compile_comma
-	EXIT_4TH
-
-
-!!! POSTPONE - CORE 6.1.2033
-IMMWORD("postpone", postpone)
-	.long	tick_parens, one_plus, OR_ELSE(1f)
-		!! immediate
-	.long	    compile_comma
-	.long	    branch, 9f
-1:		!! normal
-	.long	    compile, compile, compile_comma
-9:	EXIT_4TH
-
-
-!!! LITERAL - CORE 6.1.1780
-IMMWORD("literal", literal)
-	.long	state, fetch, OR_ELSE(9f)
-	.long	    compile, lit, comma
-9:	EXIT_4TH
-
-
-!!! 2LITERAL - DOUBLE 8.6.1.0390
-IMMWORD("2literal", two_literal)
-	.long	state, fetch, OR_ELSE(9f)
-	.long	    compile, two_lit, comma, comma
-9:	EXIT_4TH
-
 
 
 /**
@@ -1401,6 +1373,24 @@ IMMWORD("[char]", char_brackets)
 
 
 /**
+ * Literals
+ */
+
+!!! LITERAL - CORE 6.1.1780
+IMMWORD("literal", literal)
+	.long	state, fetch, OR_ELSE(9f)
+	.long	    compile, lit, comma
+9:	EXIT_4TH
+
+
+!!! 2LITERAL - DOUBLE 8.6.1.0390
+IMMWORD("2literal", two_literal)
+	.long	state, fetch, OR_ELSE(9f)
+	.long	    compile, two_lit, comma, comma
+9:	EXIT_4TH
+
+
+/**
  * String literals
  */
 
@@ -1452,6 +1442,34 @@ IMMWORD("c\"", c_quote)
 	.long	dup, allot	! reserve space
 	.long	cmove, align	! copy string
 	EXIT_4TH
+
+
+/**
+ * Word literals
+ */
+
+!!! ['] - CORE 6.1.2510
+IMMWORD("[']", tick_brackets)
+	.long	question_comp
+	.long	tick, literal
+	EXIT_4TH
+
+
+!!! [COMPILE] - CORE EXT 6.2.2530
+IMMWORD("[compile]", compile_brackets)
+	.long	tick, compile_comma
+	EXIT_4TH
+
+
+!!! POSTPONE - CORE 6.1.2033
+IMMWORD("postpone", postpone)
+	.long	tick_parens, one_plus, OR_ELSE(1f)
+		!! immediate
+	.long	    compile_comma
+	.long	    branch, 9f
+1:		!! normal
+	.long	    compile, compile, compile_comma
+9:	EXIT_4TH
 
 
 /**
