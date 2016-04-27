@@ -518,6 +518,7 @@ CONSTANT("bl", bl) .long 0x20
 
 
 !!! EMIT - CORE 6.1.1320
+!!!     ( x -- )
 ASMWORD("emit", emit)
 	mov.l	1f, r0
 	mov	TOS, r4
@@ -553,6 +554,7 @@ WORD("spaces", spaces)
 
 
 !!! TYPE - CORE 6.1.2310
+!!!     ( c-addr u -- )
 ASMWORD("type", type)
 	mov.l	1f, r0
 	mov	TOS, r5
@@ -688,6 +690,7 @@ WORD(".s", dot_s)
 !!! I/O - Input
 
 !!! ACCEPT - CORE 6.1.0695
+!!!     ( c-addr +n1 -- +n2 )
 ASMWORD("accept", accept_4th)	! XXX: avoid name clash with accept(2)
 	mov.l	1f, r0
 	mov	TOS, r5
