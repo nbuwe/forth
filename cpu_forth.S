@@ -75,8 +75,6 @@ ENTRY(start_forth)
 	mov.l	.L_abort_body, IP
 	mov.l	@IP+, r0		! CFA of (abort), the first word
 	add	#4, r0			! PFA - the actual code
-
-ALTENTRY(test_enter)		! for gdb breakpoing only
 	jmp	@r0
 	 nop
 
