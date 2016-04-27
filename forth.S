@@ -536,15 +536,22 @@ ASMWORD("type", type)
 1:	.long	_C_LABEL(type_impl)
 
 
+!!! Beginning of the pictured numeric output string.
 VARIABLE("hld", hld)
 	.long	0
 
+
 !!! <# - CORE 6.1.0490
+!!!     Initialize the pictured numeric output conversion process.
+!!!     ( -- )
 WORD("<#", less_hash)
 	.long	pad, hld, store
 	EXIT_4TH
 
+
 !!! HOLD - CORE 6.1.1670
+!!!     Add char to the beginning of the pictured numeric output string.
+!!!     ( char -- )
 WORD("hold", hold)
 	.long	lit, -1, hld, plus_store
 	.long	hld, fetch, c_store
@@ -552,19 +559,26 @@ WORD("hold", hold)
 
 
 !!! #> - CORE 6.1.0040
+!!!     Make the pictured numeric output string available as a
+!!!     character string.
+!!!     ( x -- c-addr u )	XXX: FIXME: xd
 WORD("#>", hash_greater)
-	.long	drop /* XXX: two_drop */
+	.long	drop	! XXX: FIXME: two_drop
 	.long	hld, fetch, pad, over, minus
 	EXIT_4TH
 
+
 !!! SIGN - CORE 6.1.2210
+!!!     ( n -- )
 WORD("sign", sign)
 	.long	zero_less, OR_ELSE(1f)
-	.long	    lit, 45 /* '-' */, hold
+	.long	    lit, '-, hold
 1:	EXIT_4TH
 
+
 !!! # - CORE 6.1.0030
-!!!     XXX: FIXME: single cell!
+!!!     Convert one digit.
+!!!     ( u1 -- u2 )		XXX: FIXME: ud
 WORD("#", hash)
 	.long	base, fetch, u_slash_mod, swap ! NB: unsigned
 	.long	dup, lit, 9, greater_than, OR_ELSE(1f)
@@ -576,12 +590,15 @@ WORD("#", hash)
 	.long	plus, hold
 	EXIT_4TH
 
+
 !!! #S - CORE 6.1.0050
-!!!     XXX: FIXME: single cell!
+!!!     Convert all digits with #
+!!!     ( u1 -- u2 )		XXX: FIXME: ud
 WORD("#s", hash_s)
-1:	.long	hash
-	.long	dup, zero_equals
-	.long	OR_ELSE(1b)
+0:	!! begin
+	.long	hash
+	!! until
+	.long	dup, zero_equals, OR_ELSE(0b)
 	EXIT_4TH
 
 
@@ -592,6 +609,7 @@ WORD("(.)", dot_parens)
 
 
 !!! . - CORE 6.1.0180
+!!!     ( n -- )
 WORD(".", dot)
 	.long	dot_parens, type, space
 	EXIT_4TH
@@ -604,6 +622,7 @@ WORD("(u.)", u_dot_parens)
 
 
 !!! U. - CORE 6.1.2320
+!!!     ( u -- )
 WORD("u.", u_dot)
 	.long	u_dot_parens, type, space
 	EXIT_4TH
