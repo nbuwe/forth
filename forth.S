@@ -261,10 +261,18 @@ WORD("u/mod", u_slash_mod)
 .endif
 
 
+!!! SM/REM - CORE 6.1.2214
+!!!     ( d1 n1 -- n2 n3 )
+WORD("sm/rem", sm_slash_rem)
+	.long	ms_slash_rem	! (d1 n1 -- n2 d2; 64 bit quotient)
+	.long	drop		! truncate quotient to 32 bit
+	EXIT_4TH
+
+
 !!! UM/MOD - CORE 6.1.2370
 !!!     ( ud u1 -- u2 u3 )
 WORD("um/mod", um_slash_mod)
-	.long	mu_slash_mod	! (ud u1 -- u2 ud2; 64 bit quotient)
+	.long	mu_slash_mod	! (ud1 u1 -- u2 ud2; 64 bit quotient)
 	.long	drop		! truncate quotient to 32 bit
 	EXIT_4TH
 

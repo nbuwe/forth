@@ -84,8 +84,25 @@ accept_impl(char *buf, uint32_t buflen)
 
 
 /* XXX */
-extern uint64_t __divmoddi4(uint64_t a, uint64_t b, uint64_t *rem);
+extern int64_t __divmoddi4(int64_t a, int64_t b, int64_t *rem);
 extern uint64_t __udivmoddi4(uint64_t a, uint64_t b, uint64_t *rem);
+
+
+void
+ms_slash_rem_impl(uint32_t *stack)
+{
+    int64_t dividend, quotient, remainder;
+    int32_t divisor;
+
+    divisor = (int32_t)stack[0];
+    dividend = (int64_t)((uint64_t)stack[1] << 32) | stack[2];
+
+    quotient = __divmoddi4(dividend, divisor, &remainder);
+
+    stack[0] = (uint32_t)(quotient >> 32);
+    stack[1] = (uint32_t)quotient;
+    stack[2] = (uint32_t)remainder;
+}
 
 
 void
