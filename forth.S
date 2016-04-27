@@ -262,7 +262,9 @@ WORD("u/mod", u_slash_mod)
 
 
 !!! MS/REM - nonstandard
-!!!     Divide 64 by 32 bit, producing 32 bit remainder and 64 bit quotient.
+!!!     Divide 64 by 32 bit, producing 32 bit remainder and 64 bit
+!!!     quotient.  This is signed symmetric divsion.
+!!! 
 !!!     ( d1 n1 -- n2 d2 )
 CWORD("ms/rem", ms_slash_rem)
 	.long	ms_slash_rem_impl
@@ -272,6 +274,23 @@ CWORD("ms/rem", ms_slash_rem)
 !!!     ( d1 n1 -- n2 n3 )
 WORD("sm/rem", sm_slash_rem)
 	.long	ms_slash_rem	! (d1 n1 -- n2 d2; 64 bit quotient)
+	.long	drop		! truncate quotient to 32 bit
+	EXIT_4TH
+
+
+!!! MF/MOD - nonstandard
+!!!     Divide 64 by 32 bit, producing 32 bit remainder and 64 bit
+!!!     quotient.  This is signed floored divsion.
+!!! 
+!!!     ( d1 n1 -- n2 d2 )
+CWORD("mf/mod", mf_slash_mod)
+	.long	mf_slash_mod_impl
+
+
+!!! FM/MOD - CORE 6.1.1561
+!!!     ( d1 n1 -- n2 n3 )
+WORD("fm/mod", fm_slash_mod)
+	.long	mf_slash_mod	! (d1 n1 -- n2 d2; 64 bit quotient)
 	.long	drop		! truncate quotient to 32 bit
 	EXIT_4TH
 

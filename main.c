@@ -114,6 +114,12 @@ extern int64_t __divmoddi4(int64_t a, int64_t b, int64_t *rem);
 extern uint64_t __udivmoddi4(uint64_t a, uint64_t b, uint64_t *rem);
 
 
+/*
+ * Symmetric division, aka truncation towards zero.
+ * For C99 this is mandated by the standard.
+ *
+ * ( d1 n1 -- n2 d2 )
+ */
 cell_t *
 ms_slash_rem_impl(cell_t *stack)
 {
@@ -124,6 +130,37 @@ ms_slash_rem_impl(cell_t *stack)
     dividend = (int64_t)((uint64_t)stack[1] << 32) | stack[2];
 
     quotient = __divmoddi4(dividend, divisor, &remainder);
+
+    stack[0] = (uint32_t)(quotient >> 32);
+    stack[1] = (uint32_t)quotient;
+    stack[2] = (uint32_t)remainder;
+
+    return stack;
+}
+
+
+/*
+ * Floored division.
+ *
+ * ( d1 n1 -- n2 d2 )
+ */
+cell_t *
+mf_slash_mod_impl(cell_t *stack)
+{
+    int64_t dividend, quotient, remainder;
+    int32_t divisor;
+
+    divisor = (int32_t)stack[0];
+    dividend = (int64_t)((uint64_t)stack[1] << 32) | stack[2];
+
+    /* this is symmetric division */
+    quotient = __divmoddi4(dividend, divisor, &remainder);
+
+    /* fix rounding if signs are different */
+    if (remainder != 0 && stack[0] ^ stack[1] < 0) {
+	--quotient;
+	remainder += divisor;
+    }
 
     stack[0] = (uint32_t)(quotient >> 32);
     stack[1] = (uint32_t)quotient;
