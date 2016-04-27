@@ -917,37 +917,6 @@ WORD("convert", convert)
 	EXIT_4TH
 
 
-!!! ( - CORE 6.1.0080
-IMMWORD("(", paren)
-	.long	lit, '), parse, two_drop
-	EXIT_4TH
-
-
-!!! \ - CORE EXT 6.2.2535
-IMMWORD("\\", backslash)
-	.long	lit, '\n, parse, two_drop
-	EXIT_4TH
-
-
-!!! CHAR - CORE 6.1.0895
-WORD("char", char)
-	.long	parse_word, OR_ELSE(0f)
-	.long	    c_fetch, exit_4th
-0:	.long	drop, lit, 0
-	EXIT_4TH
-
-
-!!! [CHAR] - CORE 6.1.2520
-IMMWORD("[char]", char_brackets)
-	.long	question_comp
-	.long	parse_word, OR_ELSE(0f)
-	.long	    c_fetch, branch, 1f
-	!!	else
-0:	.long	    drop, lit, 0
-1:
-	.long	    compile, lit, comma
-	EXIT_4TH
-
 
 !!! ( xt "ccc<quote>" -- )
 WORD("compile\"", compile_quote)
@@ -1317,6 +1286,11 @@ IMMWORD("2literal", two_literal)
 9:	EXIT_4TH
 
 
+
+/**
+ * Forth interpreter.
+ */
+
 !!! interpret source until it's empty
 WORD("interpret", interpret)
 1:	!! begin
@@ -1405,6 +1379,46 @@ WORD("quit", quit)
 WORD("abort", abort_4th)
 	.long	abort_parens	! reset return stack, must be first
 	.long	goto_parens, quit
+	EXIT_4TH
+
+
+
+/**
+ * Words for interacting with the interpreter and defining new words.
+ */
+
+!!! ( - CORE 6.1.0080
+!!!     Comment until the closing paren
+IMMWORD("(", paren)
+	.long	lit, '), parse, two_drop
+	EXIT_4TH
+
+
+!!! \ - CORE EXT 6.2.2535
+!!!     Comment until the end of line
+IMMWORD("\\", backslash)
+	.long	lit, '\n, parse, two_drop
+	EXIT_4TH
+
+
+!!! CHAR - CORE 6.1.0895
+!!!     ( "<spaces>name" -- char )
+WORD("char", char)
+	.long	parse_word, OR_ELSE(0f)
+	.long	    c_fetch, exit_4th
+0:	.long	drop, lit, 0
+	EXIT_4TH
+
+
+!!! [CHAR] - CORE 6.1.2520
+IMMWORD("[char]", char_brackets)
+	.long	question_comp
+	.long	parse_word, OR_ELSE(0f)
+	.long	    c_fetch, branch, 1f
+	!!	else
+0:	.long	    drop, lit, 0
+1:
+	.long	    compile, lit, comma
 	EXIT_4TH
 
 
