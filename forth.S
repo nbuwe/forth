@@ -918,18 +918,23 @@ WORD("convert", convert)
 
 
 
-!!! ( xt "ccc<quote>" -- )
-WORD("compile\"", compile_quote)
-	.long	lit, '\", parse	! XXX: handle failure
-	!! compile: xt <len> <len bytes of string>
-	.long	rot, compile_comma	! compile run-time word
-	.long	dup, comma	! string length
-	.long	here, swap	! copy destination
-	.long	dup, allot	! reserve space
-	.long	cmove, align	! copy string
+/**
+ * Compiled string literals:
+ *
+ *     (c") <cnt byte> <cnt bytes of string> [align]
+ *     (s") <len cell> <len bytes of string> [align]
+ *
+ * and ditto for (.") and (abort")
+ */
+
+!!! Put counted string on the stack (for C" - CORE EXT 6.2.0855)
+WORD("(c\")", c_quote_parens)
+	.long	r_from, dup
+	.long	count, plus, aligned, to_r	! skip string
 	EXIT_4TH
 
 
+!!! Put <c-addr, u> string on the stack (for S" - CORE 6.1.2165)
 WORD("(s\")", s_quote_parens)
 	.long	r_from, dup
 	.long	cell_plus, swap			! address of string
@@ -938,12 +943,7 @@ WORD("(s\")", s_quote_parens)
 	EXIT_4TH
 
 
-!!! S" - 6.1.2165
-IMMWORD("s\"", s_quote)
-	.long	lit, s_quote_parens, compile_quote
-	EXIT_4TH
-
-
+!!! Type string (for ." - CORE 6.1.0190)
 WORD("(.\")", dot_quote_parens)
 	.long	r_from, dup
 	.long	cell_plus, swap			! address of string
@@ -954,12 +954,7 @@ WORD("(.\")", dot_quote_parens)
 	EXIT_4TH
 
 
-!!! ." - 6.1.0190
-IMMWORD(".\"", dot_quote)
-	.long	lit, dot_quote_parens, compile_quote
-	EXIT_4TH
-
-
+!!! Abort with a message (for ABORT" - CORE 6.1.0680)
 WORD("(abort\")", abort_quote_parens)
 	.long	r_from, dup
 	.long	cell_plus, swap			! address of string
@@ -973,33 +968,6 @@ WORD("(abort\")", abort_quote_parens)
 	.long	quit ! XXX: FIXME: must be ABORT, but see QUIT definition
 	EXIT_4TH
 
-
-!!! ABORT" - CORE 6.1.0680
-IMMWORD("abort\"", abort_quote)
-	.long	lit, abort_quote_parens, compile_quote
-	EXIT_4TH
-
-
-!!! Like (s") but with counted string
-WORD("(c\")", c_quote_parens)
-	.long	r_from, dup
-	.long	count, plus, aligned, to_r	! skip string
-	EXIT_4TH
-
-
-!!! C" - CORE EXT 6.2.0855
-!!!     ( "ccc<quote" -- )
-!!! Like COMPILE" above, but with counted string
-IMMWORD("c\"", c_quote)
-	.long	lit, '\", parse	! XXX: handle failure
-	!! XXX: throw if string is too long
-	!! compile: (c") <count> <count bytes of string>
-	.long	compile, c_quote_parens
-	.long	dup, c_comma	! string count
-	.long	here, swap	! copy destination
-	.long	dup, allot	! reserve space
-	.long	cmove, align	! copy string
-	EXIT_4TH
 
 
 !!! XXX: TODO: Vocabularies
@@ -1383,8 +1351,14 @@ WORD("abort", abort_4th)
 
 
 
+!!! ====================================================================
+!!! 
+!!! Words for interacting with the interpreter and defining new words.
+!!! 
+
+
 /**
- * Words for interacting with the interpreter and defining new words.
+ * Comments
  */
 
 !!! ( - CORE 6.1.0080
@@ -1400,6 +1374,10 @@ IMMWORD("\\", backslash)
 	.long	lit, '\n, parse, two_drop
 	EXIT_4TH
 
+
+/**
+ * Character literals
+ */
 
 !!! CHAR - CORE 6.1.0895
 !!!     ( "<spaces>name" -- char )
@@ -1421,6 +1399,64 @@ IMMWORD("[char]", char_brackets)
 	.long	    compile, lit, comma
 	EXIT_4TH
 
+
+/**
+ * String literals
+ */
+
+!!! COMPILE" - common helper for S" ." and ABORT" that takes
+!!! corresponding "LIT-like" word that implements the run-time
+!!! semantics and compiles it followed by the parsed string literal.
+!!! 
+!!!     ( xt "ccc<quote>" -- )
+WORD("compile\"", compile_quote)
+	.long	lit, '\", parse	! XXX: handle failure
+	!! compile: <xt> <len> <len bytes of string>
+	.long	rot, compile_comma	! compile run-time word
+	.long	dup, comma	! string length
+	.long	here, swap	! copy destination
+	.long	dup, allot	! reserve space
+	.long	cmove, align	! copy string
+	EXIT_4TH
+
+
+!!! S" - CORE 6.1.2165
+IMMWORD("s\"", s_quote)
+	.long	lit, s_quote_parens, compile_quote
+	EXIT_4TH
+
+
+!!! ." - CORE 6.1.0190
+IMMWORD(".\"", dot_quote)
+	.long	lit, dot_quote_parens, compile_quote
+	EXIT_4TH
+
+
+!!! ABORT" - CORE 6.1.0680
+IMMWORD("abort\"", abort_quote)
+	.long	lit, abort_quote_parens, compile_quote
+	EXIT_4TH
+
+
+!!! C" - CORE EXT 6.2.0855
+!!!     Like COMPILE" above, but with counted string.
+!!! 
+!!!     ( "ccc<quote" -- )
+IMMWORD("c\"", c_quote)
+	.long	lit, '\", parse	! XXX: handle failure
+	!! XXX: throw if string is too long
+	!! compile: (c") <count> <count bytes of string>
+	.long	compile, c_quote_parens
+	.long	dup, c_comma	! string count
+	.long	here, swap	! copy destination
+	.long	dup, allot	! reserve space
+	.long	cmove, align	! copy string
+	EXIT_4TH
+
+
+/**
+ * Colon definitions
+ */
 
 !!! (;CODE) - set CFA of the latest word to the asm code that directly
 !!!     follows compiled (;code)
