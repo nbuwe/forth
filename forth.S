@@ -595,7 +595,6 @@ WORD("sign", sign)
 !!!     Convert one digit.
 !!!     ( ud1 -- ud2 )
 WORD("#", hash)
-	.long	breakpoint
 	.long	base, fetch, mu_slash_mod
 	.long	rot	! remainder
 	.long	dup, lit, 9, greater_than, OR_ELSE(1f)
