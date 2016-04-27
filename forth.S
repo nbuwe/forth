@@ -1661,6 +1661,31 @@ IMMWORD("repeat", repeat)
 	EXIT_4TH
 
 
+!!! (DO) - auxiliary for DO
+!!!     ( limit first -- R: addr limit current )
+WORD("(do)", do_parens)
+	.long	r_from			! next cell after compiled "(do)"
+	.long	dup, fetch, to_r	! stash end of loop address for "leave"
+	.long	rot			! first leave limit --
+	!! offset limit so that last + limit causes overflow
+	.long	lit, 0x80000000, swap, minus, to_r
+	.long	swap			! leave first --
+	!! offset first accordingly too
+	.long	r_fetch, plus, to_r
+	.long	cell_plus, to_r		! skip literal after (do)
+	EXIT_4TH
+
+
+!!! (?DO) - auxiliary for ?DO
+!!!     like "do", but does nothing if first == limit
+WORD("(?do)", question_do_parens)
+	.long	two_dup, equals, OR_ELSE(0f)
+	.long	    two_drop
+	.long	    goto_parens, branch ! skip loop
+0:
+	.long	goto_parens, do_parens	! setup loop
+
+
 !!! DO - CORE 6.1.1240
 IMMWORD("do", do)
 	.long	question_comp
@@ -1672,6 +1697,7 @@ IMMWORD("do", do)
 
 
 !!! ?DO - CORE EXT 6.2.0620
+!!!     Differs from DO only in the auxiliary it compiles.
 IMMWORD("question_do", question_do)
 	.long	question_comp
 	.long	compile, question_do_parens
@@ -1679,6 +1705,73 @@ IMMWORD("question_do", question_do)
 	.long	mark_back	! address to loop back to
 	.long	lit, 3		! for ?pairs
 	EXIT_4TH
+
+
+.ifnotdef i_4th
+!!! I - CORE 6.1.1680
+WORD("i", i_4th)
+	.long	r_from		! return address
+	.long	two_r_fetch	! limit and current
+	.long	swap, minus	! normalize current - see (do)
+	.long	swap, to_r	! restore return address
+	EXIT_4TH
+.endif
+
+
+.ifnotdef j_4th
+!!! J - 6.1.1730
+WORD("j", j_4th)
+	.long	two_r_from, two_r_from ! return address and inner loop params
+	.long	two_r_fetch	       ! limit and current of the outer loop
+	.long	swap, minus	       ! normalize current - see (do)
+	.long	minus_rot, two_to_r
+	.long	minus_rot, two_to_r
+	EXIT_4TH
+.endif
+
+
+!!! LEAVE - CORE 6.1.1760
+!!! 	( R: addr limit current )
+WORD("leave", leave)
+	.long	r_from, drop		! return address
+	.long	two_r_from, two_drop	! loop limit and counter
+	EXIT_4TH			! to the loop's end
+
+
+!!! UNLOOP - CORE 6.1.2380
+WORD("unloop", unloop)
+	.long	r_from			! save return address
+	.long	two_r_from, two_drop	! loop limit and counter
+	.long	r_from, drop		! leave address
+	.long	to_r			! restore return address
+	EXIT_4TH
+
+
+!!! (+LOOP) - auxiliary for +LOOP with the address of the beginning of
+!!!     the loop body compiled as literal after it.
+!!! 	( increment -- ) ( R: addr limit current )
+WORD("(+loop)", plus_loop_parens)
+	.long	r_from, swap		! take (+loop)'s return address
+
+	.long	r_from			! current
+	.long	plus_question		! add increment with overflow check
+	.long	OR_ELSE(1f)
+
+	!! overflow means we hit the limit, leave the loop
+	.long	drop		! current
+	.long	r_from, drop	! limit
+	.long	r_from, drop	! leave address
+	.long	cell_plus, to_r, exit_4th
+
+1:	!! no overflow, update current and continue
+	.long	to_r			! new current
+	.long	to_r			! return address
+	.long	goto_parens, branch	! to beginning of loop
+
+
+!!! (LOOP) - auxiliary for LOOP.  Does "1 (+LOOP)" via tail call.
+WORD("(loop)", loop_parens)
+	.long	lit, 1, goto_parens, plus_loop_parens
 
 
 !!! LOOP - CORE 6.1.1800
@@ -1691,6 +1784,7 @@ IMMWORD("loop", loop)
 
 
 !!! +LOOP - CORE 6.1.0140
+!!!     Differs from LOOP only in the auxiliary it compiles.
 IMMWORD("+loop", plus_loop)
 	.long	question_comp
 	.long	lit, 3, question_pairs
