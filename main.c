@@ -36,41 +36,61 @@ main()
 }
 
 
-void
-emit_impl(int32_t character)
+/*
+ * ( x -- )
+ */
+cell_t *
+emit_impl(cell_t *stack)
 {
-    char c = (char)character;
+    char c = (char)stack[0];
+
     fputc(c, stdout);
     fflush(stdout);
-    return;
+
+    ++stack;
+    return stack;
 }
 
 
-void
-type_impl(const char *data, int32_t size)
+/*
+ * ( c-addr u -- )
+ */
+cell_t *
+type_impl(cell_t *stack)
 {
+    size_t size = stack[0];
+    const char *data = (char *)stack[1];
+
     fwrite(data, size, 1, stdout);
     fflush(stdout);
-    return;
+
+    stack += 2;
+    return stack;
 }
 
 
-uint32_t
-accept_impl(char *buf, uint32_t buflen)
+/*
+ * ( c-addr +n1 -- +n2 )
+ */
+cell_t *
+accept_impl(cell_t *stack)
 {
+    size_t buflen = stack[0];
+    char *buf = (char *)stack[1];
+
+    size_t clen = 0;
+
     char *cbuf;
     char *ret;
-    size_t clen;
 
     cbuf = malloc(buflen + 1); /* +1 for NUL added by fgets(3) */
     if (cbuf == NULL) {
-	return 0;
+	goto out;
     }
 
     ret = fgets(cbuf, buflen + 1, stdin);
     if (ret == NULL) {
-	free(cbuf);
-	return 0;
+	goto out;
     }
 
     clen = strlen(cbuf);
@@ -79,9 +99,13 @@ accept_impl(char *buf, uint32_t buflen)
 	cbuf[--clen] = '\0';
 
     memcpy(buf, cbuf, clen);
+
+  out:
     free(cbuf);
 
-    return clen;
+    ++stack;
+    stack[0] = clen;
+    return stack;
 }
 
 

@@ -519,15 +519,8 @@ CONSTANT("bl", bl) .long 0x20
 
 !!! EMIT - CORE 6.1.1320
 !!!     ( x -- )
-ASMWORD("emit", emit)
-	mov.l	1f, r0
-	mov	TOS, r4
-	jsr	@r0
-	 FILL_TOS
-	jmp	@NEXT
-	 nop
-	.p2align 2
-1:	.long	_C_LABEL(emit_impl)
+CWORD("emit", emit)
+	.long	_C_LABEL(emit_impl)
 
 
 !!! CR - CORE 6.1.0990
@@ -555,16 +548,8 @@ WORD("spaces", spaces)
 
 !!! TYPE - CORE 6.1.2310
 !!!     ( c-addr u -- )
-ASMWORD("type", type)
-	mov.l	1f, r0
-	mov	TOS, r5
-	mov.l	@PSP+, r4
-	jsr	@r0
-	 FILL_TOS
-	jmp	@NEXT
-	 nop
-	.p2align 2
-1:	.long	_C_LABEL(type_impl)
+CWORD("type", type)
+	.long	_C_LABEL(type_impl)
 
 
 !!! Beginning of the pictured numeric output string.
@@ -691,17 +676,8 @@ WORD(".s", dot_s)
 
 !!! ACCEPT - CORE 6.1.0695
 !!!     ( c-addr +n1 -- +n2 )
-ASMWORD("accept", accept_4th)	! XXX: avoid name clash with accept(2)
-	mov.l	1f, r0
-	mov	TOS, r5
-	mov.l	@PSP+, r4
-	jsr	@r0
-	 FILL_TOS
-	SPILL_TOS
-	jmp	@NEXT
-	 mov	r0, TOS		! push +n2 returned by the C code
-	.p2align 2
-1:	.long	_C_LABEL(accept_impl)
+CWORD("accept", accept_4th)	! XXX: avoid name clash with accept(2)
+	.long	_C_LABEL(accept_impl)
 
 
 !!! TIB - CORE EXT 6.2.2290
