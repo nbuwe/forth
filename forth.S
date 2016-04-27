@@ -261,6 +261,13 @@ WORD("u/mod", u_slash_mod)
 .endif
 
 
+!!! UM/MOD - CORE 6.1.2370
+!!!     ( ud u1 -- u2 u3 )
+WORD("um/mod", um_slash_mod)
+	.long	mu_slash_mod	! (ud u1 -- u2 ud2; 64 bit quotient)
+	.long	drop		! truncate quotient to 32 bit
+	EXIT_4TH
+
 
 /**
  * Address alignment
