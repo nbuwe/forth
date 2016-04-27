@@ -1186,12 +1186,6 @@ VARIABLE("state", state)
 	.long	0		! interpretation
 
 
-!!! ?COMP
-WORD("?comp", question_comp)
-	.long	state, fetch, zero_equals, THEN_THROW(14)
-	EXIT_4TH
-
-
 !!! [ - CORE 6.1.2500
 IMMWORD("[", left_bracket)
 	.long	false, state, store
@@ -1331,6 +1325,12 @@ WORD("abort", abort_4th)
 !!! 
 
 
+!!! ?COMP - assert that the interpreter is in compilation state
+WORD("?comp", question_comp)
+	.long	state, fetch, zero_equals, THEN_THROW(14)
+	EXIT_4TH
+
+
 /**
  * Comments
  */
@@ -1414,18 +1414,21 @@ WORD("compile\"", compile_quote)
 
 !!! S" - CORE 6.1.2165
 IMMWORD("s\"", s_quote)
+	.long	question_comp
 	.long	lit, s_quote_parens, compile_quote
 	EXIT_4TH
 
 
 !!! ." - CORE 6.1.0190
 IMMWORD(".\"", dot_quote)
+	.long	question_comp
 	.long	lit, dot_quote_parens, compile_quote
 	EXIT_4TH
 
 
 !!! ABORT" - CORE 6.1.0680
 IMMWORD("abort\"", abort_quote)
+	.long	question_comp
 	.long	lit, abort_quote_parens, compile_quote
 	EXIT_4TH
 
@@ -1435,6 +1438,7 @@ IMMWORD("abort\"", abort_quote)
 !!! 
 !!!     ( "ccc<quote" -- )
 IMMWORD("c\"", c_quote)
+	.long	question_comp
 	.long	lit, '\", parse	! XXX: handle failure
 	!! XXX: throw if string is too long
 	!! compile: (c") <count> <count bytes of string>
@@ -1459,12 +1463,14 @@ IMMWORD("[']", tick_brackets)
 
 !!! [COMPILE] - CORE EXT 6.2.2530
 IMMWORD("[compile]", compile_brackets)
+	.long	question_comp
 	.long	tick, compile_comma
 	EXIT_4TH
 
 
 !!! POSTPONE - CORE 6.1.2033
 IMMWORD("postpone", postpone)
+	.long	question_comp
 	.long	tick_parens, one_plus, OR_ELSE(1f)
 		!! immediate
 	.long	    compile_comma
