@@ -1499,6 +1499,23 @@ ASMWORD("sm/rem", sm_slash_rem)
 
 
 
+!!! MU/MOD - nonstandard
+!!!     Divide 64 by 32 bit, producing 32 bit remainder and 64 bit quotient.
+!!!     ( ud1 u1 -- u2 ud2 )
+ASMWORD("mu/mod", mu_slash_mod)
+	mov.l	1f, r0		! implementation in C
+	SPILL_TOS
+	jsr	@r0
+	 mov	PSP, r4		! point to divisor and dividend in memory
+	jmp	@NEXT
+	 FILL_TOS
+
+	.p2align 2
+1:	.long	mu_slash_mod_impl
+	ASMEND(mu_slash_mod)
+
+
+
 /**
  * Control structure helpers
  */

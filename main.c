@@ -81,3 +81,25 @@ accept_impl(char *buf, uint32_t buflen)
 
     return clen;
 }
+
+
+/* XXX */
+extern uint64_t __divmoddi4(uint64_t a, uint64_t b, uint64_t *rem);
+extern uint64_t __udivmoddi4(uint64_t a, uint64_t b, uint64_t *rem);
+
+
+void
+mu_slash_mod_impl(uint32_t *stack)
+{
+    uint64_t dividend, quotient, remainder;
+    uint32_t divisor;
+
+    divisor = stack[0];
+    dividend = ((uint64_t)stack[1] << 32) | stack[2];
+
+    quotient = __udivmoddi4(dividend, divisor, &remainder);
+
+    stack[0] = (uint32_t)(quotient >> 32);
+    stack[1] = (uint32_t)quotient;
+    stack[2] = (uint32_t)remainder;
+}

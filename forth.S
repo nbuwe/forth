@@ -561,9 +561,9 @@ WORD("hold", hold)
 !!! #> - CORE 6.1.0040
 !!!     Make the pictured numeric output string available as a
 !!!     character string.
-!!!     ( x -- c-addr u )	XXX: FIXME: xd
+!!!     ( xd -- c-addr u )
 WORD("#>", hash_greater)
-	.long	drop	! XXX: FIXME: two_drop
+	.long	two_drop
 	.long	hld, fetch, pad, over, minus
 	EXIT_4TH
 
@@ -578,9 +578,11 @@ WORD("sign", sign)
 
 !!! # - CORE 6.1.0030
 !!!     Convert one digit.
-!!!     ( u1 -- u2 )		XXX: FIXME: ud
+!!!     ( ud1 -- ud2 )
 WORD("#", hash)
-	.long	base, fetch, u_slash_mod, swap ! NB: unsigned
+	.long	breakpoint
+	.long	base, fetch, mu_slash_mod
+	.long	rot	! remainder
 	.long	dup, lit, 9, greater_than, OR_ELSE(1f)
 	.long		lit, 'a - 10
 	.long		branch, 2f
@@ -592,19 +594,26 @@ WORD("#", hash)
 
 
 !!! #S - CORE 6.1.0050
-!!!     Convert all digits with #
-!!!     ( u1 -- u2 )		XXX: FIXME: ud
+!!!     Use # to convert all digits, leaves double-cell zero on the stack.
+!!!     ( ud -- 0. )
 WORD("#s", hash_s)
 0:	!! begin
 	.long	hash
 	!! until
-	.long	dup, zero_equals, OR_ELSE(0b)
+	.long	two_dup
+	.long	or, zero_equals	! XXX: TODO: D0=
+	.long	OR_ELSE(0b)
 	EXIT_4TH
 
 
-!!!     XXX: FIXME: single cell!
+!!! Convert N to string in the transient hold space.
+!!!     ( n -- )
 WORD("(.)", dot_parens)
-	.long	dup, abs, less_hash, hash_s, swap, sign, hash_greater
+	.long	dup			! keep a copy for SIGN
+	.long	abs, lit, 0		! positive, extend to double-cell
+	.long	less_hash, hash_s	! convert to string in hold buffer
+	.long	rot, sign		! add minus sign for negative
+	.long	hash_greater		! finish conversion, return string
 	EXIT_4TH
 
 
@@ -615,8 +624,10 @@ WORD(".", dot)
 	EXIT_4TH
 
 
-!!! XXX: FIXME: single cell!
+!!! Convert U to string in the transient hold space.
+!!!     ( u -- )
 WORD("(u.)", u_dot_parens)
+	.long	lit, 0		! unsigned extend to double-cell
 	.long	less_hash, hash_s, hash_greater
 	EXIT_4TH
 
