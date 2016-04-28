@@ -658,7 +658,7 @@ WORD("#s", hash_s)
 
 
 !!! Convert N to string in the transient hold space.
-!!!     ( n -- )
+!!!     ( n -- str len )
 WORD("(.)", dot_parens)
 	.long	dup			! keep a copy for SIGN
 	.long	abs, lit, 0		! positive, extend to double-cell
@@ -675,8 +675,17 @@ WORD(".", dot)
 	EXIT_4TH
 
 
+!!! .R - CORE EXT 6.2.0210
+!!!     ( n1 n2 -- )
+WORD(".r", dot_r)
+	.long	to_r, dot_parens, r_from ! str len width --
+	.long	over, minus, spaces
+	.long	type
+	EXIT_4TH
+
+
 !!! Convert U to string in the transient hold space.
-!!!     ( u -- )
+!!!     ( u -- str len )
 WORD("(u.)", u_dot_parens)
 	.long	lit, 0		! unsigned extend to double-cell
 	.long	less_hash, hash_s, hash_greater
@@ -687,6 +696,15 @@ WORD("(u.)", u_dot_parens)
 !!!     ( u -- )
 WORD("u.", u_dot)
 	.long	u_dot_parens, type, space
+	EXIT_4TH
+
+
+!!! U.R - CORE EXT 6.2.2330
+!!!     ( u n -- )
+WORD("u.r", u_dot_r)
+	.long	to_r, u_dot_parens, r_from ! str len width --
+	.long	over, minus, spaces
+	.long	type
 	EXIT_4TH
 
 
