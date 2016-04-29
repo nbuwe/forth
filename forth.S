@@ -1169,6 +1169,35 @@ WORD("name>", name_from)
 	EXIT_4TH
 
 
+!!! >NAME - nonstandard
+!!!     ( xt - nfa)
+WORD(">name", to_name)
+	.long	dup, aligned, equals, OR_ELSE(9f)
+	!! 
+	.long	to_link			! the address after name
+	.long	dup			! keep a copy for comparisons
+	.long	dup, lit, 32, minus	! the farthest away that NFA can be
+	.long	swap, cell_minus, do_parens, 9f
+1:
+	!! the byte may have its upper bit set (potential immediate
+	!! flag), since 8-bit characters are not allowed in a name.
+	!! if the byte is less than 32, it's not a printable character
+	!! and must be the name count byte.
+	.long	    i_4th, c_fetch
+	.long	    lit, (~0x1f & ~IFLAG), and, zero_equals, OR_ELSE(8f)
+	!! 		it looks like a count byte, but is the count right?
+	.long		dup, i_4th, n_to_link, equals, OR_ELSE(8f)
+	.long		    drop		! LFA
+	.long		    i_4th		! NFA
+	.long		    unloop, exit_4th
+8:	!!
+	.long	lit, 0, cell_minus, plus_loop_parens, 1b
+9:
+	.long	drop			! LFA
+	.long	lit, 0			! failure
+	EXIT_4TH
+
+
 !!! CREATE - CORE 6.1.1000
 WORD("create", create)
 	.long	parse_word, question_dup ! 0 only on EOF
