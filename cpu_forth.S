@@ -244,6 +244,7 @@ ENTRY(start_forth)
 
 #define THR13	"Undefined word"
 #define THR14	"Interpreting a compile-only word"
+#define THR15	"Invalid FORGET"
 #define THR16	"Attempt to use zero-length string as a name"
 #define THR22	"Control structure mismatch"
 #define THR32	"Invalid name argument"
@@ -1577,4 +1578,5 @@ ASMWORD("j", j_4th)
 
 	.section ".bss"
 .L_DATA_SPACE: /* begins HERE */
+.FENCE = .
 	.space	8192

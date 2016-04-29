@@ -1172,7 +1172,7 @@ WORD("name>", name_from)
 !!! >NAME - nonstandard
 !!!     ( xt - nfa)
 WORD(">name", to_name)
-	.long	dup, aligned, equals, OR_ELSE(9f)
+	.long	dup, dup, aligned, equals, OR_ELSE(9f)
 	!! 
 	.long	to_link			! the address after name
 	.long	dup			! keep a copy for comparisons
@@ -1956,3 +1956,35 @@ IMMWORD("to", to_4th)
 1:	    !! interpretation
 	.long	    store
 9:	EXIT_4TH
+
+
+VARIABLE("fence", fence)
+	.long	.FENCE
+
+
+!!! ( "<spaces>name" -- )
+WORD("forget", forget)
+	.long	tick, dup, to_name		! cfa nfa --
+	.long	question_dup, zero_equals, OR_ELSE(0f)
+	.long	    drop, exit_4th
+0:
+	.long	dup, fence, fetch, less_than, OR_ELSE(0f)
+	.long	    two_drop, THROW(15)
+0:
+	.long	swap, to_link, fetch		! nfa of the previous word
+	.long	current, fetch, store		! update current/latest
+	.long	dp_store			! move HERE to NFA
+	EXIT_4TH
+
+
+!!! ( "<spaces>name" -- )
+WORD("anew", anew)
+	.long	to_in, fetch
+	.long	bl, word, find, OR_ELSE(0f)
+	.long	    over, to_in, store
+	.long	    forget
+0:
+	.long	    drop
+	.long	    to_in, store		! rewind input
+	.long	    create			! 
+	EXIT_4TH
