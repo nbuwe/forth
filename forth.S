@@ -1289,6 +1289,9 @@ DOES_ASM(constant_does)
 !!!         get-current search-wordlist ;
 !!!     
 WORD("search-current", search_current)
+	.long	question_dup, zero_equals, OR_ELSE(0f)
+	.long	    drop, lit, 0, exit_4th
+0:
 	.long	latest
 1:	!! begin
 	.long	dup, c_fetch, lit, (SFLAG), and, zero_equals ! not smudged?
