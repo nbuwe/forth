@@ -1,6 +1,6 @@
 # $Id$
 
-PROG=	ftest
+PROG=	forth
 NOMAN=
 
 DBG=	-g
