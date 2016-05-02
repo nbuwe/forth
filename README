@@ -1,0 +1,14 @@
+This is a very simple Forth for sh3 that uses dumb, honest to god
+indirect threaded code.  The core is written entirely in assembler.
+There are only three environmental dependencies for now - printing one
+char (EMIT), printing a buffer (TYPE) and reading an input line
+(ACCEPT).  Escape to C is also used for things like 64-bit division
+(rewriting __divmoddi4 in asm from scratch is boring and kinda
+pointless).
+
+The core of the interpreter for sh3 is 16 instructions.  About 70 asm
+words tally up to about 500 instructions.  Nearly all of them are
+short trivial sequences, like adding two numbers, etc.  I'd say that
+someone familiar with the target ISA can port == write the asm core in
+an evening or two.  The rest of the system is in manually "compiled"
+threaded code.
