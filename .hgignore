@@ -6,5 +6,8 @@ forth
 *~
 *.orig
 
+obj
+obj.*
+
 *.core
 *.o
