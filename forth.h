@@ -1,0 +1,160 @@
+/*
+ * Copyright (c) 2009-2016 Valery Ushakov
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#ifndef _FORTH_H_
+#define _FORTH_H_
+
+#include <machine/asm.h>
+
+
+/**
+ *
+ * Macros for manually defining the core Forth system.
+ *
+ */
+
+
+#define NAMED_CELL(label)	  \
+	.p2align 2		; \
+	.type	label@object	; \
+	.size	label, 4	; \
+  label:			;
+
+
+#define DEFCODE_ASM(label)		  \
+	/* Code Field */		  \
+  NAMED_CELL(label)			; \
+	.long	asm_does		; \
+	/* Parameter Field */		  \
+	.type	label/**/_code@function ; \
+  label/**/_code:			;
+
+#define ASMEND(label) \
+	.size	label/**/_code, . - label/**/_code
+
+
+#define DEFCODE_C(label)		  \
+	/* Code Field */		  \
+  NAMED_CELL(label)			; \
+	.long	c_does			; \
+	/* Parameter Field */	  	  \
+  NAMED_CELL(label/**/_fn)
+
+
+#define DEFCODE_4TH(label)	  \
+	/* Code Field */	  \
+  NAMED_CELL(label)		; \
+	.long	call_code	; \
+	/* Parameter Field */	  \
+  label/**/_body:		;
+
+
+#define DEFCODE_VAR(label)	  \
+	/* Code Field */	  \
+  NAMED_CELL(label)		; \
+	.long	next_code	; \
+	/* Parameter Field */	  \
+  NAMED_CELL(label/**/_var)
+
+
+#define DEFCODE_CONST(label)	  \
+	/* Code Field */	  \
+  NAMED_CELL(label)		; \
+	.long	constant_does	; \
+	/* Parameter Field */	  \
+  NAMED_CELL(label/**/_const)
+
+
+#define EXIT_4TH		  \
+	.long	exit_4th
+
+
+/*
+ * XXX: unfortunately with traditional cpp we cannot use .L prefix
+ * here, since we would also need to pass the label argument around
+ * without preceding space, which is very fragile.
+ */
+#define NFA_LABEL(label) label/**/$nfa
+
+#define NAME_FIELD(name, flags, label)    \
+	.p2align 2, 0			; \
+	.local	NFA_LABEL(label)	; \
+  NFA_LABEL(label):			  \
+	.byte	flags | (2f-1f)		; \
+1:	.ascii	name			; \
+2:	.p2align 2, 0
+
+
+#define DEFWORD(name, flags, defcode, label)	  \
+  	NAME_FIELD(name, flags, label)		; \
+	/* Link Field */			  \
+  NAMED_CELL(label/**/_lnk)			; \
+	.long	.LASTNFA			; \
+  .LASTNFA = NFA_LABEL(label)			; \
+	defcode(label)
+
+#define	IFLAG	0x80		/* immediate */
+#define	SFLAG	0x40		/* smudge */
+
+#define WORD(name, label)	DEFWORD(name,     0, DEFCODE_4TH,   label)
+#define IMMWORD(name, label)	DEFWORD(name, IFLAG, DEFCODE_4TH,   label)
+#define ASMWORD(name, label)	DEFWORD(name,     0, DEFCODE_ASM,   label)
+#define CWORD(name, label)	DEFWORD(name,     0, DEFCODE_C,     label)
+#define CONSTANT(name, label)	DEFWORD(name,     0, DEFCODE_CONST, label)
+#define VARIABLE(name, label)	DEFWORD(name,     0, DEFCODE_VAR,   label)
+
+
+/*
+ * It takes a bit of effort to remember that question_branch is taken
+ * when the condition is false, so provide a more mnemonic and shorter
+ * way to say it.
+ */
+#define OR_ELSE(label)	/* .long */ question_branch, label
+
+
+#define QUOTESTR(word, str)				  \
+	/* .long */ word/**/_quote_parens, (22f - 21f)	; \
+21:	.ascii	str					; \
+22:	.p2align 2, 0 /* force new directive with ; */	;
+
+#define SQ(str)		QUOTESTR(s, str)	/* s"     */
+#define DOTQ(str)	QUOTESTR(dot, str)	/* ."     */
+#define ABORTQ(str)	QUOTESTR(abort, str)	/* abort" */
+
+#define THR13	"Undefined word"
+#define THR14	"Interpreting a compile-only word"
+#define THR15	"Invalid FORGET"
+#define THR16	"Attempt to use zero-length string as a name"
+#define THR22	"Control structure mismatch"
+#define THR32	"Invalid name argument"
+
+/* XXX: for now, implement in terms of abort" */
+#define THROW(code) \
+	/* .long */ lit, (code), ABORTQ(THR/**/code)
+
+#define THEN_THROW(code)			  \
+	/* .long */ OR_ELSE(0f), THROW(code)	; \
+0:
+
+#endif /* _FORTH_H_ */

@@ -1,16 +1,19 @@
-# $Id$
-
 PROG=	forth
 NOMAN=
 
-DBG=	-g
-SRCS=	main.c cpu_forth.S
+.include <bsd.own.mk>
 
-GDBINIT	= forth.gdb
+DBG = -g
+CPPFLAGS += -I${.CURDIR} -I${.CURDIR}/${MACHINE_CPU}
+
+SRCS = main.c forth_machdep.S
+GDBINIT = ${MACHINE_CPU}/forth.gdb
 
 # use traditional cpp for asm, since sh3 uses # for immediates
-CPPFLAGS.cpu_forth.S = --traditional-cpp
+CPPFLAGS.forth_machdep.S = --traditional-cpp
 
-cpu_forth.o: cpu_forth.S forth.S test.S
+# XXX: there must be a more sane way to do this, but my make-fu is weak...
+forth_machdep.d: ${MACHINE_CPU}/forth_machdep.S
+forth_machdep.o: ${MACHINE_CPU}/forth_machdep.S
 
 .include <bsd.prog.mk>
