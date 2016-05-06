@@ -132,9 +132,23 @@ accept_impl(cell_t *stack)
 }
 
 
+
 /* XXX */
+#if defined(__sh__)
+# define HAVE_DIVMODDI4
+# define HAVE_UDIVMODDI4
+#elif defined(__powerpc__)
+# define HAVE_UDIVMODDI4
+#endif
+
+
+#ifdef HAVE_DIVMODDI4
 extern int64_t __divmoddi4(int64_t a, int64_t b, int64_t *rem);
+#endif
+
+#ifdef HAVE_UDIVMODDI4
 extern uint64_t __udivmoddi4(uint64_t a, uint64_t b, uint64_t *rem);
+#endif
 
 
 /*
@@ -152,7 +166,12 @@ ms_slash_rem_impl(cell_t *stack)
     divisor = (int32_t)stack[0];
     dividend = (int64_t)((uint64_t)stack[1] << 32) | stack[2];
 
+#ifdef HAVE_DIVMODDI4
     quotient = __divmoddi4(dividend, divisor, &remainder);
+#else
+    quotient  = dividend / divisor;
+    remainder = dividend % divisor;
+#endif
 
     stack[0] = (uint32_t)(quotient >> 32);
     stack[1] = (uint32_t)quotient;
@@ -177,7 +196,12 @@ mf_slash_mod_impl(cell_t *stack)
     dividend = (int64_t)((uint64_t)stack[1] << 32) | stack[2];
 
     /* this is symmetric division */
+#ifdef HAVE_DIVMODDI4
     quotient = __divmoddi4(dividend, divisor, &remainder);
+#else
+    quotient  = dividend / divisor;
+    remainder = dividend % divisor;
+#endif
 
     /* fix rounding if signs are different */
     if (remainder != 0 && stack[0] ^ stack[1] < 0) {
@@ -202,7 +226,12 @@ mu_slash_mod_impl(cell_t *stack)
     divisor = stack[0];
     dividend = ((uint64_t)stack[1] << 32) | stack[2];
 
+#ifdef HAVE_UDIVMODDI4
     quotient = __udivmoddi4(dividend, divisor, &remainder);
+#else
+    quotient  = dividend / divisor;
+    remainder = dividend % divisor;
+#endif
 
     stack[0] = (uint32_t)(quotient >> 32);
     stack[1] = (uint32_t)quotient;
