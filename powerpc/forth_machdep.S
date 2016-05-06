@@ -24,6 +24,14 @@
  */
 #include <forth.h>
 
+
+#define TOS	r27	/* top of parameter stack lives in a register */
+#define PSP	r28	/* parameter stack pointer */
+#define RSP	r29	/* return stack pointer */
+#define IP	r30	/* instruction pointer */
+#define NEXT	r31	/* "next" address to avoid memory loads */
+
+
 ### ====================================================================
 /**
  *
@@ -63,11 +71,11 @@ ENTRY(start_forth)
 
 	stwu	%sp, -128(%sp)
 
-	# 0(%sp) - back chain
-	# 4(%sp) - callee's LR save slot
-	# 8(%sp) to 36(%sp) - 8 words of parameter list area
+	## 0(%sp) - back chain
+	## 4(%sp) - callee's LR save slot
+	## 8(%sp) to 36(%sp) - 8 words of parameter list area
 
-	# 40(%sp) to 48(%sp) - pad to 16 byte alignment/local variable space
+	## 40(%sp) to 48(%sp) - pad to 16 byte alignment/local variable space
 
 	mfcr	%r0
 	stw	%r0,   52(%sp)
@@ -92,9 +100,31 @@ ENTRY(start_forth)
 	stw	%r31, 124(%sp)
 	## end prologue
 
+	lis	%NEXT, next_code@ha
+	la	%NEXT, next_code@l(%NEXT)
+
+	## these will be reset by ABORT
+	li	%TOS, 0
+	li	%PSP, 0
+	li	%RSP, 0
+
+	## ABORT to forth
+	lis	%IP, abort_4th_body@ha
+	la	%IP, (abort_4th_body - 4)@l(%IP)
+
+	lwzu	%r0, 4(%IP)	# CFA of (ABORT), the first word of ABORT
+	addi	%r0, %r0, 4	# PFA - the actual code
+	mtctr	%r0
+	bctr
+
+.L_BYE_RETURNS_HERE:
+#if 0
+	SPILL_TOS
+	mr	%r3, %PSP	# return forth stack pointer
+#else
 	lis	%r3, stack_bottom@ha
-	la	%r3, stack_bottom@l(%r3)
-	addi	%r3, %r3, -4
+	la	%r3, (stack_bottom - 4)@l(%r3)
+#endif
 
 	## epilogue
 	lwz	%r0,   52(%sp)
@@ -124,3 +154,54 @@ ENTRY(start_forth)
 	lwz	%r0, 4(%sp)		# restore LR saved in caller's frame
 	mtlr	%r0
 	blr
+
+
+### ====================================================================
+/**
+ *
+ *				FORTH
+ *
+ */
+
+	.data			# XXX: need writable+executable
+
+	.p2align 2
+	.global	heap
+heap:
+
+/*
+ * Fake sentinel word that starts the vocabulary.
+ */
+	.p2align 2, 0
+	## Name Field
+.LASTNFA = .		# init .LASTNFA for subsequent DEFWORDs
+	.byte	0x80	# empty name, immediate (just in case?)
+	## Link Field
+	.p2align 2, 0
+	.long	0	# terminate the LFA-linked list
+	## Code Field
+	.long	0	# XXX: use some sentinel code?  just crash for now
+	## Parameter Field
+	.long	0	# there's no parameters, but provide a stub
+
+
+### Asm part of ABORT that resets parameter and return stacks
+### Must be the first word called by ABORT.
+ASMWORD("(abort)", abort_parens)
+	lis	%RSP, rstack_bottom@ha		# reset return stack
+	la	%RSP, rstack_bottom@l(%RSP)
+	lis	%PSP, stack_bottom@ha		# reset parameter stack
+	la	%PSP, stack_bottom@l(%PSP)
+	li	%TOS, 0				# clear TOS just in case
+	blr
+	ASMEND(abort_parens)
+
+
+
+### XXX: the real one is in MI forth.S, but including that will xref a
+### lot of words, so provide a local copy for now
+
+### ABORT - CORE 6.1.0670
+WORD("abort", abort_4th)
+	.long	abort_parens	# reset return stack, must be first
+	EXIT_4TH
