@@ -25,12 +25,15 @@
 #include <forth.h>
 
 
+#define TMP	r14	/* %r0 is too magic and literal %r14 is too opaque */
 #define TOS	r27	/* top of parameter stack lives in a register */
 #define PSP	r28	/* parameter stack pointer */
 #define RSP	r29	/* return stack pointer */
 #define IP	r30	/* instruction pointer */
-#define NEXT	r31	/* "next" address to avoid memory loads */
 
+#define SPILL_TOS	stwu	%TOS, -4(%PSP)
+#define FILL_TOS	lwz	%TOS, 0(%PSP); \
+			addi	%PSP, %PSP, 4
 
 ### ====================================================================
 /**
@@ -74,7 +77,6 @@ ENTRY(start_forth)
 	## 0(%sp) - back chain
 	## 4(%sp) - callee's LR save slot
 	## 8(%sp) to 36(%sp) - 8 words of parameter list area
-
 	## 40(%sp) to 48(%sp) - pad to 16 byte alignment/local variable space
 
 	mfcr	%r0
@@ -100,8 +102,12 @@ ENTRY(start_forth)
 	stw	%r31, 124(%sp)
 	## end prologue
 
-	lis	%NEXT, next_code@ha
-	la	%NEXT, next_code@l(%NEXT)
+	## LR is fixed with next_code so that we can get always there
+        ## with just "blr".  BYE knows its return address statically
+        ## (see below), so we don't need LR to record it.
+	lis	%TMP, next_code@ha
+	la	%TMP, next_code@l(%TMP)
+	mtlr	%TMP
 
 	## these will be reset by ABORT
 	li	%TOS, 0
@@ -110,25 +116,21 @@ ENTRY(start_forth)
 
 	## ABORT to forth
 	lis	%IP, abort_4th_body@ha
-	la	%IP, (abort_4th_body - 4)@l(%IP)
+	la	%IP, abort_4th_body@l(%IP)
 
-	lwzu	%r0, 4(%IP)	# CFA of (ABORT), the first word of ABORT
-	addi	%r0, %r0, 4	# PFA - the actual code
-	mtctr	%r0
+	lwz	%TMP, 0(%IP)	# CFA of (ABORT), the first word of ABORT
+	addi	%IP, %IP, 4
+	addi	%TMP, %TMP, 4	# PFA - the actual asm code of (ABORT)
+	mtctr	%TMP
 	bctr
 
 .L_BYE_RETURNS_HERE:
-#if 0
 	SPILL_TOS
 	mr	%r3, %PSP	# return forth stack pointer
-#else
-	lis	%r3, stack_bottom@ha
-	la	%r3, (stack_bottom - 4)@l(%r3)
-#endif
 
 	## epilogue
-	lwz	%r0,   52(%sp)
-	mtcr	%r0
+	lwz	%TMP,   52(%sp)
+	mtcr	%TMP
 
 	lwz	%r14,  56(%sp)
 	lwz	%r15,  60(%sp)
@@ -154,6 +156,20 @@ ENTRY(start_forth)
 	lwz	%r0, 4(%sp)		# restore LR saved in caller's frame
 	mtlr	%r0
 	blr
+
+
+### ====================================================================
+
+/*
+ * Address of this code will be written into the code field
+ * This code will be directly called by the interpreter
+ * PFA of the defined word will be in TOS
+ */
+#define DOES_ASM(label)		  \
+	.p2align 2		; \
+	.type	label@function	; \
+  label:			;
+
 
 
 ### ====================================================================
@@ -197,11 +213,136 @@ ASMWORD("(abort)", abort_parens)
 	ASMEND(abort_parens)
 
 
+### Asm part of BYE that returns control to the C code that started
+### the Forth system.  The stacks are not reset and can be inspected.
+ASMWORD("(bye)", bye_parens)
+	lis	%TMP, .L_BYE_RETURNS_HERE@ha
+	la	%TMP, .L_BYE_RETURNS_HERE@l(%TMP)
+	mtctr	%TMP
+	bctr
+	ASMEND(bye_parens)
 
+
+### nop to use as a gdb breakpoint
+ASMWORD("breakpoint", breakpoint)
+	blr
+	ASMEND(breakpoint)
+
+
+/**
+ * Threaded code interpreter.
+ *
+ * Executing a word means calling it's code with it's body at the top
+ * of the parameter stack.
+ *
+ * The real core of the interpreter is "next_code" that interprets
+ * endless stream of words.  Some of those words are forth definitions
+ * that begin with "call_code" in their code field and end with EXIT.
+ * That diverts execution by saving/restoring IP before proceeding to
+ * "next_code".
+ */
+
+### EXECUTE - CORE 6.1.1370
+###     ( i*x xt -- j*x )
+###
+### With indirect threaded code the execution token (xt) is the
+### address of the code field (CFA).  See also next_code.
+ASMWORD("execute", execute)
+	lwz	%TMP, 0(%TOS)	# fetch code address
+	addi	%TOS, %TOS, 4	# advance TOS to PFA
+	mtctr	%TMP
+	bctr			# call word's code on word's body
+	ASMEND(execute)
+
+
+### Code field of asm words points here.
+### This should eventually become the DOES> part of CODE
+DOES_ASM(asm_does)
+	mtctr	%TOS		# PFA: word's body is its asm code
+	FILL_TOS		# PFA is consumed
+	bctr
+	.size asm_does, .-asm_does
+
+
+### Code field of colon definitions (i.e. forth words)  points here.
+### This should eventually become the DOES> part of ":"
+DOES_ASM(call_code)
+	stwu	%IP, -4(%RSP)	# save caller's IP
+	mr	%IP, %TOS	# set my IP (consume PFA from TOS)
+	## don't refill TOS here, just skip the spill in next_code
+	## and let next_code set vacant TOS to next word PFA
+	b	.L_next_code_no_spill
+	.size call_code, .-call_code
+
+
+### EXIT - CORE 6.1.1380
+###     ( -- ) ( R: nest-sys -- )
+ASMWORD("exit", exit_4th)
+	lwz	%IP, 0(%RSP)	# pop return address
+	addi	%RSP, %RSP, 4
+	## FALLTHROUGH to "NEXT"
+next_code:
+	SPILL_TOS
+  .L_next_code_no_spill:	# -- entry point for call_code to jump to
+	lwz	%TOS, 0(%IP)	# CFA of the next word to execute
+	addi	%IP, %IP, 4	#  and advance IP
+	## this is the code of EXECUTE
+	lwz	%TMP, 0(%TOS)	# fetch code address
+	addi	%TOS, %TOS, 4	# advance TOS to PFA
+	mtctr	%TMP
+	bctr			# call word's code on word's body
+
+
+
+/**
+ * Stack manipualtion
+ */
+
+### DUP - CORE 6.1.1290
+###     ( x -- x x )
+ASMWORD("dup", dup)
+	SPILL_TOS
+	blr
+	ASMEND(dup)
+
+
+
+/**
+ * Arithmetic and bit-wise operations
+ */
+
+### + - CORE 6.1.0120
+###     ( n1|u1 n2|u2 -- n3|u3 )
+ASMWORD("+", plus)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	add	%TOS, %TOS, %TMP
+	blr
+	ASMEND(plus)
+
+
+
+/**
+ * Control structure helpers
+ */
+
+### LIT - auxiliary for LITERAL (CORE 6.1.1780)
+ASMWORD("lit", lit)
+	SPILL_TOS
+	lwz	%TOS, 0(%IP)
+	addi	%IP, %IP, 4
+	blr
+	ASMEND(lit)
+
+
+
+##############################################################################
 ### XXX: the real one is in MI forth.S, but including that will xref a
-### lot of words, so provide a local copy for now
+### lot of words, so use a local copy and use it for testing.
 
 ### ABORT - CORE 6.1.0670
 WORD("abort", abort_4th)
 	.long	abort_parens	# reset return stack, must be first
-	EXIT_4TH
+	.long	lit, 1, dup, plus
+	.long	bye_parens
+	#EXIT_4TH
