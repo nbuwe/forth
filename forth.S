@@ -226,9 +226,9 @@ WORD("min", min)
 !!!     code from the ANS A.6.2.2440
  */
 WORD("within", within)
-	.long	over, minus	! high - low
+	.long	over, minus	/* high - low */
 	.long	to_r
-	.long	minus		! test - low
+	.long	minus		/* test - low */
 	.long	r_from
 	.long	u_less_than
 	EXIT_4TH
@@ -352,8 +352,8 @@ CWORD("ms/rem", ms_slash_rem)
 !!!     ( d1 n1 -- n2 n3 )
  */
 WORD("sm/rem", sm_slash_rem)
-	.long	ms_slash_rem	! (d1 n1 -- n2 d2; 64 bit quotient)
-	.long	drop		! truncate quotient to 32 bit
+	.long	ms_slash_rem	/* (d1 n1 -- n2 d2; 64 bit quotient) */
+	.long	drop		/* truncate quotient to 32 bit */
 	EXIT_4TH
 
 
@@ -373,8 +373,8 @@ CWORD("mf/mod", mf_slash_mod)
 !!!     ( d1 n1 -- n2 n3 )
  */
 WORD("fm/mod", fm_slash_mod)
-	.long	mf_slash_mod	! (d1 n1 -- n2 d2; 64 bit quotient)
-	.long	drop		! truncate quotient to 32 bit
+	.long	mf_slash_mod	/* (d1 n1 -- n2 d2; 64 bit quotient) */
+	.long	drop		/* truncate quotient to 32 bit */
 	EXIT_4TH
 
 
@@ -392,8 +392,8 @@ CWORD("mu/mod", mu_slash_mod)
 !!!     ( ud u1 -- u2 u3 )
  */
 WORD("um/mod", um_slash_mod)
-	.long	mu_slash_mod	! (ud1 u1 -- u2 ud2; 64 bit quotient)
-	.long	drop		! truncate quotient to 32 bit
+	.long	mu_slash_mod	/* (ud1 u1 -- u2 ud2; 64 bit quotient) */
+	.long	drop		/* truncate quotient to 32 bit */
 	EXIT_4TH
 
 
@@ -402,8 +402,8 @@ WORD("um/mod", um_slash_mod)
 !!!     ( n1 n2 n3 -- n4 n5 )
  */
 WORD("*/mod", star_slash_mod)
-	.long	to_r, m_star		! 32 * 32 -> 64 bit
-	.long	r_from, sm_slash_rem	! symmetric, to match /
+	.long	to_r, m_star		/* 32 * 32 -> 64 bit */
+	.long	r_from, sm_slash_rem	/* symmetric, to match / */
 	EXIT_4TH
 
 /*
@@ -412,7 +412,7 @@ WORD("*/mod", star_slash_mod)
  */
 WORD("*/", star_slash)
 	.long	star_slash_mod
-	.long	swap, drop		! get rid of the remainder
+	.long	swap, drop		/* get rid of the remainder */
 	EXIT_4TH
 
 
@@ -795,7 +795,7 @@ WORD("sign", sign)
  */
 WORD("#", hash)
 	.long	base, fetch, mu_slash_mod
-	.long	rot	! remainder
+	.long	rot	/* remainder */
 	.long	dup, lit, 9, greater_than, OR_ELSE(1f)
 	.long		lit, 'a - 10
 	.long		branch, 2f
@@ -826,11 +826,11 @@ WORD("#s", hash_s)
 !!!     ( n -- str len )
  */
 WORD("(.)", dot_parens)
-	.long	dup			! keep a copy for SIGN
-	.long	abs, lit, 0		! positive, extend to double-cell
-	.long	less_hash, hash_s	! convert to string in hold buffer
-	.long	rot, sign		! add minus sign for negative
-	.long	hash_greater		! finish conversion, return string
+	.long	dup			/* keep a copy for SIGN */
+	.long	abs, lit, 0		/* positive, extend to double-cell */
+	.long	less_hash, hash_s	/* convert to string in hold buffer */
+	.long	rot, sign		/* add minus sign for negative */
+	.long	hash_greater		/* finish conversion, return string */
 	EXIT_4TH
 
 
@@ -848,7 +848,7 @@ WORD(".", dot)
 !!!     ( n1 n2 -- )
  */
 WORD(".r", dot_r)
-	.long	to_r, dot_parens, r_from ! str len width --
+	.long	to_r, dot_parens, r_from /* str len width -- */
 	.long	over, minus, spaces
 	.long	type
 	EXIT_4TH
@@ -859,7 +859,7 @@ WORD(".r", dot_r)
 !!!     ( u -- str len )
  */
 WORD("(u.)", u_dot_parens)
-	.long	lit, 0		! unsigned extend to double-cell
+	.long	lit, 0		/* unsigned extend to double-cell */
 	.long	less_hash, hash_s, hash_greater
 	EXIT_4TH
 
@@ -878,7 +878,7 @@ WORD("u.", u_dot)
 !!!     ( u n -- )
  */
 WORD("u.r", u_dot_r)
-	.long	to_r, u_dot_parens, r_from ! str len width --
+	.long	to_r, u_dot_parens, r_from /* str len width -- */
 	.long	over, minus, spaces
 	.long	type
 	EXIT_4TH
@@ -890,9 +890,9 @@ WORD("u.r", u_dot_r)
 WORD(".s", dot_s)
 	.long	sp_fetch, sp0, equals, OR_ELSE(0f), exit_4th; 0:;
 
-	.long	dup			! spill TOS to memory
-	.long	sp_fetch, cell_plus	! below spilled TOS 
-	.long	sp0, cell_minus		! skip invalid TOS of an empty stack
+	.long	dup			/* spill TOS to memory */
+	.long	sp_fetch, cell_plus	/* below spilled TOS  */
+	.long	sp0, cell_minus		/* skip invalid TOS of an empty stack */
 	.long	do_parens, 9f
 1:
 	.long	i_4th, cell_minus, fetch, dot
@@ -912,7 +912,7 @@ WORD(".s", dot_s)
 !!! ACCEPT - CORE 6.1.0695
 !!!     ( c-addr +n1 -- +n2 )
  */
-CWORD("accept", accept_4th)	! XXX: avoid name clash with accept(2)
+CWORD("accept", accept_4th)	/* XXX: avoid name clash with accept(2) */
 	.long	_C_LABEL(accept_impl)
 
 
@@ -961,19 +961,19 @@ WORD("source", source)
 !!!     ( delim -- )
  */
 WORD("skip-delim", skip_delim)
-	.long	to_r		! stash delimiter away
+	.long	to_r		/* stash delimiter away */
 	.long	source, swap
 1:	/* begin */ 		/* buflen buf -- */
 	.long	over, to_in, fetch, swap, less_than
-	.long	OR_ELSE(9f)		! exit if >in greater/equal #tib
+	.long	OR_ELSE(9f)		/* exit if >in greater/equal #tib */
 	.long	dup, to_in, fetch, plus, c_fetch
 	.long	r_fetch, equals
-	.long	OR_ELSE(9f)		! exit if not a delimiter
-	.long	to_in, one_plus_store	! advance >in
-	.long	branch, 1b		! again
+	.long	OR_ELSE(9f)		/* exit if not a delimiter */
+	.long	to_in, one_plus_store	/* advance >in */
+	.long	branch, 1b		/* again */
 9:
-	.long	two_drop		! buflen and buf
-	.long	r_from, drop		! delimiter
+	.long	two_drop		/* buflen and buf */
+	.long	r_from, drop		/* delimiter */
 	EXIT_4TH
 
 
@@ -982,33 +982,33 @@ WORD("skip-delim", skip_delim)
 !!!     ( delim "ccc<delim>" -- str len )
  */
 WORD("parse", parse)
-	.long	source, nip, to_in, fetch	! parse area limits
+	.long	source, nip, to_in, fetch	/* parse area limits */
 	.long	two_dup, less_than_equals
 	.long	OR_ELSE(1f)
 
 	/* parse area is exhausted, return empty word */
-	.long	two_drop	! limits
-	.long	drop		! delim
-	.long	source, drop, to_in, fetch, plus ! result address
-	.long	lit, 0				 ! result length
+	.long	two_drop	/* limits */
+	.long	drop		/* delim */
+	.long	source, drop, to_in, fetch, plus /* result address */
+	.long	lit, 0				 /* result length */
 	.long	exit_4th
 1:
-	.long	dup, to_r		! stash away current >in
-	.long	lit, 0, minus_rot	! init result length
+	.long	dup, to_r		/* stash away current >in */
+	.long	lit, 0, minus_rot	/* init result length */
 	.long	do_parens, 8f
 2:	/* while >in is exceeding source length */
 
-	.long	to_in, one_plus_store ! >in is always advanced
-	.long	over		      ! get a copy of delim
-	.long	source, drop, i_4th, plus, c_fetch ! current char
-	.long	equals, OR_ELSE(7f)	! .. is a delim?
+	.long	to_in, one_plus_store	/* >in is always advanced */
+	.long	over			/* get a copy of delim */
+	.long	source, drop, i_4th, plus, c_fetch /* current char */
+	.long	equals, OR_ELSE(7f)	/* .. is a delim? */
 	.long	    leave
-7:	.long	one_plus			   ! increment result length
+7:	.long	one_plus		/* increment result length */
 	.long	loop_parens, 2b
 8:
-	.long	nip			   ! get rid of delim
-	.long	source, drop, r_from, plus ! result address (via old >in)
-	.long	swap			   ! result length on top
+	.long	nip			   /* get rid of delim */
+	.long	source, drop, r_from, plus /* result address (via old >in) */
+	.long	swap			   /* result length on top */
 	EXIT_4TH
 
 
@@ -1030,11 +1030,11 @@ WORD("parse-word", parse_word)
 WORD("word", word)
 	.long	dup, skip_delim, parse
 	/* str len -- */
-	.long	dup, to_r		! stash away count
-	.long	here, one_plus		! dst temp area, reserve count byte
-	.long	swap, cmove		! copy parsed string
-	.long	r_fetch, here, c_store	! write count
-	.long	bl, here, one_plus, r_from, plus, c_store ! space after string
+	.long	dup, to_r		/* stash away count */
+	.long	here, one_plus		/* dst temp area, reserve count byte */
+	.long	swap, cmove		/* copy parsed string */
+	.long	r_fetch, here, c_store	/* write count */
+	.long	bl, here, one_plus, r_from, plus, c_store /* space after string */
 	.long	here
 	EXIT_4TH
 
@@ -1067,7 +1067,7 @@ WORD("base-a", base_a)
 !!! ( char base -- value true | false )
  */
 WORD("digit?", is_digit)
-	.long	swap, to_r	! stash away the char
+	.long	swap, to_r	/* stash away the char */
 
 	/* a "normal" digit from '0'.. range? */
 	.long	dup, base_zero
@@ -1083,7 +1083,7 @@ WORD("digit?", is_digit)
 
 	/* a digit from 'a'.. range? */
 	.long	dup, base_a
-	.long	r_from, lit, 0x20, or, dup, to_r ! downcased
+	.long	r_from, lit, 0x20, or, dup, to_r /* downcased */
 	.long	minus_rot, within
 	.long	OR_ELSE(9f)
 	.long	drop, r_from, lit, 'a, minus, lit, 10, plus, true
@@ -1099,34 +1099,34 @@ WORD("digit?", is_digit)
 !!!     ( ud1 s1 l1 -- ud2 s2 l2)
  */
 WORD(">number", to_number)
-	.long	two_dup, to_r, to_r	! stash away initial string
-	.long	over, plus, swap	! pointer loop range
+	.long	two_dup, to_r, to_r	/* stash away initial string */
+	.long	over, plus, swap	/* pointer loop range */
 	.long	question_do_parens, 9f
 1:
 	.long	i_4th, c_fetch, base, fetch, is_digit
 	.long	OR_ELSE(2f)
 
-	.long	    swap			! get hi above digit
-	.long	    base, fetch, um_star, drop	! lo(hi*base)
+	.long	    swap			/* get hi above digit */
+	.long	    base, fetch, um_star, drop	/* lo(hi*base) */
 		    /* digit lo(hi*base) - is already a double cell sum! */
-	.long	    rot				! lo
-	.long	    base, fetch, um_star	! double cell lo*base
+	.long	    rot				/* lo */
+	.long	    base, fetch, um_star	/* double cell lo*base */
 	.long	    d_plus
 
 	.long	branch, 3f
 2:
 	/* bad character, compute new string position */
-	.long	i_4th		! current pointer (NB: while we still can)
-	.long	unloop		! clean up return stack for exit
-	.long	dup			! new position
-	.long	r_from, minus		! distance from original position
-	.long	r_from, swap, minus	! decrease length by it
+	.long	i_4th		/* current pointer (NB: while we still can) */
+	.long	unloop		/* clean up return stack for exit */
+	.long	dup			/* new position */
+	.long	r_from, minus		/* distance from original position */
+	.long	r_from, swap, minus	/* decrease length by it */
 	.long	exit_4th
 3:
 	.long	loop_parens, 1b
 9:
 	/* loop ended normally, so we used up all the string */
-	.long	two_r_from, plus, lit, 0 ! 
+	.long	two_r_from, plus, lit, 0 /*  */
 	EXIT_4TH
 
 
@@ -1134,8 +1134,8 @@ WORD(">number", to_number)
 !!! str len -- 0 | n 1 | d 2
  */
 WORD("number?", is_number)
-	.long	base, fetch, to_r ! save base in case of a sigil
-	.long	false, to_r	  ! minus sign
+	.long	base, fetch, to_r /* save base in case of a sigil */
+	.long	false, to_r	  /* minus sign */
 
 	/* if there's just one char, it cannot be a sigil or a minus sign */
 	.long	dup, lit, 1, greater_than, OR_ELSE(.L_check_number)
@@ -1156,9 +1156,9 @@ WORD("number?", is_number)
 	.long	    drop, branch, .L_check_sign
 
 .L_base_sigil:
-	.long	drop		    ! sigil
-	.long	swap, one_plus	    ! ++address
-	.long	swap, one_minus	    ! --length
+	.long	drop		    /* sigil */
+	.long	swap, one_plus	    /* ++address */
+	.long	swap, one_minus	    /* --length */
 
 	/* if there's just one char, it cannot be a minus sign */
 	.long	dup, lit, 1, greater_than, OR_ELSE(.L_check_number)
@@ -1167,10 +1167,10 @@ WORD("number?", is_number)
 	.long	over, c_fetch, lit, '-, equals
 	.long	OR_ELSE(.L_check_number)
 
-	.long	r_from, drop, true, to_r ! note that we have a minus
+	.long	r_from, drop, true, to_r /* note that we have a minus */
 
-	.long	swap, one_plus		! ++address
-	.long	swap, one_minus		! --length
+	.long	swap, one_plus		/* ++address */
+	.long	swap, one_minus		/* --length */
 
 .L_check_number:
 	/* try to convert to number -> ud addr len */
@@ -1213,10 +1213,10 @@ WORD("number?", is_number)
 !!!     ( ud1 cstr -- ud2 caddr )
  */
 WORD("convert", convert)
-	.long	char_plus	! skip the count byte of cstr
-	.long	lit, 256	! provide fake length
-	.long	to_number	! convert
-	.long	drop		! remainder of the fake length
+	.long	char_plus	/* skip the count byte of cstr */
+	.long	lit, 256	/* provide fake length */
+	.long	to_number	/* convert */
+	.long	drop		/* remainder of the fake length */
 	EXIT_4TH
 
 
@@ -1266,7 +1266,7 @@ WORD("2lit", two_lit)
  */
 WORD("(c\")", c_quote_parens)
 	.long	r_from, dup
-	.long	count, plus, aligned, to_r	! skip string
+	.long	count, plus, aligned, to_r	/* skip string */
 	EXIT_4TH
 
 
@@ -1275,9 +1275,9 @@ WORD("(c\")", c_quote_parens)
  */
 WORD("(s\")", s_quote_parens)
 	.long	r_from, dup
-	.long	cell_plus, swap			! address of string
-	.long	fetch				! length
-	.long	two_dup, plus, aligned, to_r	! skip string
+	.long	cell_plus, swap			/* address of string */
+	.long	fetch				/* length */
+	.long	two_dup, plus, aligned, to_r	/* skip string */
 	EXIT_4TH
 
 
@@ -1286,9 +1286,9 @@ WORD("(s\")", s_quote_parens)
  */
 WORD("(.\")", dot_quote_parens)
 	.long	r_from, dup
-	.long	cell_plus, swap			! address of string
-	.long	fetch				! length
-	.long	two_dup, plus, aligned, to_r	! skip string
+	.long	cell_plus, swap			/* address of string */
+	.long	fetch				/* length */
+	.long	two_dup, plus, aligned, to_r	/* skip string */
 	/* the above is a copy of (s") */
 	.long	type
 	EXIT_4TH
@@ -1299,15 +1299,15 @@ WORD("(.\")", dot_quote_parens)
  */
 WORD("(abort\")", abort_quote_parens)
 	.long	r_from, dup
-	.long	cell_plus, swap			! address of string
-	.long	fetch				! length
-	.long	two_dup, plus, aligned, to_r	! skip string
+	.long	cell_plus, swap			/* address of string */
+	.long	fetch				/* length */
+	.long	two_dup, plus, aligned, to_r	/* skip string */
 	/* the above is a copy of (s") */
 	.long	rot, zero_equals, OR_ELSE(0f)
 	.long	    two_drop, exit_4th
 0:
-	.long	type, cr	! should it call CR?
-	.long	quit ! XXX: FIXME: must be ABORT, but see QUIT definition
+	.long	type, cr	/* should it call CR? */
+	.long	quit /* XXX: FIXME: must be ABORT, but see QUIT definition */
 	EXIT_4TH
 
 
@@ -1387,7 +1387,7 @@ WORD("link>", link_from)
 	EXIT_4TH
 
 WORD("name-count", name_count)
-	.long	count, lit, 0x1f, and ! upper bits are for flags
+	.long	count, lit, 0x1f, and /* upper bits are for flags */
 	EXIT_4TH
 
 WORD("n>link", n_to_link)
@@ -1406,9 +1406,9 @@ WORD("name>", name_from)
 WORD(">name", to_name)
 	.long	dup, dup, aligned, equals, OR_ELSE(9f)
 
-	.long	to_link			! the address after name
-	.long	dup			! keep a copy for comparisons
-	.long	dup, lit, 32, minus	! the farthest away that NFA can be
+	.long	to_link			/* the address after name */
+	.long	dup			/* keep a copy for comparisons */
+	.long	dup, lit, 32, minus	/* the farthest away that NFA can be */
 	.long	swap, cell_minus, do_parens, 9f
 1:
 	/*
@@ -1421,14 +1421,14 @@ WORD(">name", to_name)
 	.long	    lit, (~0x1f & ~IFLAG), and, zero_equals, OR_ELSE(8f)
 		        /* looks like a count byte, but is the count right? */
 	.long		dup, i_4th, n_to_link, equals, OR_ELSE(8f)
-	.long		    drop		! LFA
-	.long		    i_4th		! NFA
+	.long		    drop		/* LFA */
+	.long		    i_4th		/* NFA */
 	.long		    unloop, exit_4th
 8:
 	.long	lit, 0, cell_minus, plus_loop_parens, 1b
 9:
-	.long	drop			! LFA
-	.long	lit, 0			! failure
+	.long	drop			/* LFA */
+	.long	lit, 0			/* failure */
 	EXIT_4TH
 
 
@@ -1436,22 +1436,22 @@ WORD(">name", to_name)
 !!! CREATE - CORE 6.1.1000
  */
 WORD("create", create)
-	.long	parse_word, question_dup ! 0 only on EOF
+	.long	parse_word, question_dup /* 0 only on EOF */
 	.long	zero_equals, OR_ELSE(0f)
 	.long	    drop, THROW(16)
 0:
-	.long	align, here, to_r	! save NFA of the new word
+	.long	align, here, to_r	/* save NFA of the new word */
 
 	/* Name Field */
-	.long	dup, to_r		! save length
-	.long	dup, c_comma		! write name length byte
-	.long	here, swap		! destination
-	.long	cmove			! copy name
-	.long	r_from, allot, align	! move heap pointer past the name
+	.long	dup, to_r		/* save length */
+	.long	dup, c_comma		/* write name length byte */
+	.long	here, swap		/* destination */
+	.long	cmove			/* copy name */
+	.long	r_from, allot, align	/* move heap pointer past the name */
 
 	/* Link Field */
-	.long	current, fetch, dup, fetch, comma ! pointer to previous
-	.long	r_from, swap, store		  ! update current to our NFA
+	.long	current, fetch, dup, fetch, comma /* pointer to previous */
+	.long	r_from, swap, store		  /* update current to our NFA */
 
 	/*
 	 * Code Field
@@ -1543,26 +1543,26 @@ WORD("search-current", search_current)
 0:
 	.long	latest
 1:	/* begin */
-	.long	dup, c_fetch, lit, (SFLAG), and, zero_equals ! not smudged?
+	.long	dup, c_fetch, lit, (SFLAG), and, zero_equals /* not smudged? */
 	.long	OR_ELSE(8f)
 
-	.long	to_r			! stash current NFA
-	.long	two_dup			! the word we search for
-	.long	r_fetch			! current NFA
-	.long	name_count		! count, drop the flags
-	.long	compare			! zero if equals
+	.long	to_r			/* stash current NFA */
+	.long	two_dup			/* the word we search for */
+	.long	r_fetch			/* current NFA */
+	.long	name_count		/* count, drop the flags */
+	.long	compare			/* zero if equals */
 	.long	OR_ELSE(2f)
 
 	/* not the word we are looking for */
-	.long	    r_from		! get back current NFA
+	.long	    r_from		/* get back current NFA */
 	.long	branch, 9f
 
 2:	/* we've got a match */
-	.long	    two_drop			! the word we searched for
-	.long	    r_from			! get back current NFA
-	.long	    dup, name_from, swap	! CFA NFA --
-	.long	    c_fetch, lit, IFLAG, and	! nfa -> 1 for immediate,
-	.long	    lit, 6, rshift, lit, 1, minus ! ... -1 otherwise
+	.long	    two_drop			/* the word we searched for */
+	.long	    r_from			/* get back current NFA */
+	.long	    dup, name_from, swap	/* CFA NFA -- */
+	.long	    c_fetch, lit, IFLAG, and	/* nfa -> 1 for immediate, */
+	.long	    lit, 6, rshift, lit, 1, minus /* ... -1 otherwise */
 	.long	exit_4th
 
 8:	/* smudged */
@@ -1573,8 +1573,8 @@ WORD("search-current", search_current)
 	.long	question_dup, zero_equals, OR_ELSE(1b)
 
 	/* we reached the end of the vocabulary */
-	.long	two_drop	! the word we searched for
-	.long	false		! indicate failure
+	.long	two_drop	/* the word we searched for */
+	.long	false		/* indicate failure */
 	EXIT_4TH
 
 
@@ -1612,7 +1612,7 @@ WORD("(')", tick_parens)
 !!!     ( "<spaces>name" -- xt )
  */
 WORD("'", tick)
-	.long	tick_parens, drop ! immediate flag
+	.long	tick_parens, drop /* immediate flag */
 	EXIT_4TH
 
 
@@ -1625,7 +1625,7 @@ WORD("'", tick)
 !!! STATE - CORE 6.1.2250
  */
 VARIABLE("state", state)
-	.long	0		! interpretation
+	.long	0		/* interpretation */
 
 
 /*
@@ -1649,7 +1649,7 @@ WORD("]", right_bracket)
  */
 WORD("interpret", interpret)
 1:	/* begin */
-	.long	parse_word, question_dup ! 0 only on EOF
+	.long	parse_word, question_dup /* 0 only on EOF */
 	.long	OR_ELSE(9f)
 
 	.long	two_dup, search_current, question_dup, zero_equals
@@ -1696,7 +1696,7 @@ WORD("interpret", interpret)
 	.long	branch, 1b
 	/* again */
 9:
-	.long	drop	 ! leftover caddr from unsuccessful parse-word
+	.long	drop	 /* leftover caddr from unsuccessful parse-word */
 	EXIT_4TH
 
 
@@ -1705,7 +1705,7 @@ WORD("interpret", interpret)
  */
 WORD("bye", bye)
 	.long	bye_parens
-	.long	0xdeadbeef	! unreachable sentinel
+	.long	0xdeadbeef	/* unreachable sentinel */
 
 
 /*
@@ -1718,8 +1718,8 @@ WORD("bye", bye)
 !!!     the code below is actually ABORT.
  */
 WORD("quit", quit)
-	.long	quit_parens	! reset data stack, must be the first
-	.long	left_bracket	! interpret
+	.long	quit_parens	/* reset data stack, must be the first */
+	.long	left_bracket	/* interpret */
 1:	/* begin */
 	.long	    refill
 	.long	OR_ELSE(9f)
@@ -1738,7 +1738,7 @@ WORD("quit", quit)
 !!! ABORT - CORE 6.1.0670
  */
 WORD("abort", abort_4th)
-	.long	abort_parens	! reset return stack, must be first
+	.long	abort_parens	/* reset return stack, must be first */
 	.long	goto_parens, quit
 	EXIT_4TH
 
@@ -1844,13 +1844,13 @@ IMMWORD("2literal", two_literal)
 !!!     ( xt "ccc<quote>" -- )
  */
 WORD("compile\"", compile_quote)
-	.long	lit, '\", parse	! XXX: handle failure
+	.long	lit, '\", parse	/* XXX: handle failure */
 	/* compile: <xt> <len> <len bytes of string> */
-	.long	rot, compile_comma	! compile run-time word
-	.long	dup, comma	! string length
-	.long	here, swap	! copy destination
-	.long	dup, allot	! reserve space
-	.long	cmove, align	! copy string
+	.long	rot, compile_comma	/* compile run-time word */
+	.long	dup, comma	/* string length */
+	.long	here, swap	/* copy destination */
+	.long	dup, allot	/* reserve space */
+	.long	cmove, align	/* copy string */
 	EXIT_4TH
 
 
@@ -1889,14 +1889,14 @@ IMMWORD("abort\"", abort_quote)
  */
 IMMWORD("c\"", c_quote)
 	.long	question_comp
-	.long	lit, '\", parse	! XXX: handle failure
+	.long	lit, '\", parse	/* XXX: handle failure */
 	/* XXX: throw if string is too long */
 	/* compile: (c") <count> <count bytes of string> */
 	.long	compile, c_quote_parens
-	.long	dup, c_comma	! string count
-	.long	here, swap	! copy destination
-	.long	dup, allot	! reserve space
-	.long	cmove, align	! copy string
+	.long	dup, c_comma	/* string count */
+	.long	here, swap	/* copy destination */
+	.long	dup, allot	/* reserve space */
+	.long	cmove, align	/* copy string */
 	EXIT_4TH
 
 
@@ -1946,7 +1946,7 @@ IMMWORD("postpone", postpone)
  */
 WORD("(;code)", semicolon_code_parens)
 	.long	r_from, latest, name_from, store
-	EXIT_4TH		! to the caller's caller
+	EXIT_4TH		/* to the caller's caller */
 
 
 /*
@@ -1955,7 +1955,7 @@ WORD("(;code)", semicolon_code_parens)
  */
 WORD("(;alit)", semicolon_alit_parens)
 	.long	r_from, fetch, latest, name_from, store
-	EXIT_4TH		! to the caller's caller
+	EXIT_4TH		/* to the caller's caller */
 
 
 /*
@@ -2001,9 +2001,9 @@ IMMWORD("recurse", recurse)
 !!! ; - CORE 6.1.0460
  */
 IMMWORD(";", semicolon)
-	.long	compile, exit_4th	! compile exit
-	.long	unsmudge		! reveal the word to search
-	.long	left_bracket		! back to interpretation
+	.long	compile, exit_4th	/* compile exit */
+	.long	unsmudge		/* reveal the word to search */
+	.long	left_bracket		/* back to interpretation */
 	EXIT_4TH
 
 
@@ -2038,7 +2038,7 @@ IMMWORD("if", if)
 	.long	question_comp
 	.long	compile, question_branch
 	.long	mark_fwd
-	.long	lit, 1		! for ?pairs
+	.long	lit, 1		/* for ?PAIRS */
 	EXIT_4TH
 
 
@@ -2048,9 +2048,9 @@ IMMWORD("if", if)
 IMMWORD("else", else)
 	.long	question_comp
 	.long	lit, 1, question_pairs
-	.long	compile, branch, mark_fwd ! will be resolved by THEN
-	.long	swap, resolve_fwd	  ! address left by IF
-	.long	lit, 1			  ! for ?pairs
+	.long	compile, branch, mark_fwd /* will be resolved by THEN */
+	.long	swap, resolve_fwd	  /* address left by IF */
+	.long	lit, 1			  /* for ?PAIRS */
 	EXIT_4TH
 
 
@@ -2060,7 +2060,7 @@ IMMWORD("else", else)
 IMMWORD("then", then)
 	.long	question_comp
 	.long	lit, 1, question_pairs
-	.long	resolve_fwd	! MARK_FWD of IF or ELSE
+	.long	resolve_fwd	/* MARK_FWD of IF or ELSE */
 	EXIT_4TH
 
 
@@ -2070,7 +2070,7 @@ IMMWORD("then", then)
 IMMWORD("begin", begin)
 	.long	question_comp
 	.long	mark_back
-	.long	lit, 2		! for ?pairs
+	.long	lit, 2		/* for ?PAIRS */
 	EXIT_4TH
 
 
@@ -2101,7 +2101,7 @@ IMMWORD("until", until)
 IMMWORD("while", while)
 	.long	question_comp
 	.long	lit, 2, question_pairs
-	.long	lit, 2		! for ?pairs
+	.long	lit, 2		/* for ?PAIRS */
 	.long	if, two_swap
 	EXIT_4TH
 
@@ -2120,15 +2120,15 @@ IMMWORD("repeat", repeat)
 !!!     ( limit first -- R: addr limit current )
  */
 WORD("(do)", do_parens)
-	.long	r_from			! next cell after compiled "(do)"
-	.long	dup, fetch, to_r	! stash end of loop address for "leave"
-	.long	rot			! first leave limit --
+	.long	r_from			/* next cell after compiled "(do)" */
+	.long	dup, fetch, to_r	/* stash address for "leave" */
+	.long	rot			/* first ret limit -- */
 	/* offset limit so that last + limit causes overflow */
 	.long	lit, 0x80000000, swap, minus, to_r
-	.long	swap			! leave first --
+	.long	swap			/* ret first -- */
 	/* offset first accordingly too */
 	.long	r_fetch, plus, to_r
-	.long	cell_plus, to_r		! skip literal after (do)
+	.long	cell_plus, to_r		/* skip literal after (do) */
 	EXIT_4TH
 
 
@@ -2139,9 +2139,9 @@ WORD("(do)", do_parens)
 WORD("(?do)", question_do_parens)
 	.long	two_dup, equals, OR_ELSE(0f)
 	.long	    two_drop
-	.long	    goto_parens, branch ! skip loop
+	.long	    goto_parens, branch /* skip loop */
 0:
-	.long	goto_parens, do_parens	! setup loop
+	.long	goto_parens, do_parens	/* setup loop */
 
 
 /*
@@ -2150,9 +2150,9 @@ WORD("(?do)", question_do_parens)
 IMMWORD("do", do)
 	.long	question_comp
 	.long	compile, do_parens
-	.long	mark_fwd	! address for leave
-	.long	mark_back	! address to loop back to
-	.long	lit, 3		! for ?pairs
+	.long	mark_fwd	/* address for leave */
+	.long	mark_back	/* address to loop back to */
+	.long	lit, 3		/* for ?PAIRS */
 	EXIT_4TH
 
 
@@ -2163,9 +2163,9 @@ IMMWORD("do", do)
 IMMWORD("question_do", question_do)
 	.long	question_comp
 	.long	compile, question_do_parens
-	.long	mark_fwd	! address for leave
-	.long	mark_back	! address to loop back to
-	.long	lit, 3		! for ?pairs
+	.long	mark_fwd	/* address for leave */
+	.long	mark_back	/* address to loop back to */
+	.long	lit, 3		/* for ?PAIRS */
 	EXIT_4TH
 
 
@@ -2174,10 +2174,10 @@ IMMWORD("question_do", question_do)
 !!! I - CORE 6.1.1680
  */
 WORD("i", i_4th)
-	.long	r_from		! return address
-	.long	two_r_fetch	! limit and current
-	.long	swap, minus	! normalize current - see (do)
-	.long	swap, to_r	! restore return address
+	.long	r_from		/* return address */
+	.long	two_r_fetch	/* limit and current */
+	.long	swap, minus	/* normalize current - see (do) */
+	.long	swap, to_r	/* restore return address */
 	EXIT_4TH
 .endif
 
@@ -2187,9 +2187,9 @@ WORD("i", i_4th)
 !!! J - 6.1.1730
  */
 WORD("j", j_4th)
-	.long	two_r_from, two_r_from ! return address and inner loop params
-	.long	two_r_fetch	       ! limit and current of the outer loop
-	.long	swap, minus	       ! normalize current - see (do)
+	.long	two_r_from, two_r_from /* return address and inner loop params */
+	.long	two_r_fetch	       /* limit and current of the outer loop */
+	.long	swap, minus	       /* normalize current - see (do) */
 	.long	minus_rot, two_to_r
 	.long	minus_rot, two_to_r
 	EXIT_4TH
@@ -2201,19 +2201,19 @@ WORD("j", j_4th)
 !!! 	( R: addr limit current )
  */
 WORD("leave", leave)
-	.long	r_from, drop		! return address
-	.long	two_r_from, two_drop	! loop limit and counter
-	EXIT_4TH			! to the loop's end
+	.long	r_from, drop		/* return address */
+	.long	two_r_from, two_drop	/* loop limit and counter */
+	EXIT_4TH			/* to the loop's end */
 
 
 /*
 !!! UNLOOP - CORE 6.1.2380
  */
 WORD("unloop", unloop)
-	.long	r_from			! save return address
-	.long	two_r_from, two_drop	! loop limit and counter
-	.long	r_from, drop		! leave address
-	.long	to_r			! restore return address
+	.long	r_from			/* save return address */
+	.long	two_r_from, two_drop	/* loop limit and counter */
+	.long	r_from, drop		/* leave address */
+	.long	to_r			/* restore return address */
 	EXIT_4TH
 
 
@@ -2223,22 +2223,22 @@ WORD("unloop", unloop)
 !!! 	( increment -- ) ( R: addr limit current )
  */
 WORD("(+loop)", plus_loop_parens)
-	.long	r_from, swap		! take (+loop)'s return address
+	.long	r_from, swap		/* take (+loop)'s return address */
 
-	.long	r_from			! current
-	.long	plus_question		! add increment with overflow check
+	.long	r_from			/* current */
+	.long	plus_question		/* add increment with overflow check */
 	.long	OR_ELSE(1f)
 
 	/* overflow means we hit the limit, leave the loop */
-	.long	drop		! current
-	.long	r_from, drop	! limit
-	.long	r_from, drop	! leave address
+	.long	drop		/* current */
+	.long	r_from, drop	/* limit */
+	.long	r_from, drop	/* leave address */
 	.long	cell_plus, to_r, exit_4th
 
 1:	/* no overflow, update current and continue */
-	.long	to_r			! new current
-	.long	to_r			! return address
-	.long	goto_parens, branch	! to beginning of loop
+	.long	to_r			/* new current */
+	.long	to_r			/* return address */
+	.long	goto_parens, branch	/* to beginning of loop */
 
 
 /*
@@ -2285,7 +2285,7 @@ WORD("value", value)
 DOES_4TH(value_does)
 	.long	state, fetch, OR_ELSE(1f)
 	    /* compilation */
-	.long	    literal		! compile pfa as literal
+	.long	    literal		/* compile pfa as literal */
 	.long	    compile, fetch
 	.long	    branch, 9f
 1:	    /* interpretation */
@@ -2312,7 +2312,7 @@ IMMWORD("to", to_4th)
 	/* like DOES> part of VALUE above but with ! instead of @  */
 	.long	state, fetch, OR_ELSE(1f)
 	    /* compilation */
-	.long	    literal		! compile pfa as literal
+	.long	    literal		/* compile pfa as literal */
 	.long	    compile, store
 	.long	    branch, 9f
 1:	    /* interpretation */
@@ -2328,16 +2328,16 @@ VARIABLE("fence", fence)
 !!! ( "<spaces>name" -- )
  */
 WORD("forget", forget)
-	.long	tick, dup, to_name		! cfa nfa --
+	.long	tick, dup, to_name		/* cfa nfa -- */
 	.long	question_dup, zero_equals, OR_ELSE(0f)
 	.long	    drop, exit_4th
 0:
 	.long	dup, fence, fetch, less_than, OR_ELSE(0f)
 	.long	    two_drop, THROW(15)
 0:
-	.long	swap, to_link, fetch		! nfa of the previous word
-	.long	current, fetch, store		! update current/latest
-	.long	dp_store			! move HERE to NFA
+	.long	swap, to_link, fetch		/* nfa of the previous word */
+	.long	current, fetch, store		/* update current/latest */
+	.long	dp_store			/* move HERE to NFA */
 	EXIT_4TH
 
 
@@ -2351,6 +2351,6 @@ WORD("anew", anew)
 	.long	    forget
 0:
 	.long	    drop
-	.long	    to_in, store		! rewind input
-	.long	    create			! 
+	.long	    to_in, store		/* rewind input */
+	.long	    create
 	EXIT_4TH
