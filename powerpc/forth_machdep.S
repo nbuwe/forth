@@ -298,12 +298,123 @@ next_code:
  * Stack manipualtion
  */
 
+### DROP - CORE 6.1.1260
+###     ( x -- )
+ASMWORD("drop", drop)
+	FILL_TOS
+	blr
+	ASMEND(drop)
+
+
 ### DUP - CORE 6.1.1290
 ###     ( x -- x x )
 ASMWORD("dup", dup)
 	SPILL_TOS
 	blr
 	ASMEND(dup)
+
+
+### ?DUP - CORE 6.1.0630
+###     ( x -- 0 | x x )
+ASMWORD("?dup", question_dup)
+	cmpi	%cr0, %TOS, 0
+	beq	%cr0, 0f
+	SPILL_TOS
+0:	blr
+	ASMEND(question_dup)
+
+
+### SWAP - CORE 6.1.2260
+###     ( x1 x2 -- x2 x1 )
+ASMWORD("swap", swap)
+	lwz	%TMP, 0(%PSP)
+	stw	%TOS, 0(%PSP)
+	mr	%TOS, %TMP
+	blr
+	ASMEND(swap)
+
+
+### OVER - CORE 6.1.1990
+###     ( x1 x2 -- x1 x2 x1 )
+ASMWORD("over", over)
+	lwz	%TMP, 0(%PSP)
+	SPILL_TOS
+	mr	%TOS, %TMP
+	blr
+	ASMEND(over)
+
+
+### NIP - CORE EXT 6.2.1930
+###     ( x1 x2 -- x2 )
+ASMWORD("nip", nip)
+	addi	%PSP, %PSP, 4
+	blr
+	ASMEND(nip)
+
+
+### TUCK - CORE EXT 6.2.2300
+###     ( x1 x2 -- x2 x1 x2 )
+ASMWORD("tuck", tuck)
+	lwz	%TMP, 0(%PSP)
+	stw	%TOS, 0(%PSP)
+	stwu	%TMP, -4(%PSP)
+	blr
+	ASMEND(tuck)
+
+
+### ROT - CORE 6.1.2160
+###     ( x1 x2 x3 -- x2 x3 x1 )
+ASMWORD("rot", rot)
+	lwz	%TMP, 0(%PSP)	# x2
+	lwz	%r0, 4(%PSP)	# x1
+	stw	%TMP, 4(%PSP)
+	stw	%TOS, 0(%PSP)
+	mr	%TOS, %r0
+	blr
+	ASMEND(rot)
+
+
+### -ROT - non-standard, inverse of ROT
+###     ( x1 x2 x3 -- x3 x1 x2 )
+ASMWORD("-rot", minus_rot)
+	lwz	%TMP, 0(%PSP)	# x2
+	lwz	%r0, 4(%PSP)	# x1
+	stw	%TOS, 4(%PSP)
+	stw	%r0, 0(%PSP)
+	mr	%TOS, %TMP
+	blr
+	ASMEND(minus_rot)
+
+
+### PICK - CORE EXT 6.2.2030
+###     ( xu ... x1 x0 u -- xu ... x1 x0 xu )
+ASMWORD("pick", pick)
+	slwi	%TOS, %TOS, 2
+	lwzx	%TOS, %PSP, %TOS
+	blr
+	ASMEND(pick)
+
+
+### ROLL - CORE EXT 6.2.2150
+###     ( xu xu-1 ... x0 u -- xu-1 ... x0 xu )
+ASMWORD("roll", roll)
+	cmpi	%cr0, %TOS, 0
+	bne+	%cr0, 0f
+	FILL_TOS	#  if u == 0, just drop it
+	blr
+0:
+	mtctr	%TOS
+	slwi	%TMP, %TOS, 2
+	add	%TMP, %PSP, %TMP	# TMP = &xu;
+	lwz	%TOS, 0(%TMP)		# TOS = xu;
+	addi	%PSP, %PSP, 4
+0:
+	lwzu	%r0, -4(%TMP)
+	stw	%r0, 4(%TMP)
+	bdnz	0b
+	blr
+	ASMEND(roll)
+
 
 
 
@@ -343,6 +454,6 @@ ASMWORD("lit", lit)
 ### ABORT - CORE 6.1.0670
 WORD("abort", abort_4th)
 	.long	abort_parens	# reset return stack, must be first
-	.long	lit, 1, dup, plus
+	##  ... test code here ...
 	.long	bye_parens
 	#EXIT_4TH
