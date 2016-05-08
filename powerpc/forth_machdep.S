@@ -824,6 +824,49 @@ ASMWORD("rshift", rshift)
 
 
 /**
+ * Fetch and store
+ */
+
+### @ - CORE 6.1.0650
+###     ( a-addr -- x )
+ASMWORD("@", fetch)
+	lwz	%TOS, 0(%TOS)
+	blr
+	ASMEND(fetch)
+
+
+### ! - CORE 6.1.0010
+###     ( x a-addr -- )
+ASMWORD("!", store)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	stw	%TMP, 0(%TOS)
+	FILL_TOS
+	blr
+	ASMEND(fetch)
+
+
+
+### C@ - CORE 6.1.0870
+###     ( c-addr -- char )
+ASMWORD("c@", c_fetch)
+	lbz	%TOS, 0(%TOS)
+	blr
+	ASMEND(c_fetch)
+
+
+### C! - CORE 6.1.0850
+###     ( char c-addr -- )
+ASMWORD("c!", c_store)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	stb	%TMP, 0(%TOS)
+	FILL_TOS
+	blr
+	ASMEND(c_store)
+
+
+/**
  * Control structure helpers
  */
 
@@ -848,6 +891,9 @@ WORD("abort", abort_4th)
 	##  ... test code here ...
 	.long	bye_parens
 	#EXIT_4TH
+
+VARIABLE("vvv", vvv)
+	.long	0x12345678
 
 WORD("test-word", test_word)
 	## ... test code here ...
