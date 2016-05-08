@@ -1421,7 +1421,7 @@ ASMWORD("2lit", two_lit)
 !!! BRANCH - auxiliary for ELSE &co
 ASMWORD("branch", branch)
 	jmp	@NEXT
-	 mov.l	@IP+, IP
+	 mov.l	@IP, IP
 	ASMEND(branch)
 
 
@@ -1431,7 +1431,7 @@ ASMWORD("?branch", question_branch)
 	bf/s	1f		! branch is taken when TOS is false(!)
 	 FILL_TOS
 	jmp	@NEXT
-	 mov.l	@IP+, IP	! take branch
+	 mov.l	@IP, IP		! take branch
 1:	jmp	@NEXT
 	 add	#4, IP		! skip branch address
 	ASMEND(question_branch)
