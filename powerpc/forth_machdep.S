@@ -1044,6 +1044,59 @@ ASMWORD("move", move)
 
 
 
+/*
+ * Double-cell numbers
+ */
+
+### S>D - CORE 6.1.2170
+###     ( n -- d )
+ASMWORD("s>d", s2d)
+	SPILL_TOS		# least significant cell is below
+	srawi	%TOS, %TOS, 31	# sign extend
+	blr
+	ASMEND(s2d)
+
+
+### D>S - DOUBLE 8.6.1.1140
+###     ( d -- n )
+WORD("d>s", d2s)
+	.long	drop
+	EXIT_4TH
+
+
+### DNEGATE - DOUBLE 8.6.1.1230
+###     ( d1 -- d2 )
+ASMWORD("dnegate", dnegate)
+	lwz	%TMP, 0(%PSP)
+	subfic	%TMP, %TMP, 0
+	subfze	%TOS, %TOS
+	stw	%TMP, 0(%PSP)
+	blr
+	ASMEND(dnegate)
+
+
+### D+ - DOUBLE 8.6.1.1040 
+###     ( d1|ud1 d2|ud2 -- d3|ud3 )
+ASMWORD("d+", d_plus)
+#	define	D1lo	r20
+#	define	D1hi	r21
+#	define	D2lo	r22
+	#	D2hi	TOS
+	lwz	%D1lo, 8(%PSP)
+	lwz	%D2lo, 0(%PSP)
+	lwz	%D1hi, 4(%PSP)
+	addc	%D2lo, %D2lo, %D1lo
+	adde	%TOS, %TOS, %D1hi
+	stw	%D2lo, 8(%PSP)
+	addi	%PSP, %PSP, 8
+	blr
+	ASMEND(d_plus)
+#undef	D1lo
+#undef	D1hi
+#undef	D2lo
+
+
+
 /**
  * Control structure helpers
  */
