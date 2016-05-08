@@ -33,8 +33,10 @@
  */
 
 .ifnotdef question_dup
+/*
 !!! ?DUP - CORE 6.1.0630
 !!!     ( x -- 0 | x x )
+ */
 WORD("?dup", question_dup)
 	.long	dup, zero_not_equals, OR_ELSE(9f)
 	.long	    dup
@@ -43,8 +45,10 @@ WORD("?dup", question_dup)
 
 
 .ifnotdef nip
+/*
 !!! NIP - CORE EXT 6.2.1930
 !!!     ( x1 x2 -- x2 )
+ */
 WORD("nip", nip)
 	.long	swap, drop
 	EXIT_4TH
@@ -52,8 +56,10 @@ WORD("nip", nip)
 
 
 .ifnotdef tuck
+/*
 !!! TUCK - CORE EXT 6.2.2300
 !!!     ( x1 x2 -- x2 x1 x2 )
+ */
 WORD("tuck", tuck)
 	.long	swap, over
 	EXIT_4TH
@@ -61,8 +67,10 @@ WORD("tuck", tuck)
 
 
 .ifnotdef rot
+/*
 !!! ROT - CORE 6.1.2160
 !!!     ( x1 x2 x3 -- x2 x3 x1 )
+ */
 WORD("rot", rot)
 	.long	lit, 2, roll
 	EXIT_4TH
@@ -70,8 +78,10 @@ WORD("rot", rot)
 
 
 .ifnotdef minus_rot
+/*
 !!! -ROT - non-standard, inverse of ROT
 !!!     ( x1 x2 x3 -- x3 x1 x2 )
+ */
 WORD("-rot", minus_rot)
 	.long	rot, rot
 	EXIT_4TH
@@ -79,8 +89,10 @@ WORD("-rot", minus_rot)
 
 
 .ifnotdef two_drop
+/*
 !!! 2DROP - CORE 6.1.0370
 !!!     ( x1 x2 -- )
+ */
 WORD("2drop", two_drop)
 	.long	drop, drop
 	EXIT_4TH
@@ -88,8 +100,10 @@ WORD("2drop", two_drop)
 
 
 .ifnotdef two_dup
+/*
 !!! 2DUP - CORE 6.1.0380
 !!!     ( x1 x2 -- x1 x2 x1 x2 )
+ */
 WORD("2dup", two_dup)
 	.long	over, over
 	EXIT_4TH
@@ -97,8 +111,10 @@ WORD("2dup", two_dup)
 
 
 .ifnotdef two_swap
+/*
 !!! 2SWAP - CORE 6.1.0430
 !!!     ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
+ */
 WORD("2swap", two_swap)
 	.long	lit, 3, roll, lit, 3, roll
 	EXIT_4TH
@@ -106,8 +122,10 @@ WORD("2swap", two_swap)
 
 
 .ifnotdef two_over
+/*
 !!! 2OVER - CORE 6.1.0400
 !!!     ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )
+ */
 WORD("2over", two_over)
 	.long	lit, 3, pick, lit, 3, pick
 	EXIT_4TH
@@ -115,8 +133,10 @@ WORD("2over", two_over)
 
 
 .ifnotdef depth
+/*
 !!! DEPTH - CORE 6.1.1200
 !!!     ( -- +n )
+ */
 WORD("depth", depth)
 	.long	sp_fetch, sp0, minus
 	.long	lit, 1, cells, slash
@@ -129,17 +149,21 @@ WORD("depth", depth)
  * Comparison
  */
 
+/*
 !!! NOT - non standard (see discussion in A.6.1.1720 INVERT)
 !!! Negate the sense of a flag, not necessarily a well-formed flag.
 !!!     ( x -- flag)
+ */
 WORD("not", not)
 	.long	zero_equals
 	EXIT_4TH
 
 
 .ifnotdef zero_not_equals
+/*
 !!! 0<> - CORE-EXT 6.2.0260
 !!!     ( x -- flag )
+ */
 WORD("0<>", zero_not_equals)
 	.long	zero_equals, not
 	EXIT_4TH
@@ -147,8 +171,10 @@ WORD("0<>", zero_not_equals)
 
 
 .ifnotdef less_than_equals
+/*
 !!! <= - nonstandard
 !!!     ( n1 n2 -- flag )
+ */
 WORD("<=", less_than_equals)
 	.long	greater_than, not
 	EXIT_4TH
@@ -156,8 +182,10 @@ WORD("<=", less_than_equals)
 
 
 .ifnotdef greater_than_equals
+/*
 !!! >= - nonstandard
 !!!     ( n1 n2 -- flag )
+ */
 WORD(">=", greater_than_equals)
 	.long	less_than, not
 	EXIT_4TH
@@ -165,8 +193,10 @@ WORD(">=", greater_than_equals)
 
 
 .ifnotdef max
+/*
 !!! MAX - CORE 6.1.1870
 !!!     ( n1 n2 -- n3 )
+ */
 WORD("max", max)
 	.long	two_dup, greater_than, OR_ELSE(0f)
 	.long	    drop, exit_4th
@@ -177,8 +207,10 @@ WORD("max", max)
 
 
 .ifnotdef min
+/*
 !!! MIN - CORE 6.1.1880
 !!!     ( n1 n2 -- n3 )
+ */
 WORD("min", min)
 	.long	two_dup, less_than, OR_ELSE(0f)
 	.long	    drop, exit_4th
@@ -188,9 +220,11 @@ WORD("min", min)
 .endif
 
 
+/*
 !!! WITHIN - CORE EXT 6.2.2440
 !!!     ( test low high -- flag )
 !!!     code from the ANS A.6.2.2440
+ */
 WORD("within", within)
 	.long	over, minus	! high - low
 	.long	to_r
@@ -206,8 +240,10 @@ WORD("within", within)
  */
 
 .ifnotdef false
+/*
 !!! FALSE - CORE-EXT 6.2.1485
 !!!     ( -- false )
+ */
 WORD("false", false)
 	.long	lit, 0
 	EXIT_4TH
@@ -215,8 +251,10 @@ WORD("false", false)
 
 
 .ifnotdef true
+/*
 !!! TRUE - CORE-EXT 6.2.2298
 !!!     ( -- true )
+ */
 WORD("true", true)
 	.long	lit, -1
 	EXIT_4TH
@@ -224,8 +262,10 @@ WORD("true", true)
 
 
 .ifnotdef abs
+/*
 !!! ABS - CORE 6.1.0690
 !!!     ( n -- u )
+ */
 WORD("abs", abs)
 	.long	dup, zero_less, OR_ELSE(9f)
 	.long	    negate
@@ -234,8 +274,10 @@ WORD("abs", abs)
 
 
 .ifnotdef one_plus
+/*
 !!! 1+ - CORE 6.1.0290
 !!!     ( n1|u1 -- n2|u2 )
+ */
 WORD("1+", one_plus)
 	.long	lit, 1, plus
 	EXIT_4TH
@@ -243,8 +285,10 @@ WORD("1+", one_plus)
 
 
 .ifnotdef one_minus
+/*
 !!! 1- - CORE 6.1.0300
 !!!     ( n1|u1 -- n2|u2 )
+ */
 WORD("1-", one_minus)
 	.long	lit, 1, minus
 	EXIT_4TH
@@ -252,8 +296,10 @@ WORD("1-", one_minus)
 
 
 .ifnotdef mod
+/*
 !!! MOD - CORE 6.1.1890
 !!!     ( n1 n2 -- n3 )
+ */
 WORD("mod", mod)
 	.long two_dup, slash, star, minus
 	EXIT_4TH
@@ -261,8 +307,10 @@ WORD("mod", mod)
 
 
 .ifnotdef slash_mod
+/*
 !!! /MOD - CORE 6.1.0240
 !!!     ( n1 n2 -- n3 n4 )
+ */
 WORD("/mod", slash_mod)
 	.long two_dup, slash
 	.long tuck, star
@@ -274,8 +322,10 @@ WORD("/mod", slash_mod)
 
 
 .ifnotdef u_slash_mod
+/*
 !!! U/MOD - nonstandard unsigned division with remainder
 !!!     ( u1 u2 -- u3 u4 )
+ */
 WORD("u/mod", u_slash_mod)
 	.long two_dup, u_slash
 	.long tuck, star
@@ -286,65 +336,80 @@ WORD("u/mod", u_slash_mod)
 .endif
 
 
+/*
 !!! MS/REM - nonstandard
 !!!     Divide 64 by 32 bit, producing 32 bit remainder and 64 bit
 !!!     quotient.  This is signed symmetric divsion.
 !!! 
 !!!     ( d1 n1 -- n2 d2 )
+ */
 CWORD("ms/rem", ms_slash_rem)
 	.long	ms_slash_rem_impl
 
 
+/*
 !!! SM/REM - CORE 6.1.2214
 !!!     ( d1 n1 -- n2 n3 )
+ */
 WORD("sm/rem", sm_slash_rem)
 	.long	ms_slash_rem	! (d1 n1 -- n2 d2; 64 bit quotient)
 	.long	drop		! truncate quotient to 32 bit
 	EXIT_4TH
 
 
+/*
 !!! MF/MOD - nonstandard
 !!!     Divide 64 by 32 bit, producing 32 bit remainder and 64 bit
 !!!     quotient.  This is signed floored divsion.
 !!! 
 !!!     ( d1 n1 -- n2 d2 )
+ */
 CWORD("mf/mod", mf_slash_mod)
 	.long	mf_slash_mod_impl
 
 
+/*
 !!! FM/MOD - CORE 6.1.1561
 !!!     ( d1 n1 -- n2 n3 )
+ */
 WORD("fm/mod", fm_slash_mod)
 	.long	mf_slash_mod	! (d1 n1 -- n2 d2; 64 bit quotient)
 	.long	drop		! truncate quotient to 32 bit
 	EXIT_4TH
 
 
+/*
 !!! MU/MOD - nonstandard
 !!!     Divide 64 by 32 bit, producing 32 bit remainder and 64 bit quotient.
 !!!     ( ud1 u1 -- u2 ud2 )
+ */
 CWORD("mu/mod", mu_slash_mod)
 	.long	mu_slash_mod_impl
 
 
+/*
 !!! UM/MOD - CORE 6.1.2370
 !!!     ( ud u1 -- u2 u3 )
+ */
 WORD("um/mod", um_slash_mod)
 	.long	mu_slash_mod	! (ud1 u1 -- u2 ud2; 64 bit quotient)
 	.long	drop		! truncate quotient to 32 bit
 	EXIT_4TH
 
 
-!!! */MOD - CORE 6.1.0110
+/*
+!!! * /MOD - CORE 6.1.0110
 !!!     ( n1 n2 n3 -- n4 n5 )
+ */
 WORD("*/mod", star_slash_mod)
 	.long	to_r, m_star		! 32 * 32 -> 64 bit
 	.long	r_from, sm_slash_rem	! symmetric, to match /
 	EXIT_4TH
 
-
-!!! */ - CORE 6.1.0100
+/*
+!!! * / - CORE 6.1.0100
 !!!     ( n1 n2 n3 -- n4 )
+ */
 WORD("*/", star_slash)
 	.long	star_slash_mod
 	.long	swap, drop		! get rid of the remainder
@@ -358,8 +423,10 @@ WORD("*/", star_slash)
  */
 
 .ifnotdef aligned
+/*
 !!! ALIGNED - CORE 6.1.0706
 !!!     ( addr -- a-addr )
+ */
 WORD("aligned", aligned)
 	.long	lit, 3, plus, lit, -4, and
 	EXIT_4TH
@@ -367,8 +434,10 @@ WORD("aligned", aligned)
 
 
 .ifnotdef cell_plus
+/*
 !!! CELL+ - CORE 6.1.0880
 !!!     ( a-addr1 -- a-addr2 )
+ */
 WORD("cell+", cell_plus)
 	.long	lit, 4, plus
 	EXIT_4TH
@@ -376,8 +445,10 @@ WORD("cell+", cell_plus)
 
 
 .ifnotdef cell_minus
+/*
 !!! CELL- - nonstandard
 !!!     ( a-addr1 -- a-addr2 )
+ */
 WORD("cell-", cell_minus)
 	.long	lit, 4, minus
 	EXIT_4TH
@@ -385,8 +456,10 @@ WORD("cell-", cell_minus)
 
 
 .ifnotdef cells
+/*
 !!! CELLS - CORE 6.1.0890
 !!!     ( n1 -- n2 )
+ */
 WORD("cells", cells)
 	.long	two_star, two_star
 	EXIT_4TH
@@ -394,8 +467,10 @@ WORD("cells", cells)
 
 
 .ifnotdef char_plus
+/*
 !!! CHAR+ - CORE 6.1.0897
 !!!     ( c-addr1 -- c-addr2 )
+ */
 WORD("char+", char_plus)
 	.long	one_plus
 	EXIT_4TH
@@ -403,8 +478,10 @@ WORD("char+", char_plus)
 
 
 .ifnotdef chars
+/*
 !!! CHARS - CORE 6.1.0898
 !!!     ( n1 -- n2 )
+ */
 WORD("chars", chars)
 	!! nop
 	EXIT_4TH
@@ -417,8 +494,10 @@ WORD("chars", chars)
  */
 
 .ifnotdef plus_store
+/*
 !!! +! - CORE 6.1.0130
 !!!     ( n|u a-addr -- )
+ */
 WORD("+!", plus_store)
 	.long	dup, fetch
 	.long	rot, plus
@@ -428,8 +507,10 @@ WORD("+!", plus_store)
 
 
 .ifnotdef one_plus_store
+/*
 !!! 1+! - nonstandard
 !!!     ( a-addr -- )
+ */
 WORD("1+!", one_plus_store)
 	.long	dup, fetch
 	.long	one_plus
@@ -439,8 +520,10 @@ WORD("1+!", one_plus_store)
 
 
 .ifnotdef two_fetch
+/*
 !!! 2@ - CORE 6.1.0350
 !!!     ( a-addr -- x1 x2 )
+ */
 WORD("2@", two_fetch)
 	.long	dup, cell_plus, fetch
 	.long	swap, fetch
@@ -449,8 +532,10 @@ WORD("2@", two_fetch)
 
 
 .ifnotdef two_store
+/*
 !!! 2! - CORE 6.1.0310
 !!!     ( x1 x2 a-addr -- )
+ */
 WORD("2!", two_store)
 	.long	dup, to_r
 	.long	store
@@ -466,8 +551,10 @@ WORD("2!", two_store)
  */
 
 .ifnotdef count
+/*
 !!! COUNT - CORE 6.1.0980
 !!!     ( c-addr1 -- c-addr2 u )
+ */
 WORD("count", count)
 	.long	dup, c_fetch
 	.long	swap, one_plus
@@ -476,8 +563,10 @@ WORD("count", count)
 .endif
 
 
+/*
 !!! ERASE - CORE EXT 6.2.1350
 !!!     ( c-addr u -- )
+ */
 WORD("erase", erase)
 	.long	dup, zero_equals, OR_ELSE(0f)
 	.long	    two_drop, exit_4th
@@ -486,8 +575,10 @@ WORD("erase", erase)
 	EXIT_4TH
 
 
+/*
 !!! BLANK - STRING 17.6.1.0780
 !!!     ( c-addr u -- )
+ */
 WORD("blank", blank)
 	.long	dup, zero_equals, OR_ELSE(0f)
 	.long	    two_drop, exit_4th
@@ -504,8 +595,10 @@ WORD("blank", blank)
 VARIABLE("dp", dp)
 	.long	.L_DATA_SPACE
 
+/*
 !!! HERE - CORE 6.1.1650
 !!!   ( -- addr )
+ */
 WORD("here", here)
 	.long	dp, fetch
 	EXIT_4TH
@@ -514,89 +607,119 @@ WORD("dp!", dp_store)
 	.long	dp, store
 	EXIT_4TH
 
+/*
 !!! ALIGN - CORE 6.1.0705
 !!!     ( -- )
+ */
 WORD("align", align)
 	.long	here, aligned, dp_store
 	EXIT_4TH
 
+/*
 !!! ALLOT - CORE 6.1.0710
 !!!     ( n -- )
+ */
 WORD("allot", allot)
 	.long	here, plus, dp_store
 	EXIT_4TH
 
 
+/*
 !!! , - CORE 6.1.0150
 !!!     ( x -- )
+ */
 WORD(",", comma)
 	.long	here, lit, 1, cells, allot, store
 	EXIT_4TH
 
 
+/*
 !!! C, - CORE 6.1.0860
 !!!     ( char -- )
+ */
 WORD("c,", c_comma)
 	.long	here, lit, 1, chars, allot, c_store
 	EXIT_4TH
 
 
+/*
 !!! PAD - CORE EXT 6.2.2000
 !!!     As far as I understand user can use memory below pad, while
 !!!     the system uses the area between DP and PAD as hold space.
 !!!     ( -- c-addr )
+ */
 WORD("pad", pad)
 	.long	here, lit, 128, plus
 	EXIT_4TH
 
 
 
+/*
 !!! ====================================================================
 !!! I/O - Common
+ */
 
+/*
 !!! BASE - CORE 6.1.0750
+ */
 VARIABLE("base", base)
 	.long 10
 
 
+/*
 !!! DECIMAL - CORE 6.1.1170
+ */
 WORD("decimal", decimal)
 	.long	lit, 10, base, store
 	EXIT_4TH
 
 
+/*
 !!! HEX - CORE EXT 6.2.1660
+ */
 WORD("hex", hex)
 	.long	lit, 16, base, store
 	EXIT_4TH
 
 
+/*
 !!! ====================================================================
 !!! I/O - Output
+ */
 
+/*
 !!! BL - CORE 6.1.0770
+ */
 CONSTANT("bl", bl) .long 0x20
 
 
+/*
 !!! EMIT - CORE 6.1.1320
 !!!     ( x -- )
+ */
 CWORD("emit", emit)
 	.long	_C_LABEL(emit_impl)
 
 
+/*
 !!! CR - CORE 6.1.0990
+ */
 WORD("cr", cr)
 	.long	lit, '\n, emit
 	EXIT_4TH
 
 
+/*
 !!! SPACE - CORE 6.1.2220
+ */
 WORD("space", space)
 	.long	bl, emit
 	EXIT_4TH
 
 
+/*
 !!! SPACES - CORE 6.1.2230
+ */
 WORD("spaces", spaces)
 	.long	dup, zero_greater, zero_equals, OR_ELSE(0f)
 	.long	    drop, exit_4th
@@ -607,55 +730,69 @@ WORD("spaces", spaces)
 9:	EXIT_4TH
 
 
+/*
 !!! TYPE - CORE 6.1.2310
 !!!     ( c-addr u -- )
+ */
 CWORD("type", type)
 	.long	_C_LABEL(type_impl)
 
 
+/*
 !!! Beginning of the pictured numeric output string.
+ */
 VARIABLE("hld", hld)
 	.long	0
 
 
+/*
 !!! <# - CORE 6.1.0490
 !!!     Initialize the pictured numeric output conversion process.
 !!!     ( -- )
+ */
 WORD("<#", less_hash)
 	.long	pad, hld, store
 	EXIT_4TH
 
 
+/*
 !!! HOLD - CORE 6.1.1670
 !!!     Add char to the beginning of the pictured numeric output string.
 !!!     ( char -- )
+ */
 WORD("hold", hold)
 	.long	lit, -1, hld, plus_store
 	.long	hld, fetch, c_store
 	EXIT_4TH
 
 
+/*
 !!! #> - CORE 6.1.0040
 !!!     Make the pictured numeric output string available as a
 !!!     character string.
 !!!     ( xd -- c-addr u )
+ */
 WORD("#>", hash_greater)
 	.long	two_drop
 	.long	hld, fetch, pad, over, minus
 	EXIT_4TH
 
 
+/*
 !!! SIGN - CORE 6.1.2210
 !!!     ( n -- )
+ */
 WORD("sign", sign)
 	.long	zero_less, OR_ELSE(1f)
 	.long	    lit, '-, hold
 1:	EXIT_4TH
 
 
+/*
 !!! # - CORE 6.1.0030
 !!!     Convert one digit.
 !!!     ( ud1 -- ud2 )
+ */
 WORD("#", hash)
 	.long	base, fetch, mu_slash_mod
 	.long	rot	! remainder
@@ -669,9 +806,11 @@ WORD("#", hash)
 	EXIT_4TH
 
 
+/*
 !!! #S - CORE 6.1.0050
 !!!     Use # to convert all digits, leaves double-cell zero on the stack.
 !!!     ( ud -- 0. )
+ */
 WORD("#s", hash_s)
 0:	!! begin
 	.long	hash
@@ -682,8 +821,10 @@ WORD("#s", hash_s)
 	EXIT_4TH
 
 
+/*
 !!! Convert N to string in the transient hold space.
 !!!     ( n -- str len )
+ */
 WORD("(.)", dot_parens)
 	.long	dup			! keep a copy for SIGN
 	.long	abs, lit, 0		! positive, extend to double-cell
@@ -693,15 +834,19 @@ WORD("(.)", dot_parens)
 	EXIT_4TH
 
 
+/*
 !!! . - CORE 6.1.0180
 !!!     ( n -- )
+ */
 WORD(".", dot)
 	.long	dot_parens, type, space
 	EXIT_4TH
 
 
+/*
 !!! .R - CORE EXT 6.2.0210
 !!!     ( n1 n2 -- )
+ */
 WORD(".r", dot_r)
 	.long	to_r, dot_parens, r_from ! str len width --
 	.long	over, minus, spaces
@@ -709,23 +854,29 @@ WORD(".r", dot_r)
 	EXIT_4TH
 
 
+/*
 !!! Convert U to string in the transient hold space.
 !!!     ( u -- str len )
+ */
 WORD("(u.)", u_dot_parens)
 	.long	lit, 0		! unsigned extend to double-cell
 	.long	less_hash, hash_s, hash_greater
 	EXIT_4TH
 
 
+/*
 !!! U. - CORE 6.1.2320
 !!!     ( u -- )
+ */
 WORD("u.", u_dot)
 	.long	u_dot_parens, type, space
 	EXIT_4TH
 
 
+/*
 !!! U.R - CORE EXT 6.2.2330
 !!!     ( u n -- )
+ */
 WORD("u.r", u_dot_r)
 	.long	to_r, u_dot_parens, r_from ! str len width --
 	.long	over, minus, spaces
@@ -733,7 +884,9 @@ WORD("u.r", u_dot_r)
 	EXIT_4TH
 
 
+/*
 !!! .S - TOOLS 15.6.1.0220
+ */
 WORD(".s", dot_s)
 	.long	sp_fetch, sp0, equals, OR_ELSE(0f), exit_4th; 0:;
 	!! 
@@ -750,30 +903,42 @@ WORD(".s", dot_s)
 	EXIT_4TH
 
 
+/*
 !!! ====================================================================
 !!! I/O - Input
+ */
 
+/*
 !!! ACCEPT - CORE 6.1.0695
 !!!     ( c-addr +n1 -- +n2 )
+ */
 CWORD("accept", accept_4th)	! XXX: avoid name clash with accept(2)
 	.long	_C_LABEL(accept_impl)
 
 
+/*
 !!! TIB - CORE EXT 6.2.2290
+ */
 CONSTANT("tib", tib)
 	.long	terminal_input_buffer
 
 
+/*
 !!! #TIB - CORE EXT 6.2.0060
+ */
 VARIABLE("#tib", number_tib)
 	.long	0
 
 
+/*
 !!! >IN - CORE 6.1.0560
+ */
 VARIABLE(">in", to_in)
 	.long	0
 
-!!! REFILL - CORE EXT 6.2.2125 
+/*
+!!! REFILL - CORE EXT 6.2.2125
+ */
 WORD("refill", refill)
 	.long	tib, lit, 4096, accept_4th
 	.long	dup, OR_ELSE(9f)
@@ -782,15 +947,19 @@ WORD("refill", refill)
 	.long	true
 9:	EXIT_4TH
 
+/*
 !!! SOURCE - CORE 6.1.2216
+ */
 WORD("source", source)
 	.long	tib, number_tib, fetch
 	EXIT_4TH
 
 
+/*
 !!! Advance >IN to the first character that is not a delimiter or to
 !!! the end of SOURCE.
 !!!     ( delim -- )
+ */
 WORD("skip-delim", skip_delim)
 	.long	to_r		! stash delimiter away
 	.long	source, swap
@@ -808,8 +977,10 @@ WORD("skip-delim", skip_delim)
 	EXIT_4TH
 
 
+/*
 !!! PARSE - CORE EXT 6.2.2008
 !!!     ( delim "ccc<delim>" -- str len )
+ */
 WORD("parse", parse)
 	.long	source, nip, to_in, fetch	! parse area limits
 	.long	two_dup, less_than_equals
@@ -841,17 +1012,21 @@ WORD("parse", parse)
 	EXIT_4TH
 
 
+/*
 !!! Skip leading spaces and parse a space delimited word.  This is an
 !!! alternative to tradtional BL WORD that doesn't require copying the
 !!! result into a temporary space for counted space terminated string.
 !!!     ( -- str len )
+ */
 WORD("parse-word", parse_word)
 	.long	bl, skip_delim, bl, parse
 	EXIT_4TH
 
 
+/*
 !!! WORD - CORE 6.1.2450
 !!!     ( char "<chars>ccc<char>" -- c-addr )
+ */
 WORD("word", word)
 	.long	dup, skip_delim, parse
 	!! str len --
@@ -868,7 +1043,9 @@ WORD("word", word)
  * >NUMBER and related words
  */
 
+/*
 !!! ( base - '0' upper ) range of (arabic) digits; for "within"
+ */
 WORD("base-0", base_zero)
 	.long	dup, lit, 10, less_than_equals
 	.long	OR_ELSE(1f)
@@ -878,13 +1055,17 @@ WORD("base-0", base_zero)
 9:	EXIT_4TH
 
 
-!!! ( base  - 'a' upper) range of alphabetic digits; for within 
+/*
+!!! ( base  - 'a' upper) range of alphabetic digits; for within
+ */
 WORD("base-a", base_a)
 	.long	lit, 10, minus, lit, 'a, tuck, plus
 	EXIT_4TH
 
 
+/*
 !!! ( char base -- value true | false )
+ */
 WORD("digit?", is_digit)
 	.long	swap, to_r	! stash away the char
 
@@ -913,8 +1094,10 @@ WORD("digit?", is_digit)
 	EXIT_4TH
 
 
+/*
 !!! >NUMBER - CORE 6.1.0570
 !!!     ( ud1 s1 l1 -- ud2 s2 l2)
+ */
 WORD(">number", to_number)
 	.long	two_dup, to_r, to_r	! stash away initial string
 	.long	over, plus, swap	! pointer loop range
@@ -947,7 +1130,9 @@ WORD(">number", to_number)
 	EXIT_4TH
 
 
+/*
 !!! str len -- 0 | n 1 | d 2
+ */
 WORD("number?", is_number)
 	.long	base, fetch, to_r ! save base in case of a sigil
 	.long	false, to_r	  ! minus sign
@@ -1023,8 +1208,10 @@ WORD("number?", is_number)
 	EXIT_4TH
 
 
+/*
 !!! CONVERT - CORE EXT 6.2.0970
 !!!     ( ud1 cstr -- ud2 caddr )
+ */
 WORD("convert", convert)
 	.long	char_plus	! skip the count byte of cstr
 	.long	lit, 256	! provide fake length
@@ -1040,9 +1227,11 @@ WORD("convert", convert)
 
 #if 0
 .ifnotdef lit
+/*
 !!! LIT - auxiliary for LITERAL (CORE 6.1.1780)
 !!!   To use this forth version you must provide asm version of CELL+
 !!!   to avoid recursive call to LIT from forth version of CELL+.
+ */
 WORD("lit", lit)
 	.long	r_from, dup, fetch
 	.long	swap, cell_plus, to_r
@@ -1052,7 +1241,9 @@ WORD("lit", lit)
 
 
 .ifnotdef two_lit
+/*
 !!! 2LIT - auxiliary for 2LITERAL (DOUBLE 8.6.1.0390)
+ */
 WORD("2lit", two_lit)
 	.long	r_from, dup, two_fetch
 	.long	rot, lit, 2, cells, plus, to_r
@@ -1070,14 +1261,18 @@ WORD("2lit", two_lit)
  * and ditto for (.") and (abort")
  */
 
+/*
 !!! Put counted string on the stack (for C" - CORE EXT 6.2.0855)
+ */
 WORD("(c\")", c_quote_parens)
 	.long	r_from, dup
 	.long	count, plus, aligned, to_r	! skip string
 	EXIT_4TH
 
 
+/*
 !!! Put <c-addr, u> string on the stack (for S" - CORE 6.1.2165)
+ */
 WORD("(s\")", s_quote_parens)
 	.long	r_from, dup
 	.long	cell_plus, swap			! address of string
@@ -1086,7 +1281,9 @@ WORD("(s\")", s_quote_parens)
 	EXIT_4TH
 
 
+/*
 !!! Type string (for ." - CORE 6.1.0190)
+ */
 WORD("(.\")", dot_quote_parens)
 	.long	r_from, dup
 	.long	cell_plus, swap			! address of string
@@ -1097,7 +1294,9 @@ WORD("(.\")", dot_quote_parens)
 	EXIT_4TH
 
 
+/*
 !!! Abort with a message (for ABORT" - CORE 6.1.0680)
+ */
 WORD("(abort\")", abort_quote_parens)
 	.long	r_from, dup
 	.long	cell_plus, swap			! address of string
@@ -1117,14 +1316,17 @@ WORD("(abort\")", abort_quote_parens)
  * Compilied "word" literals.
  */
 
+/*
 !!! COMPILE, - CORE EXT 6.2.0945
 !!!     since this is a naive indirect threaded code implementation we
 !!!     can compile the xt/address directly
+ */
 WORD("compile,", compile_comma)
 	.long	comma
 	EXIT_4TH
 
 
+/*
 !!! COMPILE - Forth 83
 !!! 
 !!! Pick the next word (xt) and compile it.  Creatively abuses the
@@ -1135,6 +1337,7 @@ WORD("compile,", compile_comma)
 !!! within a colon definition will be compiled as-is and at run time
 !!! COMPILE can act like LIT, except it compiles its "literal", <w>,
 !!! instead of pushing it on to the stack.
+ */
 WORD("compile", compile)
 	.long	r_from, dup, cell_plus, to_r
 	.long	fetch, compile_comma
@@ -1163,8 +1366,10 @@ WORD("latest", latest)
  * or destination of ">" if omitted.
  */
 
+/*
 !!! >BODY - CORE 6.1.0550
 !!!     ( xt -- pfa )
+ */
 WORD(">body", to_body)
 	.long	cell_plus
 	EXIT_4TH
@@ -1194,8 +1399,10 @@ WORD("name>", name_from)
 	EXIT_4TH
 
 
+/*
 !!! >NAME - nonstandard
 !!!     ( xt - nfa)
+ */
 WORD(">name", to_name)
 	.long	dup, dup, aligned, equals, OR_ELSE(9f)
 	!! 
@@ -1223,7 +1430,9 @@ WORD(">name", to_name)
 	EXIT_4TH
 
 
+/*
 !!! CREATE - CORE 6.1.1000
+ */
 WORD("create", create)
 	.long	parse_word, question_dup ! 0 only on EOF
 	.long	zero_equals, OR_ELSE(0f)
@@ -1261,31 +1470,41 @@ WORD("create", create)
 	EXIT_4TH
 
 
+/*
 !!! SMUDGE - hide the latest word from search
+ */
 WORD("smudge", smudge)
 	.long	latest, c_fetch, lit, SFLAG, or, latest, c_store
 	EXIT_4TH
 
 
+/*
 !!! UNSMUDGE - reverse the latest word to search
+ */
 WORD("unsmudge", unsmudge)
 	.long	latest, c_fetch, lit, ~SFLAG, and, latest, c_store
 	EXIT_4TH
 
 
+/*
 !!! IMMEDIATE - CORE .6.1.1710
+ */
 WORD("immediate", immediate)
 	.long	latest, c_fetch, lit, IFLAG, or, latest, c_store
 	EXIT_4TH
 
 
+/*
 !!! VARIABLE - CORE 6.1.2410
+ */
 WORD("variable", variable)
 	.long	create, lit, 1, cells, allot
 	EXIT_4TH
 
 
+/*
 !!! CONSTANT - CORE 6.1.0950
+ */
 WORD("constant", constant)
 	.long	create, comma
 	.long	semicolon_code_parens
@@ -1301,6 +1520,7 @@ DOES_ASM(constant_does)
 #endif
 
 
+/*
 !!! Traditional Forth's FIND takes counted string from traditional
 !!! WORD, but that requires temporary space to hold the counted
 !!! string, so ANS Forth suggests using PARSE instead.  The
@@ -1312,7 +1532,8 @@ DOES_ASM(constant_does)
 !!! 
 !!!     : search-current ( c-addr u -- 0 | xt 1 | xt -1 )
 !!!         get-current search-wordlist ;
-!!!     
+!!!
+ */
 WORD("search-current", search_current)
 	.long	question_dup, zero_equals, OR_ELSE(0f)
 	.long	    drop, lit, 0, exit_4th
@@ -1354,8 +1575,10 @@ WORD("search-current", search_current)
 	EXIT_4TH
 
 
+/*
 !!! FIND - CORE 6.1.1550
 !!!     ( c-addr -- caddr 0 | xt 1 | xt -1 )
+ */
 WORD("find", find)
 	.long	dup, count, search_current
 	.long	dup, zero_not_equals, OR_ELSE(9f)
@@ -1363,8 +1586,10 @@ WORD("find", find)
 9:	EXIT_4TH
 
 
+/*
 !!! Common helper for ' and the like that does parse/search combo.
 !!!     ( "<spaces>name" -- 0 | xt 1 | xt -1 )
+ */
 WORD("(')", tick_parens)
 	.long	parse_word, question_dup
 	.long	zero_equals, OR_ELSE(0f)
@@ -1379,8 +1604,10 @@ WORD("(')", tick_parens)
 	EXIT_4TH
 
 
+/*
 !!! ' - CORE 6.1.0070
 !!!     ( "<spaces>name" -- xt )
+ */
 WORD("'", tick)
 	.long	tick_parens, drop ! immediate flag
 	EXIT_4TH
@@ -1391,24 +1618,32 @@ WORD("'", tick)
  * Forth interpreter.
  */
 
+/*
 !!! STATE - CORE 6.1.2250
+ */
 VARIABLE("state", state)
 	.long	0		! interpretation
 
 
+/*
 !!! [ - CORE 6.1.2500
+ */
 IMMWORD("[", left_bracket)
 	.long	false, state, store
 	EXIT_4TH
 
 
+/*
 !!! ] - CORE 6.1.2540
+ */
 WORD("]", right_bracket)
 	.long	true, state, store
 	EXIT_4TH
 
 
+/*
 !!! interpret source until it's empty
+ */
 WORD("interpret", interpret)
 1:	!! begin
 	.long	parse_word, question_dup ! 0 only on EOF
@@ -1462,12 +1697,15 @@ WORD("interpret", interpret)
 	EXIT_4TH
 
 
+/*
 !!! BYE - TOOLS EXT 15.6.2.0830
+ */
 WORD("bye", bye)
 	.long	bye_parens
 	.long	0xdeadbeef	! unreachable sentinel
 
 
+/*
 !!! QUIT - CORE 6.1.2050
 !!! refill/interpret until eof - outer repl loop
 !!! 
@@ -1475,6 +1713,7 @@ WORD("bye", bye)
 !!!     FIXME: The difference between QUIT and ABORT is that QUIT does
 !!!     NOT reset the parameter stack!  I misread QUIT description, so
 !!!     the code below is actually ABORT.
+ */
 WORD("quit", quit)
 	.long	quit_parens	! reset data stack, must be the first
 	.long	left_bracket	! interpret
@@ -1492,7 +1731,9 @@ WORD("quit", quit)
 	EXIT_4TH
 
 
+/*
 !!! ABORT - CORE 6.1.0670
+ */
 WORD("abort", abort_4th)
 	.long	abort_parens	! reset return stack, must be first
 	.long	goto_parens, quit
@@ -1500,13 +1741,16 @@ WORD("abort", abort_4th)
 
 
 
+/*
 !!! ====================================================================
 !!! 
 !!! Words for interacting with the interpreter and defining new words.
 !!! 
+ */
 
-
+/*
 !!! ?COMP - assert that the interpreter is in compilation state
+ */
 WORD("?comp", question_comp)
 	.long	state, fetch, zero_equals, THEN_THROW(14)
 	EXIT_4TH
@@ -1516,15 +1760,19 @@ WORD("?comp", question_comp)
  * Comments
  */
 
+/*
 !!! ( - CORE 6.1.0080
 !!!     Comment until the closing paren
+ */
 IMMWORD("(", paren)
 	.long	lit, '), parse, two_drop
 	EXIT_4TH
 
 
+/*
 !!! \ - CORE EXT 6.2.2535
 !!!     Comment until the end of line
+ */
 IMMWORD("\\", backslash)
 	.long	lit, '\n, parse, two_drop
 	EXIT_4TH
@@ -1534,8 +1782,10 @@ IMMWORD("\\", backslash)
  * Character literals
  */
 
+/*
 !!! CHAR - CORE 6.1.0895
 !!!     ( "<spaces>name" -- char )
+ */
 WORD("char", char)
 	.long	parse_word, OR_ELSE(0f)
 	.long	    c_fetch, exit_4th
@@ -1543,7 +1793,9 @@ WORD("char", char)
 	EXIT_4TH
 
 
+/*
 !!! [CHAR] - CORE 6.1.2520
+ */
 IMMWORD("[char]", char_brackets)
 	.long	question_comp
 	.long	parse_word, OR_ELSE(0f)
@@ -1559,14 +1811,18 @@ IMMWORD("[char]", char_brackets)
  * Literals
  */
 
+/*
 !!! LITERAL - CORE 6.1.1780
+ */
 IMMWORD("literal", literal)
 	.long	state, fetch, OR_ELSE(9f)
 	.long	    compile, lit, comma
 9:	EXIT_4TH
 
 
+/*
 !!! 2LITERAL - DOUBLE 8.6.1.0390
+ */
 IMMWORD("2literal", two_literal)
 	.long	state, fetch, OR_ELSE(9f)
 	.long	    compile, two_lit, comma, comma
@@ -1577,11 +1833,13 @@ IMMWORD("2literal", two_literal)
  * String literals
  */
 
+/*
 !!! COMPILE" - common helper for S" ." and ABORT" that takes
 !!! corresponding "LIT-like" word that implements the run-time
 !!! semantics and compiles it followed by the parsed string literal.
 !!! 
 !!!     ( xt "ccc<quote>" -- )
+ */
 WORD("compile\"", compile_quote)
 	.long	lit, '\", parse	! XXX: handle failure
 	!! compile: <xt> <len> <len bytes of string>
@@ -1593,31 +1851,39 @@ WORD("compile\"", compile_quote)
 	EXIT_4TH
 
 
+/*
 !!! S" - CORE 6.1.2165
+ */
 IMMWORD("s\"", s_quote)
 	.long	question_comp
 	.long	lit, s_quote_parens, compile_quote
 	EXIT_4TH
 
 
+/*
 !!! ." - CORE 6.1.0190
+ */
 IMMWORD(".\"", dot_quote)
 	.long	question_comp
 	.long	lit, dot_quote_parens, compile_quote
 	EXIT_4TH
 
 
+/*
 !!! ABORT" - CORE 6.1.0680
+ */
 IMMWORD("abort\"", abort_quote)
 	.long	question_comp
 	.long	lit, abort_quote_parens, compile_quote
 	EXIT_4TH
 
 
+/*
 !!! C" - CORE EXT 6.2.0855
 !!!     Like COMPILE" above, but with counted string.
 !!! 
 !!!     ( "ccc<quote" -- )
+ */
 IMMWORD("c\"", c_quote)
 	.long	question_comp
 	.long	lit, '\", parse	! XXX: handle failure
@@ -1635,21 +1901,27 @@ IMMWORD("c\"", c_quote)
  * Word literals
  */
 
+/*
 !!! ['] - CORE 6.1.2510
+ */
 IMMWORD("[']", tick_brackets)
 	.long	question_comp
 	.long	tick, literal
 	EXIT_4TH
 
 
+/*
 !!! [COMPILE] - CORE EXT 6.2.2530
+ */
 IMMWORD("[compile]", compile_brackets)
 	.long	question_comp
 	.long	tick, compile_comma
 	EXIT_4TH
 
 
+/*
 !!! POSTPONE - CORE 6.1.2033
+ */
 IMMWORD("postpone", postpone)
 	.long	question_comp
 	.long	tick_parens, one_plus, OR_ELSE(1f)
@@ -1665,21 +1937,27 @@ IMMWORD("postpone", postpone)
  * Colon definitions
  */
 
+/*
 !!! (;CODE) - set CFA of the latest word to the asm code that directly
 !!!     follows compiled (;code)
+ */
 WORD("(;code)", semicolon_code_parens)
 	.long	r_from, latest, name_from, store
 	EXIT_4TH		! to the caller's caller
 
 
+/*
 !!! (;ALIT) - set CFA of the latest word to the address compiled
 !!!     directly after this word.
+ */
 WORD("(;alit)", semicolon_alit_parens)
 	.long	r_from, fetch, latest, name_from, store
 	EXIT_4TH		! to the caller's caller
 
 
+/*
 !!! : - CORE 6.1.0450
+ */
 WORD(":", colon)
 	.long	create, smudge, right_bracket
 	.long	semicolon_alit_parens, call_code
@@ -1690,7 +1968,9 @@ WORD(":", colon)
 	!! segregate MD asm code and MI forth code as much as possible.
 
 
+/*
 !!! DOES> - CORE 6.1.1250
+ */
 IMMWORD("does>", does)
 	.long	compile, semicolon_code_parens
 	!! DOES_4TH:
@@ -1703,13 +1983,17 @@ IMMWORD("does>", does)
 	EXIT_4TH
 
 
+/*
 !!! RECURSE - 6.1.2120
+ */
 IMMWORD("recurse", recurse)
 	.long	latest, name_from, comma
 	EXIT_4TH
 
 
+/*
 !!! ; - CORE 6.1.0460
+ */
 IMMWORD(";", semicolon)
 	.long	compile, exit_4th	! compile exit
 	.long	unsmudge		! reveal the word to search
@@ -1741,7 +2025,9 @@ WORD("<resolve", resolve_back)
 	EXIT_4TH
 
 
+/*
 !!! IF - CORE 6.1.1700
+ */
 IMMWORD("if", if)
 	.long	question_comp
 	.long	compile, question_branch
@@ -1750,7 +2036,9 @@ IMMWORD("if", if)
 	EXIT_4TH
 
 
+/*
 !!! ELSE - CORE 6.1.1310
+ */
 IMMWORD("else", else)
 	.long	question_comp
 	.long	lit, 1, question_pairs
@@ -1760,7 +2048,9 @@ IMMWORD("else", else)
 	EXIT_4TH
 
 
+/*
 !!! THEN - CORE 6.1.2270
+ */
 IMMWORD("then", then)
 	.long	question_comp
 	.long	lit, 1, question_pairs
@@ -1768,7 +2058,9 @@ IMMWORD("then", then)
 	EXIT_4TH
 
 
+/*
 !!! BEGIN - CORE 6.1.0760
+ */
 IMMWORD("begin", begin)
 	.long	question_comp
 	.long	mark_back
@@ -1776,7 +2068,9 @@ IMMWORD("begin", begin)
 	EXIT_4TH
 
 
+/*
 !!! AGAIN - CORE EXT 6.2.0700
+ */
 IMMWORD("again", again)
 	.long	question_comp
 	.long	lit, 2, question_pairs
@@ -1784,7 +2078,9 @@ IMMWORD("again", again)
 	EXIT_4TH
 
 
+/*
 !!! UNTIL - CORE 6.1.2390
+ */
 IMMWORD("until", until)
 	.long	question_comp
 	.long	lit, 2, question_pairs
@@ -1792,8 +2088,10 @@ IMMWORD("until", until)
 	EXIT_4TH
 
 
+/*
 !!! WHILE - CORE 6.1.2430
 !!!     ( C: dest -- orig dest )
+ */
 IMMWORD("while", while)
 	.long	question_comp
 	.long	lit, 2, question_pairs
@@ -1802,15 +2100,19 @@ IMMWORD("while", while)
 	EXIT_4TH
 
 
+/*
 !!! 6.1.2140 REPEAT
 !!!     ( C: orig dest -- )
+ */
 IMMWORD("repeat", repeat)
 	.long	again, then
 	EXIT_4TH
 
 
+/*
 !!! (DO) - auxiliary for DO
 !!!     ( limit first -- R: addr limit current )
+ */
 WORD("(do)", do_parens)
 	.long	r_from			! next cell after compiled "(do)"
 	.long	dup, fetch, to_r	! stash end of loop address for "leave"
@@ -1824,8 +2126,10 @@ WORD("(do)", do_parens)
 	EXIT_4TH
 
 
+/*
 !!! (?DO) - auxiliary for ?DO
 !!!     like "do", but does nothing if first == limit
+ */
 WORD("(?do)", question_do_parens)
 	.long	two_dup, equals, OR_ELSE(0f)
 	.long	    two_drop
@@ -1834,7 +2138,9 @@ WORD("(?do)", question_do_parens)
 	.long	goto_parens, do_parens	! setup loop
 
 
+/*
 !!! DO - CORE 6.1.1240
+ */
 IMMWORD("do", do)
 	.long	question_comp
 	.long	compile, do_parens
@@ -1844,8 +2150,10 @@ IMMWORD("do", do)
 	EXIT_4TH
 
 
+/*
 !!! ?DO - CORE EXT 6.2.0620
 !!!     Differs from DO only in the auxiliary it compiles.
+ */
 IMMWORD("question_do", question_do)
 	.long	question_comp
 	.long	compile, question_do_parens
@@ -1856,7 +2164,9 @@ IMMWORD("question_do", question_do)
 
 
 .ifnotdef i_4th
+/*
 !!! I - CORE 6.1.1680
+ */
 WORD("i", i_4th)
 	.long	r_from		! return address
 	.long	two_r_fetch	! limit and current
@@ -1867,7 +2177,9 @@ WORD("i", i_4th)
 
 
 .ifnotdef j_4th
+/*
 !!! J - 6.1.1730
+ */
 WORD("j", j_4th)
 	.long	two_r_from, two_r_from ! return address and inner loop params
 	.long	two_r_fetch	       ! limit and current of the outer loop
@@ -1878,15 +2190,19 @@ WORD("j", j_4th)
 .endif
 
 
+/*
 !!! LEAVE - CORE 6.1.1760
 !!! 	( R: addr limit current )
+ */
 WORD("leave", leave)
 	.long	r_from, drop		! return address
 	.long	two_r_from, two_drop	! loop limit and counter
 	EXIT_4TH			! to the loop's end
 
 
+/*
 !!! UNLOOP - CORE 6.1.2380
+ */
 WORD("unloop", unloop)
 	.long	r_from			! save return address
 	.long	two_r_from, two_drop	! loop limit and counter
@@ -1895,9 +2211,11 @@ WORD("unloop", unloop)
 	EXIT_4TH
 
 
+/*
 !!! (+LOOP) - auxiliary for +LOOP with the address of the beginning of
 !!!     the loop body compiled as literal after it.
 !!! 	( increment -- ) ( R: addr limit current )
+ */
 WORD("(+loop)", plus_loop_parens)
 	.long	r_from, swap		! take (+loop)'s return address
 
@@ -1917,12 +2235,16 @@ WORD("(+loop)", plus_loop_parens)
 	.long	goto_parens, branch	! to beginning of loop
 
 
+/*
 !!! (LOOP) - auxiliary for LOOP.  Does "1 (+LOOP)" via tail call.
+ */
 WORD("(loop)", loop_parens)
 	.long	lit, 1, goto_parens, plus_loop_parens
 
 
+/*
 !!! LOOP - CORE 6.1.1800
+ */
 IMMWORD("loop", loop)
 	.long	question_comp
 	.long	lit, 3, question_pairs
@@ -1931,8 +2253,10 @@ IMMWORD("loop", loop)
 	EXIT_4TH
 
 
+/*
 !!! +LOOP - CORE 6.1.0140
 !!!     Differs from LOOP only in the auxiliary it compiles.
+ */
 IMMWORD("+loop", plus_loop)
 	.long	question_comp
 	.long	lit, 3, question_pairs
@@ -1945,7 +2269,9 @@ IMMWORD("+loop", plus_loop)
  * Values (read-mostly and hence auto-fetching).
  */
 
+/*
 !!! VALUE - CORE EXT 6.2.2405
+ */
 WORD("value", value)
 	.long	create, immediate
 	.long	comma
@@ -1961,7 +2287,9 @@ DOES_4TH(value_does)
 9:	EXIT_4TH
 
 
+/*
 !!! TO - CORE EXT 6.2.2295
+ */
 IMMWORD("to", to_4th)
 	.long	tick_parens
 #if 1
@@ -1990,7 +2318,9 @@ VARIABLE("fence", fence)
 	.long	.FENCE
 
 
+/*
 !!! ( "<spaces>name" -- )
+ */
 WORD("forget", forget)
 	.long	tick, dup, to_name		! cfa nfa --
 	.long	question_dup, zero_equals, OR_ELSE(0f)
@@ -2005,7 +2335,9 @@ WORD("forget", forget)
 	EXIT_4TH
 
 
+/*
 !!! ( "<spaces>name" -- )
+ */
 WORD("anew", anew)
 	.long	to_in, fetch
 	.long	bl, word, find, OR_ELSE(0f)
