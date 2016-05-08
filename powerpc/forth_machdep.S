@@ -480,6 +480,151 @@ ASMWORD("2r@", two_r_fetch)
 
 
 /**
+ * Comparison
+ */
+
+### 0= - CORE 6.1.0270
+###     ( x -- flag )
+ASMWORD("0=", zero_equals)
+	cmpi	%cr0, %TOS, 0
+	beq-	%cr0, 1f
+	li	%TOS, 0
+	blr
+1:
+	li	%TOS, -1
+	blr
+	ASMEND(zero_equals)
+
+
+### 0<> - CORE-EXT 6.2.0260
+###     ( x -- flag )
+ASMWORD("0<>", zero_not_equals)
+	cmpi	%cr0, %TOS, 0
+	beqlr	%cr0
+	li	%TOS, -1
+	blr
+	ASMEND(zero_not_equals)
+
+
+
+### 0> - CORE-EXT 6.2.0280
+###     ( x -- flag )
+ASMWORD("0>", zero_greater)
+	cmpi	%cr0, %TOS, 0
+	bgt	%cr0, 1f
+	li	%TOS, 0
+	blr
+1:
+	li	%TOS, -1
+	blr
+	ASMEND(zero_greater)
+
+
+### 0< - CORE 6.1.0250
+###     ( x -- flag )
+ASMWORD("0<", zero_less)
+	cmpi	%cr0, %TOS, 0
+	blt	%cr0, 1f
+	li	%TOS, 0
+	blr
+1:
+	li	%TOS, -1
+	blr
+	ASMEND(zero_less)
+
+
+### = - CORE 6.1.0530
+###     ( x1 x2 -- flag )
+ASMWORD("=", equals)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	cmp	%cr0, %TMP, %TOS
+	beq	%cr0, 1f
+	li	%TOS, 0
+	blr
+1:
+	li	%TOS, -1
+	blr
+	ASMEND(equals)
+
+
+### <> - CORE-EXT 6.2.0500
+###     ( x1 x2 -- flag )
+ASMWORD("<>", not_equals)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	cmp	%cr0, %TMP, %TOS
+	bne	%cr0, 1f
+	li	%TOS, 0
+	blr
+1:
+	li	%TOS, -1
+	blr
+	ASMEND(not_equals)
+
+
+### < - CORE 6.1.0480
+###     ( n1 n2 -- flag )
+ASMWORD("<", less_than)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	cmp	%cr0, %TMP, %TOS
+	blt	%cr0, 1f
+	li	%TOS, 0
+	blr
+1:
+	li	%TOS, -1
+	blr
+	ASMEND(less_than)
+
+
+### > - CORE 6.1.0540
+###     ( n1 n2 -- flag )
+ASMWORD(">", greater_than)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	cmp	%cr0, %TMP, %TOS
+	bgt	%cr0, 1f
+	li	%TOS, 0
+	blr
+1:
+	li	%TOS, -1
+	blr
+	ASMEND(greater_than)
+
+
+### U< - CORE 6.1.2340
+###     ( u1 u2 -- flag )
+ASMWORD("u<", u_less_than)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	cmpl	%cr0, %TMP, %TOS
+	blt	%cr0, 1f
+	li	%TOS, 0
+	blr
+1:
+	li	%TOS, -1
+	blr
+	ASMEND(u_less_than)
+
+
+### U> - CORE-EXT 6.2.2350
+###     ( u1 u2 -- flag )
+ASMWORD("u>", u_greater_than)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	cmpl	%cr0, %TMP, %TOS
+	bgt	%cr0, 1f
+	li	%TOS, 0
+	blr
+1:
+	li	%TOS, -1
+	blr
+	ASMEND(u_greater_than)
+
+
+
+/**
  * Arithmetic and bit-wise operations
  */
 
