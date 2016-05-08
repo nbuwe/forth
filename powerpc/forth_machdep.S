@@ -416,6 +416,67 @@ ASMWORD("roll", roll)
 	ASMEND(roll)
 
 
+### >R - CORE 6.1.0580
+###     ( x -- ) ( R: -- x )
+ASMWORD(">r", to_r)
+	stwu	%TOS, -4(%RSP)
+	FILL_TOS
+	blr
+	ASMEND(to_r)
+
+
+### R> - CORE 6.1.2060
+###     ( -- x ) ( R: x -- )
+ASMWORD("r>", r_from)
+	SPILL_TOS
+	lwz	%TOS, 0(%RSP)
+	addi	%RSP, %RSP, 4
+	blr
+	ASMEND(r_from)
+
+
+### R@ - CORE 6.1.2070
+###     ( -- x ) ( R: x -- x )
+ASMWORD("r@", r_fetch)
+	SPILL_TOS
+	lwz	%TOS, 0(%RSP)
+	blr
+	ASMEND(r_fetch)
+
+
+### 2>R CORE EXT 6.2.0340
+###     ( -- x1 x2 ) ( R: x1 x2 -- )
+ASMWORD("2>r", two_to_r)
+	lwz	%TMP, 0(%PSP)
+	stw	%TMP, -4(%RSP)
+	stwu	%TOS, -8(%RSP)
+	FILL_TOS
+	blr
+	ASMEND(two_to_r)
+
+
+### 2R> - CORE EXT 6.2.0410
+###     ( -- x1 x2 ) ( R: x1 x2 -- )
+ASMWORD("2r>", two_r_from)
+	SPILL_TOS
+	lwz	%TMP, 4(%RSP)
+	lwz	%TOS, 0(%RSP)
+	addi	%RSP, %RSP, 8
+	stwu	%TMP, -4(%PSP)
+	blr
+	ASMEND(two_r_from)
+
+
+### 2R@ - CORE EXT 6.2.0415
+###     ( -- x1 x2 ) ( R: x1 x2 -- x1 x2 )
+ASMWORD("2r@", two_r_fetch)
+	SPILL_TOS
+	lwz	%TMP, 4(%RSP)
+	lwz	%TOS, 0(%RSP)
+	stwu	%TMP, -4(%PSP)
+	blr
+	ASMEND(two_r_fetch)
+
 
 
 /**
@@ -454,6 +515,11 @@ ASMWORD("lit", lit)
 ### ABORT - CORE 6.1.0670
 WORD("abort", abort_4th)
 	.long	abort_parens	# reset return stack, must be first
+	.long	test_word
 	##  ... test code here ...
 	.long	bye_parens
 	#EXIT_4TH
+
+WORD("test-word", test_word)
+	## ... test code here ...
+	EXIT_4TH
