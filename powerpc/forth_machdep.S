@@ -1096,6 +1096,32 @@ ASMWORD("d+", d_plus)
 #undef	D2lo
 
 
+### M* - CORE 6.1.1810
+###     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
+ASMWORD("m*", m_star)
+#	define	LO	r20
+	lwz	%TMP, 0(%PSP)
+	mullw	%LO, %TMP, %TOS
+	mulhw	%TOS, %TMP, %TOS
+	stw	%LO, 0(%PSP)
+	blr
+	ASMEND(m_star)
+#undef	LO
+
+
+### UM* - CORE 6.1.2360
+###     ( n1 n2 -- d ) unsigned mixed multiplication (32x32 -> 64)
+ASMWORD("um*", um_star)
+#	define	LO	r20
+	lwz	%TMP, 0(%PSP)
+	mullw	%LO, %TMP, %TOS
+	mulhwu	%TOS, %TMP, %TOS
+	stw	%LO, 0(%PSP)
+	blr
+	ASMEND(m_star)
+#undef	LO
+
+
 
 /**
  * Control structure helpers
