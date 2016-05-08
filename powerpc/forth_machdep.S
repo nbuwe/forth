@@ -26,10 +26,12 @@
 
 
 #define TMP	r14	/* %r0 is too magic and literal %r14 is too opaque */
-#define TOS	r27	/* top of parameter stack lives in a register */
-#define PSP	r28	/* parameter stack pointer */
-#define RSP	r29	/* return stack pointer */
-#define IP	r30	/* instruction pointer */
+#define TOS	r26	/* top of parameter stack lives in a register */
+#define PSP	r27	/* parameter stack pointer */
+#define RSP	r28	/* return stack pointer */
+#define IP	r29	/* instruction pointer */
+#define DOES	r30	/* address of does_code */
+#define NEXT	r31	/* address of next_code */
 
 #define SPILL_TOS	stwu	%TOS, -4(%PSP)
 #define FILL_TOS	lwz	%TOS, 0(%PSP); \
@@ -105,9 +107,12 @@ ENTRY(start_forth)
 	## LR is fixed with next_code so that we can get always there
         ## with just "blr".  BYE knows its return address statically
         ## (see below), so we don't need LR to record it.
-	lis	%TMP, next_code@ha
-	la	%TMP, next_code@l(%TMP)
-	mtlr	%TMP
+	lis	%NEXT, next_code@ha
+	la	%NEXT, next_code@l(%NEXT)
+	mtlr	%NEXT
+
+	lis	%DOES, does_code@ha
+	la	%DOES, does_code@l(%DOES)
 
 	## these will be reset by ABORT
 	li	%TOS, 0
@@ -171,7 +176,6 @@ ENTRY(start_forth)
   label:			;
 
 
-
 ### ====================================================================
 /**
  *
@@ -201,6 +205,11 @@ heap:
 	.long	0	# there's no parameters, but provide a stub
 
 
+### Where the stacks are.
+CONSTANT("sp0", sp0)	.long	stack_bottom
+CONSTANT("rp0", rp0)	.long	rstack_bottom
+
+
 ### Asm part of ABORT that resets parameter and return stacks
 ### Must be the first word called by ABORT.
 ASMWORD("(abort)", abort_parens)
@@ -211,6 +220,15 @@ ASMWORD("(abort)", abort_parens)
 	li	%TOS, 0				# clear TOS just in case
 	blr
 	ASMEND(abort_parens)
+
+
+### Asm part of QUIT that resets return stack.
+### Must be the first word called by QUIT.
+ASMWORD("(quit)", quit_parens)
+	lis	%RSP, rstack_bottom@ha		# reset return stack
+	la	%RSP, rstack_bottom@l(%RSP)
+	blr
+	ASMEND(quit_parens)
 
 
 ### Asm part of BYE that returns control to the C code that started
@@ -279,11 +297,37 @@ DOES_ASM(c_does)
 	.size c_does, .-c_does
 
 
-### just inlined @
-DOES_ASM(constant_does)
-	lwz	%TOS, 0(%TOS)
-	blr
-	.size constant_does, .-constant_does
+/*
+ * For words with DOES> part (that contains forth code by definition)
+ * the address of the following asm code will be compiled into the
+ * code field of the defined word.
+ *
+ * This code does an equivalent of jumping to "CALL" with 1f in TOS,
+ * but inlined and since we jump to "NEXT" directly we can avoid
+ * messing with TOS at all.
+ */
+#define DOES_4TH(label)		  \
+  DOES_ASM(label)		; \
+	mtctr	%DOES		; \
+	bctrl			; \
+	/* threaded code follows */
+
+/*
+ * Forth code to compile the above.  This will be part of DOES>
+ *
+ *   7f c9 03 a6	mtctr   %r30	# %DOES contains does_code
+ *   4e 80 04 21	bctrl
+ */
+#define COMPILE_DOES_CODE		  \
+	.long	lit, 0x7fc903a6, comma	; \
+	.long	lit, 0x4e800421, comma
+
+
+DOES_ASM(does_code)
+	stwu	%IP, -4(%RSP)
+	mflr	%IP		# threaded code after DOES>
+	mtlr	%NEXT		# restore LR to next_code
+	b	next_code
 
 
 ### Code field of colon definitions (i.e. forth words)  points here.
@@ -313,6 +357,27 @@ next_code:
 	addi	%TOS, %TOS, 4	# advance TOS to PFA
 	mtctr	%TMP
 	bctr			# call word's code on word's body
+
+
+### tail-call - note that the difference from EXIT is the order of
+### CFA := @IP and IP := @RSP+
+###
+### This makes it possible to add a wrapper around words that examine
+### the cell after them, like LIT, BRANCH, etc.  Just make the tail
+### call to such word at the end of the wrapper and it will work.
+ASMWORD("(goto)", goto_parens)
+	SPILL_TOS
+	lwz	%TOS, 0(%IP)	# CFA of the next word to execute
+
+	lwz	%IP, 0(%RSP)	# pop return address
+	addi	%RSP, %RSP, 4
+
+	## this is the code of EXECUTE
+	lwz	%TMP, 0(%TOS)	# fetch code address
+	addi	%TOS, %TOS, 4	# advance TOS to PFA
+	mtctr	%TMP
+	bctr			# call word's code on word's body
+	ASMEND(goto_parens)
 
 
 
@@ -436,6 +501,25 @@ ASMWORD("roll", roll)
 	bdnz	0b
 	blr
 	ASMEND(roll)
+
+
+### Current stack pointer.
+###     ( -- sp )
+###
+### XXX: Both SP@ and SP0 don't try to hide the fact that we keep TOS
+### in a register.  This has implications in MI forth code, e.g. in .S
+### or DEPTH.
+###
+### The cell just after SP0 is not part of stack - it's a place to
+### spill invalid TOS register when we push the first value onto the
+### stack.  The TOS is in a register, so to spill it into memory, DUP
+### it.
+ASMWORD("sp@", sp_fetch)
+	mr	%r0, %PSP	# before the spill
+	SPILL_TOS
+	mr	%TOS, %r0
+	blr
+	ASMEND(sp_fetch)
 
 
 ### >R - CORE 6.1.0580
@@ -1157,50 +1241,19 @@ ASMWORD("?branch", question_branch)
 
 
 
-##############################################################################
-### XXX: the real one is in MI forth.S, but including that will xref a
-### lot of words, so use a local copy and use it for testing.
+/* Machine-independent words in threaded code. */
+#include "forth.S"
 
-### ABORT - CORE 6.1.0670
-WORD("abort", abort_4th)
-	.long	abort_parens	# reset return stack, must be first
-	.long	test_word
-	##  ... test code here ...
-	.long	bye_parens
-	#EXIT_4TH
+/* Random test code. */
+#include "test.S"
 
+	.data
+### value for CURRENT
+.LATEST = .LASTNFA
 
-### BL - CORE 6.1.0770
-CONSTANT("bl", bl) .long 0x20
+	.size	heap, . - heap
 
-
-### EMIT - CORE 6.1.1320
-###     ( x -- )
-CWORD("emit", emit)
-	.long	_C_LABEL(emit_impl)
-
-
-### CR - CORE 6.1.0990
-WORD("cr", cr)
-	.long	lit, '\n, emit
-	EXIT_4TH
-
-
-### SPACE - CORE 6.1.2220
-WORD("space", space)
-	.long	bl, emit
-	EXIT_4TH
-
-
-### TYPE - CORE 6.1.2310
-###     ( c-addr u -- )
-CWORD("type", type)
-	.long	_C_LABEL(type_impl)
-
-
-VARIABLE("vvv", vvv)
-	.long	0x12345678
-
-WORD("test-word", test_word)
-	## ... test code here ...
-	EXIT_4TH
+	.section ".bss"
+.L_DATA_SPACE: /* begins HERE */
+.FENCE = .
+	.space	8192
