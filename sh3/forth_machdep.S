@@ -329,14 +329,12 @@ next_code:
 !!! call to such word at the end of the wrapper and it will work.
 ASMWORD("(goto)", goto_parens)
 	SPILL_TOS
-	mov.l	@IP, r0		! r0 = CFA of the next word to execute
-
+	mov.l	@IP, TOS	! TOS = CFA of the next word to execute
 	mov.l	@RSP+, IP	! NB: this is what makes it a tail call
-
-	mov.l	@r0, r1		! r1 = *CFA (acctual code)
-	mov	#4, TOS		!
-	jmp	@r1		! execute word's code
-	 add	r0, TOS		! TOS = PFA (for code to consume)
+	!! this is the code of EXECUTE
+	mov.l	@TOS+, r0	! fetch code address and advance TOS to PFA
+	jmp	@r0		! execute word's code
+	 nop
 	ASMEND(goto_parens)
 
 
