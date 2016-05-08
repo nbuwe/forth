@@ -1344,7 +1344,7 @@ WORD("d>s", d2s)
 
 !!! DNEGATE - DOUBLE 8.6.1.1230
 !!!     ( d1 -- d2 )
-WORD("dnegate", dnegate)
+ASMWORD("dnegate", dnegate)
 	mov.l	@PSP, r0	! lower cell
 	clrt
 	negc	r0, r0
