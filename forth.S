@@ -1512,7 +1512,8 @@ WORD("constant", constant)
 	.long	create, comma
 	.long	semicolon_code_parens
 	/* code fields of CONSTANT definitions point here */
-#if 0	/* ... DOES> @ ; */
+/* XXX: FIXME: use forth version for now */
+#if 1	/* ... DOES> @ ; */
 DOES_4TH(constant_does)
 	.long	fetch
 	EXIT_4TH
