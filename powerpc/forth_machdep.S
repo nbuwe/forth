@@ -628,6 +628,41 @@ ASMWORD("u>", u_greater_than)
  * Arithmetic and bit-wise operations
  */
 
+### FALSE - CORE-EXT 6.2.1485
+###     ( -- false )
+ASMWORD("false", false)
+	SPILL_TOS
+	li	%TOS, 0
+	blr
+	ASMEND(false)
+
+
+### TRUE - CORE-EXT 6.2.2298
+###     ( -- true )
+ASMWORD("true", true)
+	SPILL_TOS
+	li	%TOS, -1
+	blr
+	ASMEND(true)
+
+### NEGATE - CORE 6.1.1910
+###     ( n1 -- n2 )
+ASMWORD("negate", negate)
+	neg	%TOS, %TOS
+	blr
+	ASMEND(negate)
+
+
+### ABS - CORE 6.1.0690
+###     ( n -- u )
+ASMWORD("abs", abs)
+	srawi	%TMP, %TOS, 31	# sign
+	xor	%TOS, %TMP, %TOS
+	subf	%TOS, %TMP, %TOS
+	blr
+	ASMEND(abs)
+
+
 ### + - CORE 6.1.0120
 ###     ( n1|u1 n2|u2 -- n3|u3 )
 ASMWORD("+", plus)
@@ -636,6 +671,155 @@ ASMWORD("+", plus)
 	add	%TOS, %TOS, %TMP
 	blr
 	ASMEND(plus)
+
+
+### +? - nonstandard: add with overflow check
+###     used by LOOP to efficiently detect loop terminataion
+###     ( n1|u1 n2|u2 -- n3|u3 flag )
+ASMWORD("+?", plus_question)
+	lwz	%TMP, 0(%PSP)
+	addo	%TOS, %TOS, %TMP
+	mcrxr	%cr0			# copy xer[0:3]; XER[ov] -> CR0[gt]
+	stw	%TOS, 0(%PSP)
+	bgt	%cr0, 1f
+	li	%TOS, 0
+	blr
+1:
+	li	%TOS, -1
+	blr
+	ASMEND(plus_question)
+
+
+### - - CORE 6.1.0160
+###     ( n1|u1 n2|u2 -- n3|u3 )
+ASMWORD("-", minus)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	subf	%TOS, %TOS, %TMP
+	blr
+	ASMEND(minus)
+
+
+### 1+ - CORE 6.1.0290
+###     ( n1|u1 -- n2|u2 )
+ASMWORD("1+", one_plus)
+	addi	%TOS, %TOS, 1
+	blr
+	ASMEND(one_plus)
+
+
+### 1- - CORE 6.1.0300
+###     ( n1|u1 -- n2|u2 )
+ASMWORD("1-", one_minus)
+	addi	%TOS, %TOS, -1
+	blr
+	ASMEND(one_minus)
+
+
+### * - CORE 6.1.0090
+###     ( n1|u1 n2|u2 -- n3|u3 )
+ASMWORD("*", star)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	mullw	%TOS, %TOS, %TMP
+	blr
+	ASMEND(star)
+
+
+### / - CORE 6.1.0230
+###     NB: symmetric division
+###     ( n1 n2 -- n3 )
+ASMWORD("/", slash)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	divw	%TOS, %TMP, %TOS
+	blr
+	ASMEND(slash)
+
+
+### U/ - nonstandard unsigned division
+###     ( u1 u2 -- u3 )
+ASMWORD("u/", u_slash)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	divwu	%TOS, %TMP, %TOS
+	blr
+	ASMEND(u_slash)
+
+
+### 2* - CORE 6.1.0320
+###     ( x1 -- x2 )
+ASMWORD("2*", two_star)
+	slwi	%TOS, %TOS, 1
+	blr
+	ASMEND(two_star)
+
+
+### 2/ - CORE 6.1.0330
+###     ( x1 -- x2 )
+ASMWORD("2/", two_slash)
+	srwi	%TOS, %TOS, 1
+	blr
+	ASMEND(two_slash)
+
+
+### INVERT - CORE 6.1.1720
+###     ( x1 -- x2 )
+ASMWORD("invert", invert)
+	not	%TOS, %TOS
+	blr
+	ASMEND(invert)
+
+
+### AND - CORE 6.1.0720
+###     ( x1 x2 -- x3 )
+ASMWORD("and", and)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	and	%TOS, %TOS, %TMP
+	blr
+	ASMEND(and)
+
+
+### OR - CORE 6.1.1980
+###     ( x1 x2 -- x3 )
+ASMWORD("or", or)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	or	%TOS, %TOS, %TMP
+	blr
+	ASMEND(or)
+
+
+### XOR - CORE 6.1.2490
+###     ( x1 x2 -- x3 )
+ASMWORD("xor", xor)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	xor	%TOS, %TOS, %TMP
+	blr
+	ASMEND(xor)
+
+
+
+## LSHIFT - CORE 6.1.1805
+###     ( x1 u -- x2 )
+ASMWORD("lshift", lshift)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	slw	%TOS, %TMP, %TOS
+	blr
+	ASMEND(lshift)
+
+
+## RSHIFT - CORE 6.1.2162
+###     ( x1 u -- x2 )
+ASMWORD("rshift", rshift)
+	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
+	srw	%TOS, %TMP, %TOS
+	blr
+	ASMEND(rshift)
 
 
 
