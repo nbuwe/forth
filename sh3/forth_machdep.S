@@ -154,6 +154,20 @@ ENTRY(start_forth)
   1:	/* threaded code follows */
 
 
+/*
+ * Forth code to compile the above.  This will be part of DOES>
+ *
+ *   01 c7	mova	.+8, r0
+ *   b6 2a	mov.l	IP, @-RSP
+ *   2b 4d	jmp	@NEXT
+ *   03 6b	 mov	r0, IP
+ */
+#define COMPILE_DOES_CODE		  \
+	.long	lit, 0x2ab6c701, comma	; \
+	.long	lit, 0x6b034d2b, comma
+
+
+
 
 !!! ====================================================================
 /**
