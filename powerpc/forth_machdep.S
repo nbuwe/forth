@@ -264,6 +264,28 @@ DOES_ASM(asm_does)
 	.size asm_does, .-asm_does
 
 
+### Code field of C words points here.  The body contains the C
+### funtion address.  Call it as PSP = (*PFA)(PSP);
+DOES_ASM(c_does)
+	mflr	%r31		# save next_code address
+	lwz	%TOS, 0(%TOS)	# function pointer from word's body
+	mr	%r3, %PSP	# pass PSP as argument
+	mtctr	%TOS
+	bctrl
+	mr	%PSP, %r3	# return value is the new %PSP
+	mtlr	%r31		# restore next_code
+	FILL_TOS
+	blr
+	.size c_does, .-c_does
+
+
+### just inlined @
+DOES_ASM(constant_does)
+	lwz	%TOS, 0(%TOS)
+	blr
+	.size constant_does, .-constant_does
+
+
 ### Code field of colon definitions (i.e. forth words)  points here.
 ### This should eventually become the DOES> part of ":"
 DOES_ASM(call_code)
@@ -891,6 +913,35 @@ WORD("abort", abort_4th)
 	##  ... test code here ...
 	.long	bye_parens
 	#EXIT_4TH
+
+
+### BL - CORE 6.1.0770
+CONSTANT("bl", bl) .long 0x20
+
+
+### EMIT - CORE 6.1.1320
+###     ( x -- )
+CWORD("emit", emit)
+	.long	_C_LABEL(emit_impl)
+
+
+### CR - CORE 6.1.0990
+WORD("cr", cr)
+	.long	lit, '\n, emit
+	EXIT_4TH
+
+
+### SPACE - CORE 6.1.2220
+WORD("space", space)
+	.long	bl, emit
+	EXIT_4TH
+
+
+### TYPE - CORE 6.1.2310
+###     ( c-addr u -- )
+CWORD("type", type)
+	.long	_C_LABEL(type_impl)
+
 
 VARIABLE("vvv", vvv)
 	.long	0x12345678
