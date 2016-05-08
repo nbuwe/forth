@@ -1136,6 +1136,26 @@ ASMWORD("lit", lit)
 	ASMEND(lit)
 
 
+### BRANCH - auxiliary for ELSE &co
+ASMWORD("branch", branch)
+	lwz	%IP, 0(%IP)
+	blr
+	ASMEND(branch)
+
+
+### ?BRANCH - auxiliary for IF &co
+ASMWORD("?branch", question_branch)
+	cmpi	%cr0, %TOS, 0
+	FILL_TOS
+	beq	%cr0, .L_branch_taken	# NB: taken when TOS is false
+	addi	%IP, %IP, 4	# not taken, skip over target address
+	blr
+.L_branch_taken:
+	lwz	%IP, 0(%IP)
+	blr
+	ASMEND(question_branch)
+
+
 
 ##############################################################################
 ### XXX: the real one is in MI forth.S, but including that will xref a
