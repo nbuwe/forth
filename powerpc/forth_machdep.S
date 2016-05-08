@@ -1003,6 +1003,46 @@ ASMWORD("compare", compare)
 #undef	C2
 
 
+### FILL - CORE 6.1.1540
+###     ( c-addr u char -- )
+ASMWORD("fill", fill)
+	## cheat, use memset(3)
+	lwz	%r3, 4(%PSP)	# dst
+	mr	%r4, %TOS	# char
+	lwz	%r5, 0(%PSP)	# len
+	lwz	%TOS, 8(%PSP)	# fill tos
+	addi	%PSP, %PSP, 12
+
+	lis	%TMP, memset@ha
+	la	%TMP, memset@l(%TMP)
+	mtctr	%TMP
+	mflr	%r31
+	bctrl
+	mtlr	%r31
+	blr
+	ASMEND(fill)
+
+
+### MOVE - CORE 6.1.1900
+###     ( src dst len -- )
+ASMWORD("move", move)
+	## cheat, use memmove(3)
+	lwz	%r3, 0(%PSP)	# dst
+	lwz	%r4, 4(%PSP)	# src
+	mr	%r5, %TOS	# len
+	lwz	%TOS, 8(%PSP)	# fill tos
+	addi	%PSP, %PSP, 12
+
+	lis	%TMP, memmove@ha
+	la	%TMP, memmove@l(%TMP)
+	mtctr	%TMP
+	mflr	%r31
+	bctrl
+	mtlr	%r31
+	blr
+	ASMEND(move)
+
+
 
 /**
  * Control structure helpers
