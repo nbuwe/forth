@@ -995,6 +995,12 @@ ASMWORD("compare", compare)
 	li	%TOS, 1
 	blr
 	ASMEND(compare)
+#undef	S1
+#undef	U1
+#undef	C1
+#undef	S2
+#undef	U2
+#undef	C2
 
 
 
