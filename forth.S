@@ -603,9 +603,30 @@ WORD("d>s", d2s)
 
 /*
 !!! D0= - DOUBLE 8.6.1.1080
+!!!     ( xd -- flag)
  */
 WORD("d0=", d_zero_equals)
 	.long	or, zero_equals
+	EXIT_4TH
+
+
+/*
+!!! D0< - DOUBLE 8.6.1.1075
+!!!     ( xd -- flag)
+ */
+WORD("d0<", d_zero_less)
+	.long	nip, zero_less
+	EXIT_4TH
+
+
+/*
+!!! D= - DOUBLE 8.6.1.1120
+!!!     ( xd1 xd2 -- flag )
+ */
+WORD("d=", d_equals)
+	.long	rot, equals, OR_ELSE(0f)
+	.long	    equals, exit_4th
+0:	.long	two_drop, false
 	EXIT_4TH
 
 
