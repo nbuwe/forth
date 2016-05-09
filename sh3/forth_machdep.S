@@ -1347,13 +1347,6 @@ ASMWORD("s>d", s2d)
 	ASMEND(s2d)
 
 
-!!! D>S - DOUBLE 8.6.1.1140
-!!!     ( d -- n )
-WORD("d>s", d2s)
-	.long	drop
-	EXIT_4TH
-
-
 !!! DNEGATE - DOUBLE 8.6.1.1230
 !!!     ( d1 -- d2 )
 ASMWORD("dnegate", dnegate)

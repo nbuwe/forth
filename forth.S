@@ -589,6 +589,28 @@ WORD("blank", blank)
 
 
 /**
+ * Double-cell numbers
+ */
+
+/*
+!!! D>S - DOUBLE 8.6.1.1140
+!!!     ( d -- n )
+ */
+WORD("d>s", d2s)
+	.long	drop
+	EXIT_4TH
+
+
+/*
+!!! D0= - DOUBLE 8.6.1.1080
+ */
+WORD("d0=", d_zero_equals)
+	.long	or, zero_equals
+	EXIT_4TH
+
+
+
+/**
  * Data-space words
  */
 
@@ -815,9 +837,7 @@ WORD("#s", hash_s)
 0:	/* begin */
 	.long	hash
 	/* until */
-	.long	two_dup
-	.long	or, zero_equals	/* XXX: TODO: D0= */
-	.long	OR_ELSE(0b)
+	.long	two_dup, d_zero_equals, OR_ELSE(0b)
 	EXIT_4TH
 
 
