@@ -1,14 +1,20 @@
-This is a very simple Forth for sh3 that uses dumb, honest to god
-indirect threaded code.  The core is written entirely in assembler.
-There are only three environmental dependencies for now - printing one
-char (EMIT), printing a buffer (TYPE) and reading an input line
-(ACCEPT).  Escape to C is also used for things like 64-bit division
-(rewriting __divmoddi4 in asm from scratch is boring and kinda
-pointless).
+This is a very simple Forth that uses dumb, honest to god indirect
+threaded code.  The core is written entirely in assembler.  There are
+only three environmental dependencies for now - printing one char
+(EMIT), printing a buffer (TYPE) and reading an input line (ACCEPT).
+Escape to C is also used for things like 64-bit division (rewriting
+__divmoddi4 in asm from scratch is boring and kinda pointless).
 
-The core of the interpreter for sh3 is 16 instructions.  About 70 asm
-words tally up to about 500 instructions.  Nearly all of them are
-short trivial sequences, like adding two numbers, etc.  I'd say that
-someone familiar with the target ISA can port == write the asm core in
-an evening or two.  The rest of the system is in manually "compiled"
-threaded code.
+Currently sh3 and 32-bit powerpc are supported.
+
+The core of the interpreter for sh3 is 14 instructions (two of which
+are nops in delay slots).  About 70 asm words tally up to about 500
+instructions.  Nearly all of them are short trivial sequences, like
+adding two numbers, etc.  I'd say that someone familiar with the
+target ISA can port == write the asm core in an evening or two.  I
+wrote powerpc code in three evenings without any prior knowledge of
+the ISA.  The early version history of powerpc/forth_machdep.S is
+probably a good roadmap for the new port.
+
+The rest of the system is in manually "compiled" threaded code in MI
+forth.S
