@@ -23,3 +23,14 @@
   /STRING
   SEARCH
   SLITERAL
+
+* DOUBLE
+
+  2CONSTANT 2VARIABLE
+  D-
+  D. D.R
+  D2* D2/
+  D<
+  DABS
+  DMAX DMIN
+  M*/ M+
