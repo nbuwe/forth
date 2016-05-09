@@ -132,6 +132,11 @@
  */
 #define OR_ELSE(label)	/* .long */ question_branch, label
 
+/*
+ * Syntactic sugar for single word THEN part
+ */
+#define THEN_RETURN(word) /* .long */ OR_ELSE(0f), word, exit_4th; 0:;
+
 
 #define QUOTESTR(word, str)				  \
 	/* .long */ word/**/_quote_parens, (22f - 21f)	; \

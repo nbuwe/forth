@@ -198,10 +198,8 @@ WORD(">=", greater_than_equals)
 !!!     ( n1 n2 -- n3 )
  */
 WORD("max", max)
-	.long	two_dup, greater_than, OR_ELSE(0f)
-	.long	    drop, exit_4th
-0:	    /*	else  */
-	.long	    nip
+	.long	two_dup, greater_than, THEN_RETURN(drop)
+	.long	nip
 	EXIT_4TH
 .endif
 
@@ -212,10 +210,8 @@ WORD("max", max)
 !!!     ( n1 n2 -- n3 )
  */
 WORD("min", min)
-	.long	two_dup, less_than, OR_ELSE(0f)
-	.long	    drop, exit_4th
-0:	    /*	else  */
-	.long	    nip
+	.long	two_dup, less_than, THEN_RETURN(drop)
+	.long	nip
 	EXIT_4TH
 .endif
 
@@ -568,10 +564,8 @@ WORD("count", count)
 !!!     ( c-addr u -- )
  */
 WORD("erase", erase)
-	.long	dup, zero_equals, OR_ELSE(0f)
-	.long	    two_drop, exit_4th
-0:
-	.long	    lit, 0, fill
+	.long	dup, zero_equals, THEN_RETURN(two_drop)
+	.long	lit, 0, fill
 	EXIT_4TH
 
 
@@ -580,10 +574,8 @@ WORD("erase", erase)
 !!!     ( c-addr u -- )
  */
 WORD("blank", blank)
-	.long	dup, zero_equals, OR_ELSE(0f)
-	.long	    two_drop, exit_4th
-0:
-	.long	    bl, fill
+	.long	dup, zero_equals, THEN_RETURN(two_drop)
+	.long	bl, fill
 	EXIT_4TH
 
 
@@ -624,9 +616,8 @@ WORD("d0<", d_zero_less)
 !!!     ( xd1 xd2 -- flag )
  */
 WORD("d=", d_equals)
-	.long	rot, equals, OR_ELSE(0f)
-	.long	    equals, exit_4th
-0:	.long	two_drop, false
+	.long	rot, equals, THEN_RETURN(equals)
+	.long	two_drop, false
 	EXIT_4TH
 
 
@@ -762,11 +753,10 @@ WORD("space", space)
 
 /*
 !!! SPACES - CORE 6.1.2230
+!!!     ( n -- )
  */
 WORD("spaces", spaces)
-	.long	dup, zero_greater, zero_equals, OR_ELSE(0f)
-	.long	    drop, exit_4th
-0:
+	.long	dup, zero_greater, zero_equals, THEN_RETURN(drop)
 	.long	lit, 0, do_parens, 9f
 1:	.long	    space
 	.long	loop_parens, 1b
@@ -1344,9 +1334,7 @@ WORD("(abort\")", abort_quote_parens)
 	.long	fetch				/* length */
 	.long	two_dup, plus, aligned, to_r	/* skip string */
 	/* the above is a copy of (s") */
-	.long	rot, zero_equals, OR_ELSE(0f)
-	.long	    two_drop, exit_4th
-0:
+	.long	rot, zero_equals, THEN_RETURN(two_drop)
 	.long	type, cr	/* should it call CR? */
 	.long	quit /* XXX: FIXME: must be ABORT, but see QUIT definition */
 	EXIT_4TH
@@ -1832,9 +1820,8 @@ IMMWORD("\\", backslash)
 !!!     ( "<spaces>name" -- char )
  */
 WORD("char", char)
-	.long	parse_word, OR_ELSE(0f)
-	.long	    c_fetch, exit_4th
-0:	.long	drop, lit, 0
+	.long	parse_word, THEN_RETURN(c_fetch)
+	.long	drop, lit, 0
 	EXIT_4TH
 
 
@@ -2364,9 +2351,8 @@ VARIABLE("fence", fence)
  */
 WORD("forget", forget)
 	.long	tick, dup, to_name		/* cfa nfa -- */
-	.long	question_dup, zero_equals, OR_ELSE(0f)
-	.long	    drop, exit_4th
-0:
+	.long	question_dup, zero_equals, THEN_RETURN(drop)
+
 	.long	dup, fence, fetch, less_than, OR_ELSE(0f)
 	.long	    two_drop, THROW(15)
 0:
