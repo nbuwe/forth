@@ -285,13 +285,12 @@ DOES_ASM(asm_does)
 ### Code field of C words points here.  The body contains the C
 ### funtion address.  Call it as PSP = (*PFA)(PSP);
 DOES_ASM(c_does)
-	mflr	%r31		# save next_code address
 	lwz	%TOS, 0(%TOS)	# function pointer from word's body
 	mr	%r3, %PSP	# pass PSP as argument
 	mtctr	%TOS
 	bctrl
 	mr	%PSP, %r3	# return value is the new %PSP
-	mtlr	%r31		# restore next_code
+	mtlr	%NEXT		# restore next_code
 	FILL_TOS
 	blr
 	.size c_does, .-c_does
@@ -1100,9 +1099,8 @@ ASMWORD("fill", fill)
 	lis	%TMP, memset@ha
 	la	%TMP, memset@l(%TMP)
 	mtctr	%TMP
-	mflr	%r31
 	bctrl
-	mtlr	%r31
+	mtlr	%NEXT
 	blr
 	ASMEND(fill)
 
@@ -1120,9 +1118,8 @@ ASMWORD("move", move)
 	lis	%TMP, memmove@ha
 	la	%TMP, memmove@l(%TMP)
 	mtctr	%TMP
-	mflr	%r31
 	bctrl
-	mtlr	%r31
+	mtlr	%NEXT
 	blr
 	ASMEND(move)
 
