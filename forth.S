@@ -2030,7 +2030,7 @@ IMMWORD(";", semicolon)
 
 
 WORD("?pairs", question_pairs)
-	.long	minus, zero_not_equals, THEN_THROW(22)
+	.long	not_equals, THEN_THROW(22)
 	EXIT_4TH
 
 
