@@ -2039,7 +2039,7 @@ WORD(">mark", mark_fwd)
 	EXIT_4TH
 
 
-WORD("resolve>", resolve_fwd)
+WORD(">resolve", resolve_fwd)
 	.long	here, swap, store
 	EXIT_4TH
 
