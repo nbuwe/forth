@@ -15,12 +15,7 @@ variable target-wid
 also target context @ target-wid !
 previous
 
-variable tstate   tstate off
-
-: t[   tstate off ; \ NB: _not_ immediate
-: t]   tstate on ;
-
-: ?comp   tstate 0= if  -14 throw then ; \ interpreting a compile-only word
+: ?comp   state 0= if  -14 throw then ; \ interpreting a compile-only word
 
 
 \ XXX: gforth - snumber? returns dot position
@@ -122,82 +117,59 @@ char ~ xlat: tilde
 : "type"   [char] " emit  type  [char] " emit ;
 : tab   9 emit ;
 : .long   tab ." .long" tab ;
+: comment   ." /* " -trailing type space ." */" cr ;
 
-: tliteral
-   tstate @ if  .long ." lit, " 0 .r cr  then ;
-
-: t2literal
-   tstate @ if  .long ." two_lit, " 0 .r ." , " 0 .r cr  then ;
+: tliteral    .long ." lit, " 0 .r cr ;
+: t2literal   .long ." two_lit, " 0 .r ." , " 0 .r cr ;
+: tcompile,   .long >body count type cr ;
 
 
 : tsearch-target   target-wid @ search-wordlist ;
 : tsearch-meta   meta-wid @ search-wordlist ;
 
-\ we search in different places depending on tstate
+\ "compiling" - use target's words, except for immediates
 : tsearch-word  ( c-addr u -- 0 | xt 1 | xt -1 )
-   tstate @ if
-      \ "compiling" - use target's words, except for immediates
-      2dup 2>r
-      tsearch-target dup 0>= if \ immediate or not yet defined
-         drop 2r@
-         tsearch-meta dup 0< if
-            ." immediate mismatch: " 2r> type cr
-            -13 throw  \ undefined word
-         then
+   2dup 2>r
+   tsearch-target dup 0>= if \ immediate or not yet defined
+      drop 2r@
+      tsearch-meta dup 0< if
+         ." immediate mismatch: " 2r> type cr
+         -13 throw  \ undefined word
       then
-      2r> 2drop
-   else
-      \ interpreting - use host's words
-      search-word
-   then ;
+   then
+   2r> 2drop ;
 
-: myint
-   begin
-      parse-word ?dup if ( c-addr u -- )
-         2dup
-         tsearch-word ?dup if  \ NB: tstate-smart search
+: transpile
+   ] begin
+      parse-word ?dup if  ( c-addr u -- )
+         2dup tsearch-word ?dup if
             \ found a word
-            2swap 2drop \ get rid of the c-addr u pair
+            2nip  \ word's c-addr u string
             1+ if
-               execute \ immediate
+               execute  \ immediate
             else
-               tstate @ if
-                  \ "compile"
-                  .long >body count type cr
-               else
-                  execute
-               then
+               tcompile,
             then
          else
             \ not a word, may be a number?
-            2dup
-            number? ?dup 0= if
+            2dup number? ?dup 0= if
                ." undefined word: " type cr
-               -13 throw \ undefined word
+               -13 throw  \ undefined word
             then
             \ yes, a number
-            2 = if
-               2swap 2drop \ get rid of the c-addr u pair
-               t2literal
-            else
-               -rot 2drop \ get rid of the c-addr u pair
-               tliteral
-            then
+            2 = if  t2literal else  tliteral then
+            2drop  \ number's c-addr u string
          then
-      else \ end of input
-         drop \ leftover c-addr from the unsuccessful parse-word
-         cr exit
+         state @  \ continue if still compiling
+      else
+         \ end of input
+         drop  \ leftover c-addr from the unsuccessful parse-word
+         refill  \ continue if there's still input
       then
-   again ;
+   0= until ;
 
-: myrepl
-   ." #define IMMEDIATE .Limm0" cr
-   begin
-      refill while
-         myint
-         \ ." trans-ok" cr
-   repeat
-   ." IMMEDIATE = 0" cr ;
+: transpile-begin   ." #define IMMEDIATE .Limm0" cr ;
+: transpile-end     ." IMMEDIATE = 0" cr ;
 
 
 \ takes the name of the CPP macro to use (e.g. WORD or VARIABLE) to
@@ -227,7 +199,7 @@ char ~ xlat: tilde
    [char] ) emit
    cr ;
 
-: ?pairs   - 0<> if  .s -22 throw then ; \ control structure mismatch
+: ?pairs   - 0<> if  ." oops" .s -22 throw then ; \ control structure mismatch
 
 variable lblcnt
 : reset-labels   1000 lblcnt ! ;
@@ -259,8 +231,8 @@ reset-labels
 \ in the search order
 also meta definitions previous
 
-: \   $0a parse 2drop ; immediate
-: (   [char] ) parse 2drop ; immediate
+: \   $0a parse comment ; immediate
+: (   [char] ) parse comment ; immediate
 
 : cell+   cell + ;
 : cells   cell * ;
@@ -275,11 +247,11 @@ also meta definitions previous
    s" VARIABLE" emitdef
    .long 0 0 .r cr ;
 
-: [   t[ ; immediate
-: ]   t] ;
+\ : [   [ ; immediate
+: ]   transpile ;
 
-: :   s" WORD" emitdef reset-labels t] ;
-: ;   ?comp tab ." EXIT_4TH" cr t[ ; immediate
+: :   s" WORD" emitdef reset-labels transpile ;
+: ;   ?comp tab ." EXIT_4TH" cr postpone [ ; immediate
 
 : immediate   ." IMMEDIATE = IMM_FLAG" cr ; \ see emitdef
 
@@ -309,9 +281,7 @@ predef~ +       plus
 
 also meta
 
-\ cr myint  : test ( comment ) begin 42 again ;
-
-myrepl \ start processing target's forth text
+\ start processing target's forth text
 
 variable question
 42 constant answer
