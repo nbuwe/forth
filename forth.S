@@ -2039,7 +2039,7 @@ WORD(">mark", mark_fwd)
 	EXIT_4TH
 
 
-WORD("resolve>", resolve_fwd)
+WORD(">resolve", resolve_fwd)
 	.long	here, swap, store
 	EXIT_4TH
 
@@ -2182,7 +2182,7 @@ IMMWORD("do", do)
 !!! ?DO - CORE EXT 6.2.0620
 !!!     Differs from DO only in the auxiliary it compiles.
  */
-IMMWORD("question_do", question_do)
+IMMWORD("?do", question_do)
 	.long	question_comp
 	.long	compile, question_do_parens
 	.long	mark_fwd	/* address for leave */
