@@ -5,53 +5,36 @@ vocabulary trans        \ main transpiler vocabulary
 
 only forth also trans definitions
 
-vocabulary meta         \ defining words for the target
-variable meta-wid
-also meta context @ meta-wid !
-previous
-
-vocabulary target       \ shadow vocabulary for the target
-variable target-wid
-also target context @ target-wid !
-previous
-
-: ?comp   state 0= if  -14 throw then ; \ interpreting a compile-only word
-
-
 \ XXX: gforth - snumber? returns dot position
 : number?
    snumber? dup if
       0> if 2 else 1 then
    then ;
 
-\ search-word is to parse-word what find is to word
-\
-\ ANSI standard recommends c-addr u representation for strings instead
-\ of counted strings, yet it doesn't provide a counterpart to "find"
-\ that works with such strings.  There's only search-wordlist that
-\ operates on a single word list.  Do I miss something obvious here?
-: search-word   ( c-addr u -- 0 | xt 1 | xt -1 )
-    get-order >r
-    sp@ pad r@ cells move              \ copy order to pad
-    r@ 0 ?do drop loop                 \ drop order from stack
-    r> 0 ?do
-        2dup
-        pad i cells + @
-        search-wordlist ?dup if
-            2swap 2drop unloop exit
-        then
-    loop
-    2drop 0 ;
+
+vocabulary meta         \ defining words for the target
+also meta context @ constant meta-wid
+previous
+
+vocabulary target       \ shadow vocabulary for the target
+also target context @ constant target-wid
+previous
+
+: tsearch-meta   meta-wid search-wordlist ;
+: tsearch-target   target-wid search-wordlist ;
+
 
 : ?parsed
    ?dup 0= if drop  -16 throw then ; \ attempt to use zero-length string as a name
 
-: word,   \ compile counted string, like c" but parses at run time
+: string,   ( c-addr u -- )   \ reserve space and store string
+   here swap dup allot move ;
+
+: word,   \ compile as counted string, like c" but parses at run time
    parse-word ?parsed   ( c-addr u -- )
-   dup c,      \ save count
-   here swap   \ move destination
-   dup allot   \ reserve space
-   move ;      \ save name
+   \ XXX: TODO: check length
+   dup c, string, ;
+
 
 bl 1+ constant xlat-base
 : xlat-off   xlat-base - cells ;
@@ -85,56 +68,103 @@ char ~ xlat: tilde
 : word-xlat,
    parse-word ?parsed    ( c-addr u -- )
    here >r 0 c,          \ reserve and save count location
+   over c@ [char] 0 [ char 9 1+ ] literal within if
+      [char] _ c,
+   then
    over + swap do        \ loop over chars
       i c@ dup xlat? ?dup if
-         nip                \ original char
-         [char] _ c,        \ prepend underscore
-         count here swap    ( c-addr here count -- )
-         dup allot move
+         nip                \ lose original char
+         [char] _ c,        \ append underscore ...
+         count string,      \ ... and char's name
       else
-         c, \ copy as-is
+         c,                 \ copy char as-is
       then
    loop
    here r@ - 1- r> c! ;
 
-\ XXX: use this for predef too?
-: tcreate  ( " name" -- c-addr )
-   >in @ create
-   >in ! here word-xlat, ;   \ leave address of xlated word (see colon)
-   
+
+\ target vocabulary collects shadow definitions with the following
+\ parameter data:
+\
+\    +---+---+---+---+
+\    |    version    |
+\    +---+---+---+---+
+\    |cnt| f | o | o |
+\    +---+---+---+---+
+\
+\ version is inited to -1 when the word is being defined for the first
+\ time and tsearch-word handles considers such a word still hidden.
+\ redefining a word just bumps its version so that we can generate a
+\ new unique asm symbol.
+
+variable tlatest    0 tlatest !
+variable tversion   0 tversion !
+
+: type-sym
+   dup cell+ count type  \ basename
+   @ ?dup if             \ needs version suffix?
+      [char] . emit
+      0 .r
+   then ;
+
+: treveal   tversion @ tlatest @ ! ;
+: thide   tversion @ 1- tlatest @ ! ;
+
+: (tcreate)
+   create   here  dup tlatest !  0 tversion !  0 , ;
+
+: tcreate-new
+   >in @ (tcreate) swap >in ! word-xlat, ;
+
+: tcreate-version   ( xt -- )
+   >body  dup tlatest !  dup @ 1+ tversion ! ;
+
+: tcreate
+   >in @ parse-word ?parsed
+   tsearch-target if
+      nip   \ consume input word
+      tcreate-version
+   else
+      >in !   \ restore input
+      tcreate-new
+   then ;
+
+
 \ record a mapping in the target dictionary.  this is to let the
 \ transpiler know about assembler words written in real assembler in
 \ the machine-dependent .S file
-: predef~   \ e.g.  predef~ + plus
-   create word, ;
-
-\ like predef~ but the word is its own name
-: predef=   \ e.g.  predef= lit
-   >in @ create
-   >in ! word, ;
+: predef~   (tcreate) word, ;   \ to accomodate existing names
+: predef   tcreate drop treveal ;   \ xlated
 
 
-: "type"   [char] " emit  type  [char] " emit ;
+: "type"
+   [char] " emit
+   over + swap do
+      i c@
+      dup [char] \ = over [char] " = or if  [char] \ emit then
+      emit
+   loop
+   [char] " emit ;
+
 : tab   9 emit ;
 : .long   tab ." .long" tab ;
 : comment   ." /* " -trailing type space ." */" cr ;
 
 : tliteral    .long ." lit, " 0 .r cr ;
-: t2literal   .long ." two_lit, " 0 .r ." , " 0 .r cr ;
-: tcompile,   .long >body count type cr ;
+: t2literal   .long ." _2lit, " 0 .r ." , " 0 .r cr ;
+: tcompile,   .long >body type-sym cr ;
 
-
-: tsearch-target   target-wid @ search-wordlist ;
-: tsearch-meta   meta-wid @ search-wordlist ;
 
 \ "compiling" - use target's words, except for immediates
 : tsearch-word  ( c-addr u -- 0 | xt 1 | xt -1 )
    2dup 2>r
-   tsearch-target dup 0>= if \ immediate or not yet defined
-      drop 2r@
-      tsearch-meta dup 0< if
-         ." immediate mismatch: " 2r> type cr
-         -13 throw  \ undefined word
+   tsearch-meta dup 1 <> if
+      if drop then   \ xt of non-immediate(?!) word in meta
+      2r@ tsearch-target
+      dup if
+         over >body @ -1 = if  \ defined in target but hidden
+            2drop 0
+         then
       then
    then
    2r> 2drop ;
@@ -168,19 +198,18 @@ char ~ xlat: tilde
       then
    0= until ;
 
-: transpile-begin   ." #define IMMEDIATE .Limm0" cr ;
+: transpile-begin
+   .\" #include \"test-manual.S\"" cr
+   ." #define IMMEDIATE .Limm0" cr ;
 : transpile-end     ." IMMEDIATE = 0" cr ;
 
 
 \ takes the name of the CPP macro to use (e.g. WORD or VARIABLE) to
 \ define the forth name in the generated output
-: emitdef ( c-addr u " name" -- )
-   >in @ tcreate        \ leaves xlated name (counted)
+: emitdef ( c-addr u reveal? " name" -- )
+   >in @ tcreate        \ leaves pfa
    swap >in !           \ restore input for parse-word below
-   \ cpp directives cannot be nested in a macro, so this has to be
-   \ emitted explicitly over and over (or we can bite the bullet and
-   \ use m4)
-   \
+   treveal              \ XXX: need for type-sym below
    \ the defining macro will use the not yet defined .Limm_name as the
    \ immediate flag.  if "immediate" follows this definition, it will
    \ set the flag.  IMMEDIATE = 0 before the next definition will
@@ -189,16 +218,25 @@ char ~ xlat: tilde
    cr
    ." IMMEDIATE = 0" cr
    ." #undef  IMMEDIATE" cr
-   ." #define IMMEDIATE .Limm_" dup count type cr
+   ." #define IMMEDIATE .Limm_" dup type-sym cr
    -rot    \ xlated name away
    type                 \ macro name
    [char] ( emit
    parse-word "type"    \ forth name
    [char] , emit space
-   count type           \ xlated name
+   type-sym             \ xlated name
    [char] ) emit
    cr ;
 
+\ make real constant definitions in the meta vocabulary so that
+\ interpreted code can use them
+: meta-constant
+   meta-wid set-current
+   >in @  over constant  >in !
+   target-wid set-current ;
+
+
+: ?comp   state @ 0= if  -14 throw then ; \ interpreting a compile-only word
 : ?pairs   - 0<> if  ." oops" .s -22 throw then ; \ control structure mismatch
 
 variable lblcnt
@@ -225,6 +263,9 @@ reset-labels
 : (again)   .long ." branch"          cr <resolve ;
 : (until)   .long ." question_branch" cr <resolve ;
 
+: (do)   ?comp .long type cr >mark <mark 4 ;
+: (loop) ?comp rot 4 ?pairs .long type cr <resolve >resolve ;
+
 4 constant cell
 
 \ defining words go to the meta vocabulary, but that vocabulary is not
@@ -240,6 +281,7 @@ also meta definitions previous
 : align   ." p2align 2, 0" cr ;
 
 : constant
+   meta-constant
    s" CONSTANT" emitdef
    .long 0 .r cr ;
 
@@ -247,13 +289,29 @@ also meta definitions previous
    s" VARIABLE" emitdef
    .long 0 0 .r cr ;
 
-\ : [   [ ; immediate
+: [   postpone [ ; immediate
 : ]   transpile ;
 
-: :   s" WORD" emitdef reset-labels transpile ;
-: ;   ?comp tab ." EXIT_4TH" cr postpone [ ; immediate
+: :   s" WORD" emitdef  thide reset-labels transpile ;
+: ;   ?comp  tab ." EXIT_4TH" cr  treveal  postpone [ ; immediate
 
-: immediate   ." IMMEDIATE = IMM_FLAG" cr ; \ see emitdef
+: immediate
+   immediate
+   ." IMMEDIATE = IMM_FLAG" cr ; \ see emitdef
+
+: literal
+   state @ if tliteral then ; immediate
+
+: postpone
+   parse-word ?parsed tsearch-target ?dup if
+      1+ if   \ immediate
+	 tcompile,
+      else
+	 .long ." compile" cr
+	 tcompile,
+      then
+   else
+   then ; immediate
 
 : [char] ?comp
    parse-word if c@ else drop 0 then tliteral ; immediate
@@ -270,23 +328,19 @@ also meta definitions previous
 : while  ?comp 2 ?pairs (if) 3 ;  immediate
 : repeat ?comp 3 ?pairs swap (again) (then) ;  immediate
 
+: do    s" _lparendo_rparen"          (do) ; immediate
+: ?do   s" _lparen_questiondo_rparen" (do) ; immediate
+: loop  s" _lparenloop_rparen"      (loop) ; immediate
+: +loop s" _lparen_plusloop_rparen" (loop) ; immediate
 
 \ pre-populate target vocabulary with stubs for the asm words
 also target definitions previous
-
-predef= dup
-\ ...
-predef~ =       equals
-predef~ +       plus
+include asmwords.fth
 
 also meta
 
 \ start processing target's forth text
-
-variable question
-42 constant answer
-
-: ?! answer ; immediate
-: test ( comment ) begin question answer = until ;
-
+transpile-begin
+include forth.fth
+transpile-end
 \ bye
