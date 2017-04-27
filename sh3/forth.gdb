@@ -1,5 +1,3 @@
-# $Id$
-
 break *(&breakpoint_code)
 
 define pstack
