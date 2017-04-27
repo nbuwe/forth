@@ -10,4 +10,7 @@ obj
 obj.*
 
 *.core
+*.d
 *.o
+.depend
+.log*
