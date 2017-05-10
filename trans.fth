@@ -110,14 +110,16 @@ variable tversion   0 tversion !
 : treveal   tversion @ tlatest @ ! ;
 : thide   tversion @ 1- tlatest @ ! ;
 
-: (tcreate)
-   create   here  dup tlatest !  0 tversion !  0 , ;
+: (tcreate)   ( "<spaces>name" -- )
+   create here tlatest !  0 dup , tversion ! ;
 
-: tcreate-new
-   >in @ (tcreate) swap >in ! word-xlat, ;
+: tcreate-new   ( "<spaces>name" -- )
+   >in @ (tcreate) >in ! word-xlat, ;
 
 : tcreate-version   ( xt -- )
-   >body  dup tlatest !  dup @ 1+ tversion ! ;
+   >body tlatest !
+   tlatest @ @ 1+ tversion !
+   treveal ;
 
 : tcreate
    >in @ parse-word ?parsed
@@ -134,7 +136,7 @@ variable tversion   0 tversion !
 \ transpiler know about assembler words written in real assembler in
 \ the machine-dependent .S file
 : predef~   (tcreate) word, ;   \ to accomodate existing names
-: predef   tcreate drop treveal ;   \ xlated
+: predef   tcreate ;            \ xlated
 
 
 : "type"
@@ -206,9 +208,8 @@ variable tversion   0 tversion !
 
 \ takes the name of the CPP macro to use (e.g. WORD or VARIABLE) to
 \ define the forth name in the generated output
-: emitdef ( c-addr u reveal? " name" -- )
-   >in @ tcreate        \ leaves pfa
-   swap >in !           \ restore input for parse-word below
+: emitdef ( c-addr u "<spaces>name" -- )
+   >in @ tcreate >in !  \ restore input for parse-word below
    treveal              \ XXX: need for type-sym below
    \ the defining macro will use the not yet defined .Limm_name as the
    \ immediate flag.  if "immediate" follows this definition, it will
@@ -218,13 +219,12 @@ variable tversion   0 tversion !
    cr
    ." IMMEDIATE = 0" cr
    ." #undef  IMMEDIATE" cr
-   ." #define IMMEDIATE .Limm_" dup type-sym cr
-   -rot    \ xlated name away
+   ." #define IMMEDIATE .Limm_" tlatest @ type-sym cr
    type                 \ macro name
    [char] ( emit
    parse-word "type"    \ forth name
    [char] , emit space
-   type-sym             \ xlated name
+   tlatest @ type-sym   \ xlated name
    [char] ) emit
    cr ;
 
