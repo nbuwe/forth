@@ -239,11 +239,10 @@ variable tversion   0 tversion !
 : ?comp   state @ 0= if  -14 throw then ; \ interpreting a compile-only word
 : ?pairs   - 0<> if  ." oops" .s -22 throw then ; \ control structure mismatch
 
-variable lblcnt
-: reset-labels   1000 lblcnt ! ;
-reset-labels
+variable lblcnt   0 lblcnt !
+: reset-labels   100 lblcnt @  over / 1+ *  lblcnt ! ;
 
-: label-name   0 .r [char] $ emit ;
+: label-name   ." .L" 0 .r ;
 : label-ref   .long 4 spaces label-name cr ;
 : label   label-name [char] : emit cr ;
 
