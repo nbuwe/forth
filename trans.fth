@@ -221,7 +221,7 @@ variable tversion   0 tversion !
    0= until ;
 
 : transpile-begin
-   .\" #include \"test-manual.S\"" cr
+   .\" #include \"forth-prologue.S\"" cr
    ." #define IMMEDIATE .Limm0" cr ;
 : transpile-end     ." IMMEDIATE = 0" cr ;
 
