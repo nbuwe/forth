@@ -29,7 +29,7 @@
  * forth implementations and simplify porting, or more asm words to
  * get a bit more speed once initial porting is done?
  */
-#undef MORE_ASM_WORDS
+#define MORE_ASM_WORDS 1
 
 #define TOS	r8	/* top of parameter stack lives in a register */
 #define PSP	r9	/* parameter stack pointer */
@@ -120,7 +120,7 @@ ENTRY(start_forth)
 
 	.p2align 2
 .L_next:	.long	next_code
-.L_abort_body:	.long	abort_4th_body
+.L_abort_body:	.long	abort__4th_body
 
 
 !!! ====================================================================
@@ -1013,7 +1013,7 @@ ASMWORD("rshift", rshift)
  * Address alignment
  */
 
-#ifdef MORE_ASM_WORDS
+#if 0 && defined(MORE_ASM_WORDS)
 !!! ALIGNED - CORE 6.1.0706
 !!!     ( addr -- a-addr )
 ASMWORD("aligned", aligned)
@@ -1025,7 +1025,7 @@ ASMWORD("aligned", aligned)
 #endif
 
 
-#ifdef MORE_ASM_WORDS
+#if 0 && defined(MORE_ASM_WORDS)
 !!! CELL+ - CORE 6.1.0880
 !!!     ( a-addr1 -- a-addr2 )
 ASMWORD("cell+", cell_plus)
@@ -1035,7 +1035,7 @@ ASMWORD("cell+", cell_plus)
 #endif
 
 
-#ifdef MORE_ASM_WORDS
+#if 0 && defined(MORE_ASM_WORDS)
 !!! CELL- - nonstandard
 !!!     ( a-addr1 -- a-addr2 )
 ASMWORD("cell-", cell_minus)
@@ -1045,7 +1045,7 @@ ASMWORD("cell-", cell_minus)
 #endif
 
 
-#ifdef MORE_ASM_WORDS
+#if 0 && defined(MORE_ASM_WORDS)
 !!! CELLS - CORE 6.1.0890
 !!!     ( n1 -- n2 )
 ASMWORD("cells", cells)
@@ -1055,7 +1055,7 @@ ASMWORD("cells", cells)
 #endif
 
 
-#ifdef MORE_ASM_WORDS
+#if 0 && defined(MORE_ASM_WORDS)
 !!! CHAR+ - CORE 6.1.0897
 !!!     ( c-addr1 -- c-addr2 )
 ASMWORD("char+", char_plus)
@@ -1065,7 +1065,7 @@ ASMWORD("char+", char_plus)
 #endif
 
 
-#ifdef MORE_ASM_WORDS
+#if 0 && defined(MORE_ASM_WORDS)
 !!! CHARS - CORE 6.1.0898
 !!!     ( n1 -- n2 )
 ASMWORD("chars", chars)
@@ -1176,7 +1176,7 @@ ASMWORD("2!", two_store)
  * Strings
  */
 
-#ifdef MORE_ASM_WORDS
+#if 0 && defined(MORE_ASM_WORDS)
 !!! COUNT - CORE 6.1.0980
 !!!     ( c-addr1 -- c-addr2 u )
 ASMWORD("count", count)
