@@ -16,5 +16,16 @@ wrote powerpc code in three evenings without any prior knowledge of
 the ISA.  The early version history of powerpc/forth_machdep.S is
 probably a good roadmap for the new port.
 
-The rest of the system is in manually "compiled" threaded code in MI
-forth.S
+The rest of the system is transpiled from the forth sources to MI
+assembler sources.  That "compiled" assembler used to be handwritten
+(and you can still find it on the "handwritten" branch), but as the
+system grows it gets more inconvenient to maintain it in that form.
+
+Generating assembler source is not the most convenient way to go about
+making a forth system.  Still there are certain reasons that make the
+tradeoffs worthwhile for me.  GNU assembler is single pass, so that
+imposes certain limitations.  There's a strong temptation to throw M4
+into the mix to fix that, but M4 introduces certain inconveniences of
+its own and I'm still not desperate enough to accept them.
+
+-uwe
