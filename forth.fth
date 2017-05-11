@@ -175,7 +175,7 @@ variable hld
    r> drop   2r> 2drop ;
 
 : unloop
-   r>   2r> drop r> drop   >r ;
+   r>   2r> 2drop r> drop   >r ;
 
 \ XXX: only support tib for now
 \ constant tib
