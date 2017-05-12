@@ -371,8 +371,8 @@ variable state
    r> dup cell+ >r
    @ compile, ;
 
-: literal    state @ if compile lit , then ;
-: 2literal   state @ if compile 2lit , , then ;
+: literal    state @ if compile lit , then ; immediate
+: 2literal   state @ if compile 2lit , , then ; immediate
 : [char]     ?comp char postpone literal ; immediate
 
 
