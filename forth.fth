@@ -230,6 +230,9 @@ variable >in
 : parse-word   ( "<spaces>name<space>" -- c-addr u )
    bl skip-delim bl parse ;
 
+: char   ( "<spaces>name" -- char )
+   parse-word if c@ else drop 0 then ;
+
 : word   ( char "<chars>ccc<char>" -- c-addr )
    dup skip-delim parse   \ str len --
    dup >r
@@ -370,6 +373,7 @@ variable state
 
 : literal    state @ if compile lit , then ;
 : 2literal   state @ if compile 2lit , , then ;
+: [char]     ?comp char literal ; immediate
 
 
 : (c")
