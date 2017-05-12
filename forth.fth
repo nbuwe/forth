@@ -473,8 +473,7 @@ $40 constant &sflag
 predef~ next-code next_code
 
 : create
-   parse-word
-   ?dup 0= if ( drop -16 throw ) then \ zero length name
+   parse-word ( XXX: ?parsed ) ?dup 0= if drop exit then
    align here >r   \ save NFA
    \ Name Field
    dup c, string, align
