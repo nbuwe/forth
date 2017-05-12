@@ -456,6 +456,14 @@ $40 constant &sflag
    until
    2drop false ;
 
+\ helper for ' and the like that do the parse/search combo
+: (')   ( "<spaces>name" -- 0 | xt 1 | xt -1 )
+   parse-word ( XXX: ?parsed ) ?dup 0= if drop false exit then
+   search-current ;
+
+: '   (') ?dup if drop else ( XXX: undefined: throw -13 ) false then ;
+: [']   ?comp ' postpone literal ; immediate \ XXX: use compile,
+
 
 \ ==================== defining words &co
 
