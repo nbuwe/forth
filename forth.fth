@@ -481,7 +481,8 @@ predef~ next-code next_code
    latest ,
    r> current @ !
    \ Code Field
-   next-code , ;
+   \ XXX: for now we need to protect next-code with compile
+   compile next-code , ;
 
 
 : compile"
