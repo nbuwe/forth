@@ -373,7 +373,7 @@ variable state
 
 : literal    state @ if compile lit , then ;
 : 2literal   state @ if compile 2lit , , then ;
-: [char]     ?comp char literal ; immediate
+: [char]     ?comp char postpone literal ; immediate
 
 
 : (c")
