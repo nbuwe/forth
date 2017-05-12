@@ -482,7 +482,24 @@ predef~ next-code next_code
    r> current @ !
    \ Code Field
    \ XXX: for now we need to protect next-code with compile
-   compile next-code , ;
+   compile next-code ;
+
+: variable    create 1 cells allot ;
+: 2variable   create 2 cells allot ;
+
+
+\ set CFA of the latest word to the address compiled after this word
+: (;alit)   r> @ latest name> ! ;
+
+predef~ call-code call_code \ XXX
+
+: :
+   create smudge ]
+   (;alit) call-code ;
+
+: ;
+   compile exit
+   unsmudge postpone [ ; immediate
 
 
 : compile"
