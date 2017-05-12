@@ -222,6 +222,7 @@ variable tversion   0 tversion !
 
 : transpile-begin
    .\" #include \"forth-prologue.S\"" cr
+   ." #undef  IMMEDIATE" cr
    ." #define IMMEDIATE .Limm0" cr ;
 : transpile-end     ." IMMEDIATE = 0" cr ;
 
@@ -316,7 +317,7 @@ also meta definitions previous
 
 : immediate
    immediate
-   ." IMMEDIATE = IMM_FLAG" cr ; \ see emitdef
+   ." IMMEDIATE = IFLAG" cr ; \ see emitdef
 
 : literal
    state @ if tliteral then ; immediate
