@@ -519,6 +519,25 @@ predef~ call-code call_code \ XXX
    dup c, string,
    align ; immediate
 
+\ forward - mark is the location to patch with the destination
+: >mark      ( C: -- mark )   here 0 , ;
+: >resolve   ( C: mark -- )   here swap ! ;
+
+\ backward - mark is the destination address
+: <mark      ( C: -- mark )   here ;
+: <resolve   ( C: mark -- )   , ;
+
+: (ahead)   compile  branch >mark ;
+: (if)      compile ?branch >mark ;
+: (then)    >resolve ;
+
+: ?pairs   ( C: expected actual -- ) 2drop ; \ XXX: TODO
+
+: ahead   ?comp          (ahead) 1 ; immediate
+: if      ?comp          (if) 1 ; immediate
+: else    ?comp 1 ?pairs (ahead) swap (then) 1 ; immediate
+: then    ?comp 1 ?pairs (then) ; immediate
+
 \ : (abort")
 \    r> dup cell+ swap @
 \    2dup + aligned >r
