@@ -78,6 +78,31 @@
 : off   false swap ! ;
 
 
+variable handler \ handler off
+
+: catch   ( xt -- error | 0 )
+   sp@ >r               \ save data stack pointer
+   handler @ >r         \ save previous handler
+   rp@ handler !        \ set current handler to this one
+   execute              \ execute the word passed
+   \ no errors
+   r> handler !         \ restore previous handler
+   r> drop              \ discard saved stack pointer
+   0 ;                  \ normal completion
+
+: throw   ( error | 0 -- )
+   ?dup if
+      handler @         \ XXX: check for 0?
+      rp!               \ restore saved return stack
+      r> handler !      \ restore previous handler
+      r>                \ get saved stack pointer
+      swap >r           \ stash away error code so that it survives sp!
+      sp!               \ restore stack pointer
+      drop              \ invalid TOS (was xt)
+      r>                \ get error code back
+   then ;
+
+
 : i
    r>   \ shoo our return address to get to the loop params
    2r@  \ limit current --
