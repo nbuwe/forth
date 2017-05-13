@@ -521,6 +521,29 @@ ASMWORD("sp@", sp_fetch)
 	ASMEND(sp_fetch)
 
 
+### SP!
+ASMWORD("sp!", sp_store)
+	mr	%PSP, %TOS
+	blr
+	ASMEND(sp_fetch)
+
+
+### RP@
+ASMWORD("rp@", rp_fetch)
+	SPILL_TOS
+	mr	%TOS, %RSP
+	blr
+	ASMEND(rp_fetch)
+
+
+### RP!
+ASMWORD("rp!", rp_store)
+	mr	%RSP, %TOS
+	FILL_TOS
+	blr
+	ASMEND(rp_fetch)
+
+
 ### >R - CORE 6.1.0580
 ###     ( x -- ) ( R: -- x )
 ASMWORD(">r", to_r)

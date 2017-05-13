@@ -241,6 +241,29 @@ ASMWORD("sp@", sp_fetch)
 	 mov	r0, TOS
 	ASMEND(sp_fetch)
 
+!!! SP!
+ASMWORD("sp!", sp_store)
+	jmp	@NEXT
+	 mov	TOS, PSP
+	ASMEND(sp_fetch)
+
+
+!!! RP@
+ASMWORD("rp@", rp_fetch)
+	SPILL_TOS
+	jmp	@NEXT
+	 mov	RSP, TOS
+	ASMEND(rp_fetch)
+
+
+!!! RP!
+ASMWORD("rp!", rp_store)
+	mov	TOS, RSP
+	jmp	@NEXT
+	 FILL_TOS
+	ASMEND(rp_fetch)
+
+
 
 !!! Asm part of BYE that returns control to the C code that started
 !!! the Forth system.  The stacks are not reset and can be inspected.

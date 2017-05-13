@@ -5,6 +5,9 @@ predef rp0
 predef~ (abort) abort_parens
 predef~ (quit) quit_parens
 predef~ sp@ sp_fetch
+predef~ sp! sp_store
+predef~ rp@ rp_fetch
+predef~ rp! rp_store
 predef~ (bye) bye_parens
 predef~ breakpoint breakpoint
 predef~ execute execute
