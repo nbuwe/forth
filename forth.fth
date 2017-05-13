@@ -224,8 +224,8 @@ variable >in
    source drop r> +  \ result address (at old >in)
    swap ;            \ result length
 
-: \   $0a parse 2drop ;
-: (   [char] ) parse 2drop ;
+: \   $0a parse 2drop ; immediate
+: (   [char] ) parse 2drop ; immediate
 
 : parse-word   ( "<spaces>name<space>" -- c-addr u )
    bl skip-delim bl parse ;
