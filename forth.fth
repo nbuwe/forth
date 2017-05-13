@@ -636,9 +636,9 @@ predef~ call-code call_code \ XXX
    decimal
    postpone [
    begin
+      ." ok "
       refill while
 	 interpret
-	 cr
    repeat
    bye ;
 

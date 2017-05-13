@@ -159,7 +159,7 @@
 
 
 #define QUOTESTR(word, str)				  \
-	/* .long */ word/**/_quote_parens, (22f - 21f)	; \
+	/* .long */ _lparen_/**/word/**/_dquote_rparen, (22f - 21f) ; \
 21:	.ascii	str					; \
 22:	.p2align 2, 0 /* force new directive with ; */	;
 

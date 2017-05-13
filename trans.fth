@@ -336,6 +336,10 @@ also meta definitions previous
 : [char] ?comp
    parse-word if c@ else drop 0 then tliteral ; immediate
 
+: ." ?comp
+   [char] " parse
+   .long ." DOTQ(" "type" ." )" cr ; immediate
+
 : ahead  ?comp          (ahead) 1 ; immediate
 : if     ?comp          (if) 1 ; immediate
 : else   ?comp 1 ?pairs (ahead) swap (then) 1 ;  immediate
