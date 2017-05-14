@@ -163,8 +163,8 @@ ENTRY(start_forth)
  *   03 6b	 mov	r0, IP
  */
 #define COMPILE_DOES_CODE		  \
-	.long	lit, 0x2ab6c701, comma	; \
-	.long	lit, 0x6b034d2b, comma
+	.long	lit, 0x2ab6c701, _comma	; \
+	.long	lit, 0x6b034d2b, _comma
 
 
 

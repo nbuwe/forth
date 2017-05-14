@@ -318,8 +318,8 @@ DOES_ASM(c_does)
  *   4e 80 04 21	bctrl
  */
 #define COMPILE_DOES_CODE		  \
-	.long	lit, 0x7fc903a6, comma	; \
-	.long	lit, 0x4e800421, comma
+	.long	lit, 0x7fc903a6, _comma	; \
+	.long	lit, 0x4e800421, _comma
 
 
 DOES_ASM(does_code)
