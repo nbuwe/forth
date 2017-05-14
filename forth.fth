@@ -638,7 +638,7 @@ predef~ call-code call_code \ XXX
    decimal
    postpone [
    begin
-      ." ok "
+      state @ not if ." ok " then
       refill while
 	 interpret
    repeat
