@@ -315,6 +315,15 @@ also meta definitions previous
 : :   s" WORD" emitdef  thide reset-labels transpile ;
 : ;   ?comp  tab ." EXIT_4TH" cr  treveal  postpone [ ; immediate
 
+\ XXX: CONSTANT() macro refers to "constant_does"
+: does> ?comp
+   .long ." _lparen_semicoloncode_rparen"  cr
+   ." DOES_4TH("
+   treveal \ XXX
+   tlatest @ type-sym
+   thide
+   ." _does)" cr ; immediate
+
 : immediate
    immediate
    ." IMMEDIATE = IFLAG" cr ; \ see emitdef

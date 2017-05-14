@@ -22,10 +22,6 @@ CWORD("type", type)
 CWORD("accept", accept_4th)	/* XXX: avoid name clash with accept(2) */
 	.long	_C_LABEL(accept_impl)
 
-DOES_4TH(constant_does)
-	.long	fetch
-	EXIT_4TH
-
 VARIABLE("current", current)
 	.long	. + 4
 	/* this will be part of a vocabulary */
