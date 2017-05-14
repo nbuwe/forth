@@ -559,9 +559,16 @@ predef~ call-code call_code \ XXX
 : <mark      ( C: -- mark )   here ;
 : <resolve   ( C: mark -- )   , ;
 
+\ forward jumps
 : (ahead)   compile  branch >mark ;
 : (if)      compile ?branch >mark ;
 : (then)    >resolve ;
+
+\ backward jumps
+: (begin)   <mark ;
+: (again)   compile  branch <resolve ;
+: (until)   compile ?branch <resolve ;
+
 
 : ?pairs   ( C: expected actual -- ) 2drop ; \ XXX: TODO
 
@@ -569,6 +576,14 @@ predef~ call-code call_code \ XXX
 : if      ?comp          (if) 1 ; immediate
 : else    ?comp 1 ?pairs (ahead) swap (then) 1 ; immediate
 : then    ?comp 1 ?pairs (then) ; immediate
+
+: begin  ?comp          (begin) 2 ; immediate
+: again  ?comp 2 ?pairs (again) ; immediate
+: until  ?comp 2 ?pairs (until) ; immediate
+
+: while  ?comp 2 ?pairs (if) 3 ;  immediate
+: repeat ?comp 3 ?pairs swap (again) (then) ;  immediate
+
 
 \ : (abort")
 \    r> dup cell+ swap @
@@ -616,14 +631,14 @@ predef~ call-code call_code \ XXX
    compile (do)
    >mark \ leave address
    <mark \ address to loop back to
-   3 ; immediate
+   4 ; immediate
 
 : ?do
    ?comp
    compile (?do)
    >mark \ leave address
    <mark \ address to loop back to
-   3 ; immediate
+   4 ; immediate
 
 : leave   ( R: leave-addr limit current -- )  \ return after the loop
    r> drop      \ return address
@@ -636,13 +651,13 @@ predef~ call-code call_code \ XXX
    >r ;         \ restore return address
 
 : loop
-   ?comp 3 ?pairs
+   ?comp 4 ?pairs
    compile (loop)
    <resolve     \ jump to the beginning of the loop
    >resolve ; immediate \ leave address after the loop
 
 : +loop
-   ?comp 3 ?pairs
+   ?comp 4 ?pairs
    compile (+loop)
    <resolve     \ jump to the beginning of the loop
    >resolve ; immediate \ leave address after the loop
