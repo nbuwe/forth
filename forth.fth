@@ -611,6 +611,42 @@ predef~ call-code call_code \ XXX
 : (loop)   1 (goto) (+loop) ;
 
 
+: do
+   ?comp
+   compile (do)
+   >mark \ leave address
+   <mark \ address to loop back to
+   3 ; immediate
+
+: ?do
+   ?comp
+   compile (?do)
+   >mark \ leave address
+   <mark \ address to loop back to
+   3 ; immediate
+
+: leave   ( R: leave-addr limit current -- )  \ return after the loop
+   r> drop      \ return address
+   2r> 2drop ;  \ loop counter and limit
+
+: unloop   ( R: leave-addr limit current -- ) \ caller wants to exit from loop
+   r>           \ save return address
+   2r> 2drop    \ loop counter and limit
+   r> drop      \ leave address
+   >r ;         \ restore return address
+
+: loop
+   ?comp 3 ?pairs
+   compile (loop)
+   <resolve     \ jump to the beginning of the loop
+   >resolve ; immediate \ leave address after the loop
+
+: +loop
+   ?comp 3 ?pairs
+   compile (+loop)
+   <resolve     \ jump to the beginning of the loop
+   >resolve ; immediate \ leave address after the loop
+
 : interpret
    begin
       parse-word ?dup 0= if drop exit then
