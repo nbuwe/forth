@@ -489,6 +489,8 @@ $40 constant &sflag
 : '   (') ?dup if drop else ( XXX: undefined: throw -13 ) false then ;
 : [']   ?comp ' postpone literal ; immediate \ XXX: use compile,
 
+: [compile]   ?comp ' compile, ; immediate
+
 : postpone
    ?comp
    (') 0< if
