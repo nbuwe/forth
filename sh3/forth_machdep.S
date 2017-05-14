@@ -153,7 +153,6 @@ ENTRY(start_forth)
 	 mov	r0, IP		; \
   1:	/* threaded code follows */
 
-
 /*
  * Forth code to compile the above.  This will be part of DOES>
  *
@@ -166,6 +165,15 @@ ENTRY(start_forth)
 	.long	lit, 0x2ab6c701, _comma	; \
 	.long	lit, 0x6b034d2b, _comma
 
+/*
+ * Generate an instance for DOES> thunk to decouple MD asm from MI
+ * forth code that can just copy the thunk when compiling DOES>
+ */
+CONSTANT("does-thunk", does_thunk)
+	.long	0f
+0:	.long	9f - does_thunk_code
+	DOES_4TH(does_thunk_code)
+9:	.size	does_thunk_code, .-does_thunk_code
 
 
 

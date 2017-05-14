@@ -321,12 +321,22 @@ DOES_ASM(c_does)
 	.long	lit, 0x7fc903a6, _comma	; \
 	.long	lit, 0x4e800421, _comma
 
+/*
+ * Generate an instance for DOES> thunk to decouple MD asm from MI
+ * forth code that can just copy the thunk when compiling DOES>
+ */
+CONSTANT("does-thunk", does_thunk)
+	.long	0f
+0:	.long	9f - does_thunk_code
+	DOES_4TH(does_thunk_code)
+9:	.size	does_thunk_code, .-does_thunk_code
 
 DOES_ASM(does_code)
 	stwu	%IP, -4(%RSP)
 	mflr	%IP		# threaded code after DOES>
 	mtlr	%NEXT		# restore LR to next_code
 	b	next_code
+	.size	does_code, .-does_code
 
 
 ### Code field of colon definitions (i.e. forth words)  points here.

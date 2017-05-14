@@ -528,6 +528,11 @@ predef~ call-code call_code \ XXX
    compile exit
    unsmudge postpone [ ; immediate
 
+: does> ?comp
+   compile (;code)
+   does-thunk  dup @ swap cell+ swap \ code len -- (like sliteral)
+   string, ; immediate
+
 
 : compile"
    r> dup cell+ >r @   \ fetch runtime word after us (like compile)

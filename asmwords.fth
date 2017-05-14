@@ -11,6 +11,7 @@ predef~ rp! rp_store
 predef~ (bye) bye_parens
 predef~ breakpoint breakpoint
 predef~ execute execute
+predef~ does-thunk does_thunk
 predef~ exit exit_4th
 predef~ (goto) goto_parens
 predef~ drop drop
