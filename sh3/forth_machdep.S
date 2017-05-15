@@ -120,7 +120,7 @@ ENTRY(start_forth)
 
 	.p2align 2
 .L_next:	.long	next_code
-.L_abort_body:	.long	abort__4th_body
+.L_abort_body:	.long	abort_body
 
 
 !!! ====================================================================

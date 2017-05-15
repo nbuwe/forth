@@ -120,8 +120,8 @@ ENTRY(start_forth)
 	li	%RSP, 0
 
 	## ABORT to forth
-	lis	%IP, abort__4th_body@ha
-	la	%IP, abort__4th_body@l(%IP)
+	lis	%IP, abort_body@ha
+	la	%IP, abort_body@l(%IP)
 
 	lwz	%TMP, 0(%IP)	# CFA of (ABORT), the first word of ABORT
 	addi	%IP, %IP, 4

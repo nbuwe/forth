@@ -709,4 +709,4 @@ predef~ call-code call_code \ XXX
    repeat
    bye ;
 
-: abort_4th   (abort) (goto) quit ;
+: abort   (abort) (goto) quit ;
