@@ -78,6 +78,50 @@
 : off   false swap ! ;
 
 
+\ LEAVE and UNLOOP are needed pretty early in the parsing code, but
+\ they and the rest of the DO loop machinery are rather low level with
+\ very few dependencies, so it can be defined early.
+
+: (do)   ( limit first -- R: addr limit current )
+   r>
+   dup @ >r   \ end of the loop address for leave
+   rot   \ first ret limit --
+   \ offset limit so that last + limit causes overflow
+   $80000000 swap - >r
+   swap   \ ret first --
+   \ offset first accordingly too
+   r@ + >r
+   cell+ >r ;  \ skip end of the loop address
+
+: (?do)
+   2dup = if
+      2drop (goto) branch
+   else
+      (goto) (do)
+   then ;
+
+\ XXX: I and (especially!) J should really be defined in asm as we
+\ spelunk the depths of the return stack
+: i
+   r>   \ shoo our return address to get to the loop params
+   2r@  \ limit current --
+   swap -   \ normalize current, see (do)
+   swap >r ;  \ restore return address
+
+: (+loop)   ( increment -- ) ( R: addr limit current )
+   r> swap
+   r> +? if
+      drop
+      2r> 2drop
+      cell+ >r
+   else
+      >r >r
+      (goto) branch
+   then ;
+
+: (loop)   1 (goto) (+loop) ;
+
+
 variable handler \ handler off
 
 : catch   ( xt -- error | 0 )
@@ -102,12 +146,6 @@ variable handler \ handler off
       r>                \ get error code back
    then ;
 
-
-: i
-   r>   \ shoo our return address to get to the loop params
-   2r@  \ limit current --
-   swap -   \ normalize current, see (do)
-   swap >r ;  \ restore return address
 
 variable base
 
@@ -650,38 +688,6 @@ predef~ call-code call_code \ XXX
 \    type cr
 \    quit ;   \ XXX: FIXME: must be ABORT, but see QUIT definition
 \ : abort"   ?comp compile" (abort") ; immediate
-
-: (do)   ( limit first -- R: addr limit current )
-   r>
-   dup @ >r   \ end of the loop address for leave
-   rot   \ first ret limit --
-   \ offset limit so that last + limit causes overflow
-   $80000000 swap - >r
-   swap   \ ret first --
-   \ offset first accordingly too
-   r@ + >r
-   cell+ >r ;  \ skip end of the loop address
-
-: (?do)
-   2dup = if
-      2drop (goto) branch
-   else
-      (goto) (do)
-   then ;
-
-: (+loop)   ( increment -- ) ( R: addr limit current )
-   r> swap
-   r> +? if
-      drop
-      2r> 2drop
-      cell+ >r
-   else
-      >r >r
-      (goto) branch
-   then ;
-
-: (loop)   1 (goto) (+loop) ;
-
 
 : do
    ?comp
