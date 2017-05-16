@@ -504,6 +504,49 @@ $40 constant &sflag
    compile, ; immediate
 
 
+\ ==================== repl
+
+: interpret
+   begin
+      parse-word ?dup 0= if drop exit then
+      2dup search-current ?dup if
+	 2swap 2drop
+	 1+ if
+	    execute
+	 else
+	    state @ if compile, else execute then
+	 then
+      else
+	 2dup number? ?dup if
+	    2 = if
+	       2swap 2drop
+	       postpone 2literal
+	    else
+	       -rot 2drop
+	       postpone literal
+	    then
+	 else
+	    type [char] ? emit cr
+	 then
+      then
+   again ;
+
+: bye   (bye) ;
+
+: quit
+   (quit)
+   decimal
+   postpone [
+   begin
+      state @ not if ." ok " then
+      refill while
+	 interpret
+   repeat
+   bye ;
+
+: abort   (abort) (goto) quit ;
+
+
 \ ==================== defining words &co
 
 
@@ -665,43 +708,3 @@ predef~ call-code call_code \ XXX
    compile (+loop)
    <resolve     \ jump to the beginning of the loop
    >resolve ; immediate \ leave address after the loop
-
-: interpret
-   begin
-      parse-word ?dup 0= if drop exit then
-      2dup search-current ?dup if
-	 2swap 2drop
-	 1+ if
-	    execute
-	 else
-	    state @ if compile, else execute then
-	 then
-      else
-	 2dup number? ?dup if
-	    2 = if
-	       2swap 2drop
-	       postpone 2literal
-	    else
-	       -rot 2drop
-	       postpone literal
-	    then
-	 else
-	    type [char] ? emit cr
-	 then
-      then
-   again ;
-
-: bye   (bye) ;
-
-: quit
-   (quit)
-   decimal
-   postpone [
-   begin
-      state @ not if ." ok " then
-      refill while
-	 interpret
-   repeat
-   bye ;
-
-: abort   (abort) (goto) quit ;
