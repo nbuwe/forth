@@ -196,11 +196,16 @@ variable hld
 
 
 \ XXX: need this early for do loops below
-: leave   ( R: addr limit current -- )
-   r> drop   2r> 2drop ;
+: leave   ( R: leave-addr limit current -- )  \ return after the loop
+   r> drop      \ return address
+   2r> 2drop ;  \ loop counter and limit
 
-: unloop
-   r>   2r> 2drop r> drop   >r ;
+: unloop   ( R: leave-addr limit current -- ) \ caller wants to exit from loop
+   r>           \ save return address
+   2r> 2drop    \ loop counter and limit
+   r> drop      \ leave address
+   >r ;         \ restore return address
+
 
 \ XXX: only support tib for now
 \ constant tib
@@ -648,16 +653,6 @@ predef~ call-code call_code \ XXX
    >mark \ leave address
    <mark \ address to loop back to
    4 ; immediate
-
-: leave   ( R: leave-addr limit current -- )  \ return after the loop
-   r> drop      \ return address
-   2r> 2drop ;  \ loop counter and limit
-
-: unloop   ( R: leave-addr limit current -- ) \ caller wants to exit from loop
-   r>           \ save return address
-   2r> 2drop    \ loop counter and limit
-   r> drop      \ leave address
-   >r ;         \ restore return address
 
 : loop
    ?comp 4 ?pairs
