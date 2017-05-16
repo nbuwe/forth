@@ -82,22 +82,22 @@
 \ they and the rest of the DO loop machinery are rather low level with
 \ very few dependencies, so it can be defined early.
 
-: (do)   ( limit first -- R: addr limit current )
+: (do)   ( limit first -- R: leave-addr limit current )
    r>
-   dup @ >r   \ end of the loop address for leave
-   rot   \ first ret limit --
+   dup @ >r             \ end of the loop address for LEAVE
+   rot                  \ first ret limit --
    \ offset limit so that last + limit causes overflow
-   $80000000 swap - >r
-   swap   \ ret first --
+   $80000000 swap - >r	\ XXX: TODO: we don't need to keep the limit
+   swap                 \ ret first --
    \ offset first accordingly too
    r@ + >r
-   cell+ >r ;  \ skip end of the loop address
+   cell+ >r ;           \ skip end of the loop address
 
 : (?do)
    2dup = if
-      2drop (goto) branch
+      2drop (goto) branch       \ skip the loop
    else
-      (goto) (do)
+      (goto) (do)               \ enter the loop
    then ;
 
 \ XXX: I and (especially!) J should really be defined in asm as we
@@ -118,15 +118,15 @@
    r> drop      \ leave address
    >r ;         \ restore return address
 
-: (+loop)   ( increment -- ) ( R: addr limit current )
-   r> swap
-   r> +? if
-      drop
-      2r> 2drop
-      cell+ >r
+: (+loop)   ( increment -- )
+   r> swap      \ get our return address out the way
+   r> +? if     \ get and increment current, check overflow; see (do)
+      drop      \ current
+      2r> 2drop \ leave-addr and limit
+      cell+ >r  \ return after the loop
    else
-      >r >r
-      (goto) branch
+      >r                \ new current
+      >r (goto) branch  \ repeat the loop
    then ;
 
 : (loop)   1 (goto) (+loop) ;
