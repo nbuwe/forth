@@ -108,6 +108,16 @@
    swap -   \ normalize current, see (do)
    swap >r ;  \ restore return address
 
+: leave   ( R: leave-addr limit current -- )  \ return after the loop
+   r> drop      \ return address
+   2r> 2drop ;  \ loop counter and limit
+
+: unloop   ( R: leave-addr limit current -- ) \ caller wants to exit from loop
+   r>           \ save return address
+   2r> 2drop    \ loop counter and limit
+   r> drop      \ leave address
+   >r ;         \ restore return address
+
 : (+loop)   ( increment -- ) ( R: addr limit current )
    r> swap
    r> +? if
@@ -231,18 +241,6 @@ variable hld
       i @ .
    [ -1 cells ] literal +loop
    drop ;
-
-
-\ XXX: need this early for do loops below
-: leave   ( R: leave-addr limit current -- )  \ return after the loop
-   r> drop      \ return address
-   2r> 2drop ;  \ loop counter and limit
-
-: unloop   ( R: leave-addr limit current -- ) \ caller wants to exit from loop
-   r>           \ save return address
-   2r> 2drop    \ loop counter and limit
-   r> drop      \ leave address
-   >r ;         \ restore return address
 
 
 \ XXX: only support tib for now
