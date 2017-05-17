@@ -331,6 +331,15 @@ also meta definitions previous
 : literal
    state @ if tliteral then ; immediate
 
+: [']
+   parse-word ?parsed tsearch-target ?dup if 
+      drop
+      .long ." lit" cr
+      tcompile,
+   else
+      \ ... undefined word
+   then ; immediate
+
 : postpone
    parse-word ?parsed tsearch-target ?dup if
       1+ if   \ immediate
@@ -340,6 +349,7 @@ also meta definitions previous
 	 tcompile,
       then
    else
+      \ ... undefined word
    then ; immediate
 
 : [char] ?comp
