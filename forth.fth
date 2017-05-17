@@ -87,7 +87,7 @@
    dup @ >r             \ end of the loop address for LEAVE
    rot                  \ first ret limit --
    \ offset limit so that last + limit causes overflow
-   $80000000 swap - >r	\ XXX: TODO: we don't need to keep the limit
+   $80000000 swap - >r
    swap                 \ ret first --
    \ offset first accordingly too
    r@ + >r
