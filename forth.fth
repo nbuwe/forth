@@ -546,24 +546,24 @@ $40 constant &sflag
    begin
       parse-word ?dup 0= if drop exit then
       2dup search-current ?dup if
-	 2swap 2drop
-	 1+ if
-	    execute
-	 else
-	    state @ if compile, else execute then
-	 then
+         2swap 2drop
+         1+ if
+            execute
+         else
+            state @ if compile, else execute then
+         then
       else
-	 2dup number? ?dup if
-	    2 = if
-	       2swap 2drop
-	       postpone 2literal
-	    else
-	       -rot 2drop
-	       postpone literal
-	    then
-	 else
-	    type [char] ? emit cr
-	 then
+         2dup number? ?dup if
+            2 = if
+               2swap 2drop
+               postpone 2literal
+            else
+               -rot 2drop
+               postpone literal
+            then
+         else
+            type [char] ? emit cr
+         then
       then
    again ;
 
@@ -576,7 +576,7 @@ $40 constant &sflag
    begin
       state @ not if ." ok " then
       refill while
-	 interpret
+         interpret
    repeat
    bye ;
 
