@@ -123,6 +123,8 @@ variable tversion   0 tversion !
 : treveal   tversion @ tlatest @ ! ;
 : thide   tversion @ 1- tlatest @ ! ;
 
+: thidden?   ( xt -- )   >body @ -1 = ;
+
 : (tcreate)   ( "<spaces>name" -- )
    create here tlatest !  0 dup , tversion ! ;
 
@@ -144,7 +146,7 @@ variable tversion   0 tversion !
       tcreate-new
    then ;
 
-: type-sym
+: type-sym  ( body -- )
    dup cell+ count type  \ basename
    @ ?dup if             \ needs version suffix?
       [char] . emit
@@ -186,7 +188,7 @@ variable tversion   0 tversion !
       if drop then   \ xt of non-immediate(?!) word in meta
       2r@ tsearch-target
       dup if
-         over >body @ -1 = if  \ defined in target but hidden
+         over thidden? if  \ defined in target but still hidden
             2drop 0
          then
       then
