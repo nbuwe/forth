@@ -598,7 +598,7 @@ predef~ throw-msgtab throw_msgtab
          count type cr
          drop
       else
-         dup -1 <> if ." THROW " . cr then
+         dup -1 <> if ." THROW " . cr else drop then
       then
    then ;
 
