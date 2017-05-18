@@ -26,3 +26,5 @@ VARIABLE("current", current)
 	.long	. + 4
 	/* this will be part of a vocabulary */
 	.long .LATEST
+
+#include "forth-throw.S"

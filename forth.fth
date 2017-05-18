@@ -574,18 +574,38 @@ $40 constant &sflag
 
 variable abort-message
 
-: throw   ( error | 0 -- )
+predef~ throw-msgtab throw_msgtab
+
+: throw-message ( code -- flag )
+   dup 0< if                    \ reserved throw codes are negative
+      negate
+      dup throw-msgtab @ < if   \ at offset 0 is the number of messages
+         cells throw-msgtab + @ \ message for this code
+         exit
+      then
+   then
+   drop 0 ;
+
+: report-exception   ( code -- )
+   dup -2 = if
+      abort-message @ ?dup if
+         dup @ swap cell+ swap
+         type cr
+         abort-message off
+      then
+   else
+      dup throw-message ?dup if
+         count type cr
+         drop
+      else
+         dup -1 <> if ." THROW " . cr then
+      then
+   then ;
+
+: throw   ( code | 0 -- )
    ?dup if
       handler @ ?dup 0= if   \ is there a catch?
-         dup -2 = if
-            abort-message @ ?dup if
-               dup @ swap cell+ swap
-               type cr
-            then
-         else
-            \ XXX: TODO: error messages for standard codes
-            dup -1 <> if ." THROW " . cr then
-         then
+         report-exception
          ." ABORT" cr
          abort
       then
