@@ -321,6 +321,8 @@ also meta definitions previous
    .long ." _lparen_semicoloncode_rparen"  cr
    ." DOES_4TH(" treveal tlatest-sym thide ." _does)" cr ; immediate
 
+: recurse   treveal tlatest @ body> tcompile, thide ; immediate
+
 : immediate
    immediate
    ." IMMEDIATE = IFLAG" cr ; \ see emitdef
