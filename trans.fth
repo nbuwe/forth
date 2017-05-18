@@ -120,13 +120,6 @@ char ~ xlat: tilde
 variable tlatest    0 tlatest !
 variable tversion   0 tversion !
 
-: type-sym
-   dup cell+ count type  \ basename
-   @ ?dup if             \ needs version suffix?
-      [char] . emit
-      0 .r
-   then ;
-
 : treveal   tversion @ tlatest @ ! ;
 : thide   tversion @ 1- tlatest @ ! ;
 
@@ -150,6 +143,15 @@ variable tversion   0 tversion !
       >in !   \ restore input
       tcreate-new
    then ;
+
+: type-sym
+   dup cell+ count type  \ basename
+   @ ?dup if             \ needs version suffix?
+      [char] . emit
+      0 .r
+   then ;
+
+: tlatest-sym   tlatest @ type-sym ;
 
 
 \ record a mapping in the target dictionary.  this is to let the
@@ -239,12 +241,12 @@ variable tversion   0 tversion !
    cr
    ." IMMEDIATE = 0" cr
    ." #undef  IMMEDIATE" cr
-   ." #define IMMEDIATE .Limm_" tlatest @ type-sym cr
+   ." #define IMMEDIATE .Limm_" tlatest-sym cr
    type                 \ macro name
    [char] ( emit
    parse-word "type"    \ forth name
    [char] , emit space
-   tlatest @ type-sym   \ xlated name
+   tlatest-sym          \ xlated name
    [char] ) emit
    cr ;
 
@@ -317,11 +319,7 @@ also meta definitions previous
 \ XXX: CONSTANT() macro refers to "constant_does"
 : does> ?comp
    .long ." _lparen_semicoloncode_rparen"  cr
-   ." DOES_4TH("
-   treveal \ XXX
-   tlatest @ type-sym
-   thide
-   ." _does)" cr ; immediate
+   ." DOES_4TH(" treveal tlatest-sym thide ." _does)" cr ; immediate
 
 : immediate
    immediate
