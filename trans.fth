@@ -231,7 +231,6 @@ variable tversion   0 tversion !
 \ define the forth name in the generated output
 : emitdef ( c-addr u "<spaces>name" -- )
    >in @ tcreate >in !  \ restore input for parse-word below
-   treveal              \ XXX: need for type-sym below
    \ the defining macro will use the not yet defined .Limm_name as the
    \ immediate flag.  if "immediate" follows this definition, it will
    \ set the flag.  IMMEDIATE = 0 before the next definition will
