@@ -559,18 +559,6 @@ $40 constant &sflag
 
 : bye   (bye) ;
 
-: quit
-   (quit)
-   decimal
-   postpone [
-   begin
-      state @ not if ." ok " then
-      refill while
-         interpret
-   repeat
-   bye ;
-
-: abort   (abort) (goto) quit ;
 
 variable abort-message
 
@@ -602,6 +590,30 @@ predef~ throw-msgtab throw_msgtab
          dup -1 <> if ." THROW " . cr else drop then
       then
    then ;
+
+
+: quit
+   (quit)
+   decimal
+   postpone [
+   begin
+      state @ not if ." ok " then
+      refill while
+         ['] interpret catch
+         ?dup if
+            dup report-exception
+            -2 0 within if  \ ABORT" (-2) or ABORT (-1)?
+               ." ABORT" cr
+               \ open-coded ABORT to break mutual dependency
+               (abort) (goto) recurse
+            then
+         then
+
+   repeat
+   bye ;
+
+: abort   (abort) (goto) quit ;
+
 
 : throw   ( code | 0 -- )
    ?dup if
