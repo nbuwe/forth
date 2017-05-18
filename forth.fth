@@ -588,6 +588,7 @@ predef~ throw-msgtab throw_msgtab
 
 : report-exception   ( code -- )
    dup -2 = if
+      drop
       abort-message @ ?dup if
          dup @ swap cell+ swap
          type cr
