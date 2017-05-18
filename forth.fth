@@ -144,17 +144,7 @@ variable handler \ handler off
    r> drop              \ discard saved stack pointer
    0 ;                  \ normal completion
 
-: throw   ( error | 0 -- )
-   ?dup if
-      handler @         \ XXX: check for 0?
-      rp!               \ restore saved return stack
-      r> handler !      \ restore previous handler
-      r>                \ get saved stack pointer
-      swap >r           \ stash away error code so that it survives sp!
-      sp!               \ restore stack pointer
-      drop              \ invalid TOS (was xt)
-      r>                \ get error code back
-   then ;
+\ throw is defined later since it needs abort
 
 
 variable base
@@ -582,6 +572,36 @@ $40 constant &sflag
 
 : abort   (abort) (goto) quit ;
 
+variable abort-message
+
+: throw   ( error | 0 -- )
+   ?dup if
+      handler @ ?dup 0= if   \ is there a catch?
+         dup -2 = if
+            abort-message @ ?dup if
+               dup @ swap cell+ swap
+               type cr
+            then
+         else
+            \ XXX: TODO: error messages for standard codes
+            dup -1 <> if ." THROW " . cr then
+         then
+         ." ABORT" cr
+         abort
+      then
+      rp!               \ restore saved return stack
+      r> handler !      \ restore previous handler
+      r>                \ get saved stack pointer
+      swap >r           \ stash away error code so that it survives sp!
+      sp!               \ restore stack pointer
+      drop              \ invalid TOS (was xt)
+      r>                \ get error code back
+   then ;
+
+: abort   -1 throw ;
+
+
+
 
 \ ==================== defining words &co
 
@@ -644,6 +664,19 @@ predef~ call-code call_code \ XXX
    dup c, string,
    align ; immediate
 
+: (abort")
+   if
+      r@ abort-message !
+      -2 throw
+   else
+      \ skip the abort message after us; cf. (s")
+      r> dup cell+ swap @ + aligned >r
+   then ;
+
+: abort"  ( x | 0 -- )
+   ?comp compile" (abort") ; immediate
+
+
 \ forward - mark is the location to patch with the destination
 : >mark      ( C: -- mark )   here 0 , ;
 : >resolve   ( C: mark -- )   here swap ! ;
@@ -676,16 +709,6 @@ predef~ call-code call_code \ XXX
 
 : while  ?comp 2 ?pairs (if) 3 ;  immediate
 : repeat ?comp 3 ?pairs swap (again) (then) ;  immediate
-
-
-\ : (abort")
-\    r> dup cell+ swap @
-\    2dup + aligned >r
-\    \ XXX: the above is (s")
-\    rot 0= if 2drop exit then
-\    type cr
-\    quit ;   \ XXX: FIXME: must be ABORT, but see QUIT definition
-\ : abort"   ?comp compile" (abort") ; immediate
 
 : do
    ?comp
