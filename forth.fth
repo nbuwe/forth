@@ -241,7 +241,7 @@ variable >in
 : refill
    tib 4096 accept
    dup -1 = if drop false exit then
-   #tib !  0 >in ! true ;
+   #tib !  0 >in !  true ;
 
 : source   ( -- c-addr u )   tib #tib @ ;
 
