@@ -113,6 +113,7 @@ accept_impl(cell_t *stack)
 
     ret = fgets(cbuf, buflen + 1, stdin);
     if (ret == NULL) {
+	clen = -1;
 	goto out;
     }
 
