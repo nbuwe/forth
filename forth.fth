@@ -119,7 +119,7 @@
    >r ;         \ restore return address
 
 : (+loop)   ( increment -- )
-   r> swap      \ get our return address out the way
+   r> swap      \ get our return address out of the way
    r> +? if     \ get and increment current, check overflow; see (do)
       drop      \ current
       2r> 2drop \ leave-addr and limit
