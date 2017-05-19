@@ -605,14 +605,14 @@ predef~ throw-msgtab throw_msgtab
             -2 0 within if  \ ABORT" (-2) or ABORT (-1)?
                ." ABORT" cr
                \ open-coded ABORT to break mutual dependency
-               (abort) (goto) recurse
+               (abort) recurse
             then
          then
 
    repeat
    bye ;
 
-: abort   (abort) (goto) quit ;
+: abort   (abort) quit ;
 
 
 : throw   ( code | 0 -- )
