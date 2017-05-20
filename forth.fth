@@ -77,6 +77,8 @@
 : on     true swap ! ;
 : off   false swap ! ;
 
+defer throw
+
 
 \ LEAVE and UNLOOP are needed pretty early in the parsing code, but
 \ they and the rest of the DO loop machinery are rather low level with
@@ -615,7 +617,7 @@ predef~ throw-msgtab throw_msgtab
 : abort   (abort) quit ;
 
 
-: throw   ( code | 0 -- )
+: (throw)   ( code | 0 -- )
    ?dup if
       handler @ ?dup 0= if   \ is there a catch?
          report-exception
@@ -630,6 +632,8 @@ predef~ throw-msgtab throw_msgtab
       drop              \ invalid TOS (was xt)
       r>                \ get error code back
    then ;
+
+' (throw) is throw
 
 : abort   -1 throw ;
 
