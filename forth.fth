@@ -146,8 +146,6 @@ variable handler \ handler off
    r> drop              \ discard saved stack pointer
    0 ;                  \ normal completion
 
-\ throw is defined later since it needs abort
-
 
 variable base
 
@@ -288,6 +286,9 @@ variable >in
 : parse-word   ( "<spaces>name<space>" -- c-addr u )
    bl skip-delim bl parse ;
 
+: ?parsed   \ attempt to use zero-length string as a name
+   ?dup 0= if drop  -16 throw then ;
+
 : char   ( "<spaces>name" -- char )
    parse-word if c@ else drop 0 then ;
 
@@ -420,9 +421,8 @@ variable state
 : [   state off ; immediate
 : ]   state on ;
 
-\ XXX: TODO: sort dependencies.  (ab)use immediate "throw" in
-\ transpiler's meta vocabulary to sneak in forward reference?
-: ?comp   ( state @ 0= if  -14 throw then ) ;
+: ?comp   \ interpreting a compile-only word
+   state @ 0= if  -14 throw then ;
 
 : compile,   , ;
 : compile
@@ -516,10 +516,9 @@ $40 constant &sflag
 
 \ helper for ' and the like that do the parse/search combo
 : (')   ( "<spaces>name" -- 0 | xt 1 | xt -1 )
-   parse-word ( XXX: ?parsed ) ?dup 0= if drop false exit then
-   search-current ;
+   parse-word ?parsed search-current ;
 
-: '   (') ?dup if drop else ( XXX: undefined: throw -13 ) false then ;
+: '   (') ?dup if drop else ( undefined )  -13 throw then ;
 : [']   ?comp ' postpone literal ; immediate \ XXX: use compile,
 
 : [compile]   ?comp ' compile, ; immediate
@@ -648,7 +647,7 @@ predef~ throw-msgtab throw_msgtab
 predef~ next-code next_code
 
 : create
-   parse-word ( XXX: ?parsed ) ?dup 0= if drop exit then
+   parse-word ?parsed
    align here >r   \ save NFA
    \ Name Field
    dup c, string, align
