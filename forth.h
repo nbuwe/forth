@@ -70,6 +70,14 @@
   label/**/_body:		;
 
 
+#define DEFCODE_DEFER(label)	  \
+	/* Code Field */	  \
+  NAMED_CELL(label)		; \
+	.long	defer_does	; \
+	/* Parameter Field */	  \
+  NAMED_CELL(label/**/_xt)
+
+
 #define DEFCODE_VAR(label)	  \
 	/* Code Field */	  \
   NAMED_CELL(label)		; \
@@ -141,6 +149,7 @@
 #define IMMWORD(name, label)	DEFWORD(name, IFLAG, DEFCODE_4TH,   label)
 #define ASMWORD(name, label)	DEFWORD(name,     0, DEFCODE_ASM,   label)
 #define CWORD(name, label)	DEFWORD(name,     0, DEFCODE_C,     label)
+#define DEFER(name, label)	DEFWORD(name,     0, DEFCODE_DEFER, label)
 #define CONSTANT(name, label)	DEFWORD(name,     0, DEFCODE_CONST, label)
 #define VARIABLE(name, label)	DEFWORD(name,     0, DEFCODE_VAR,   label)
 

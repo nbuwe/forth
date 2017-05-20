@@ -192,6 +192,14 @@ variable tversion   0 tversion !
 : t2literal   .long ." _2lit, " 0 .r ." , " 0 .r cr ;
 : tcompile,   .long >body type-sym cr ;
 
+: t[']
+   t(') if
+      .long ." lit" cr
+      tcompile,
+   else
+      -13 throw   \ undefined word
+   then ;
+
 
 \ "compiling" - use target's words, except for immediates
 : tsearch-word  ( c-addr u -- 0 | xt 1 | xt -1 )
@@ -332,6 +340,25 @@ also meta definitions previous
 
 : recurse   treveal tlatest @ body> tcompile, thide ; immediate
 
+
+\ don't bother arranging for default ABORT action, just let linking
+\ fail if there is no top-level IS call later
+: defer
+   s" DEFER" emitdef
+   .long ." .L" tlatest-sym ." _xt" cr ;
+
+: '   t' ;
+
+: is
+   state @ if
+      \ postpone ['] postpone defer!
+      t['] .long ." defer_exclam" cr
+   else
+      t' ." .L" >body type-sym ." _xt = "
+      >body type-sym cr
+   then ; immediate
+
+
 : immediate
    immediate
    ." IMMEDIATE = IFLAG" cr ; \ see emitdef
@@ -339,14 +366,7 @@ also meta definitions previous
 : literal
    state @ if tliteral then ; immediate
 
-: [']
-   t(') ?dup if
-      drop
-      .long ." lit" cr
-      tcompile,
-   else
-      \ ... undefined word
-   then ; immediate
+: [']   t['] ; immediate
 
 : postpone
    t(') ?dup if
