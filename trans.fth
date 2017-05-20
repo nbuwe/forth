@@ -134,7 +134,7 @@ variable tversion   0 tversion !
    parse-word ?parsed tsearch-target ;
 
 : t'   ( "<spaces>name" -- xt )
-   t(') ?dup if drop else -13 throw then ;
+   t(') 0= if ( undefined word ) -13 throw then ;
 
 
 : (tcreate)   ( "<spaces>name" -- )
