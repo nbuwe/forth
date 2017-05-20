@@ -680,6 +680,29 @@ predef~ call-code call_code \ XXX
    string, ; immediate
 
 
+: defer ( "name" -- )
+   create compile abort
+ does>
+   @ execute ;
+
+: defer@   ( xt1 -- xt2 )   >body @ ;
+: defer!   ( xt2 xt1 -- )   >body ! ;
+
+: is
+   state @ if
+      postpone ['] postpone defer!
+   else
+      ' defer!
+   then ; immediate
+
+: action-of
+   state @ if
+      postpone ['] postpone defer@
+   else
+      ' defer@
+   then ; immediate
+
+
 : compile"
    r> dup cell+ >r @   \ fetch runtime word after us (like compile)
    [char] " parse      \ XXX: TODO: handle failure
