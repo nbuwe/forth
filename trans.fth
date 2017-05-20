@@ -40,8 +40,8 @@ vocabulary target       \ shadow vocabulary for the target
 also target context @ constant target-wid
 previous
 
-: tsearch-meta   meta-wid search-wordlist ;
-: tsearch-target   target-wid search-wordlist ;
+: search-meta   meta-wid search-wordlist ;
+: search-target   target-wid search-wordlist ;
 
 
 : ?parsed
@@ -125,6 +125,18 @@ variable tversion   0 tversion !
 
 : thidden?   ( xt -- )   >body @ -1 = ;
 
+: tsearch-target   ( c-addr u -- 0 | xt 1 | xt -1 )
+   search-target dup if
+      over thidden? if 2drop 0 then
+   then ;
+
+: t(')   ( "<spaces>name" -- 0 | xt 1 | xt -1 )
+   parse-word ?parsed tsearch-target ;
+
+: t'   ( "<spaces>name" -- xt )
+   t(') ?dup if drop else -13 throw then ;
+
+
 : (tcreate)   ( "<spaces>name" -- )
    create here tlatest !  0 dup , tversion ! ;
 
@@ -138,7 +150,7 @@ variable tversion   0 tversion !
 
 : tcreate
    >in @ parse-word ?parsed
-   tsearch-target if
+   search-target if
       nip   \ consume input word
       tcreate-version
    else
@@ -184,14 +196,9 @@ variable tversion   0 tversion !
 \ "compiling" - use target's words, except for immediates
 : tsearch-word  ( c-addr u -- 0 | xt 1 | xt -1 )
    2dup 2>r
-   tsearch-meta dup 1 <> if
+   search-meta dup 1 <> if
       if drop then   \ xt of non-immediate(?!) word in meta
       2r@ tsearch-target
-      dup if
-         over thidden? if  \ defined in target but still hidden
-            2drop 0
-         then
-      then
    then
    2r> 2drop ;
 
@@ -333,7 +340,7 @@ also meta definitions previous
    state @ if tliteral then ; immediate
 
 : [']
-   parse-word ?parsed tsearch-target ?dup if 
+   t(') ?dup if
       drop
       .long ." lit" cr
       tcompile,
@@ -342,7 +349,7 @@ also meta definitions previous
    then ; immediate
 
 : postpone
-   parse-word ?parsed tsearch-target ?dup if
+   t(') ?dup if
       1+ if   \ immediate
 	 tcompile,
       else
