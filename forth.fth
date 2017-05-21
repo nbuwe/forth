@@ -765,7 +765,8 @@ predef~ call-code call_code \ XXX
 : (until)   compile ?branch <resolve ;
 
 
-: ?pairs   ( C: expected actual -- ) 2drop ; \ XXX: TODO
+: ?pairs   ( C: expected actual -- )
+   <> if -22 throw then ;   \ control structure mismatch
 
 : ahead   ?comp          (ahead) 1 ; immediate
 : if      ?comp          (if) 1 ; immediate
