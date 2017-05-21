@@ -683,6 +683,16 @@ predef~ call-code call_code \ XXX
    string, ; immediate
 
 
+: :noname
+   \ Name Field: empty name, smudged
+   align [ &sflag ] literal c,
+   \ Link Field: no link
+   align 0 ,
+   \ Code Field
+   here   \ xt we leave on the stack
+   compile call-code ] ;
+
+
 : defer ( "name" -- )
    create compile abort
  does>
