@@ -153,6 +153,11 @@
 #define CONSTANT(name, label)	DEFWORD(name,     0, DEFCODE_CONST, label)
 #define VARIABLE(name, label)	DEFWORD(name,     0, DEFCODE_VAR,   label)
 
+#define NONAME(label)				  \
+	NAME_FIELD("", SFLAG, label)		; \
+	.long	0	/* Link Field */	; \
+	DEFCODE_4TH(label)
+
 
 /*
  * It takes a bit of effort to remember that question_branch is taken

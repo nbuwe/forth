@@ -43,6 +43,8 @@ previous
 : search-meta   meta-wid search-wordlist ;
 : search-target   target-wid search-wordlist ;
 
+: noname-basename s" .Lnoname" ;
+
 
 : ?parsed
    ?dup 0= if drop  -16 throw then ; \ attempt to use zero-length string as a name
@@ -333,6 +335,12 @@ also meta definitions previous
 : :   s" WORD" emitdef  thide reset-labels transpile ;
 : ;   ?comp  tab ." EXIT_4TH" cr  treveal  postpone [ ; immediate
 
+: :noname
+   noname-basename tsearch-target drop
+   dup tcreate-version
+   cr ." NONAME(" tlatest-sym ." )" cr
+   thide reset-labels transpile ;
+
 \ XXX: CONSTANT() macro refers to "constant_does"
 : does> ?comp
    .long ." _lparen_semicoloncode_rparen"  cr
@@ -406,6 +414,8 @@ also meta definitions previous
 
 \ pre-populate target vocabulary with stubs for the asm words
 also target definitions previous
+
+predef~ .Lnoname .Lnoname   \ XXX: placeholder
 include asmwords.fth
 
 also meta

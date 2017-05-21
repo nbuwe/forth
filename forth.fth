@@ -616,7 +616,7 @@ predef~ throw-msgtab throw_msgtab
 : abort   (abort) quit ;
 
 
-: (throw)   ( code | 0 -- )
+:noname ( is throw )   ( code | 0 -- )
    ?dup if
       handler @ ?dup 0= if   \ is there a catch?
          report-exception
@@ -631,8 +631,7 @@ predef~ throw-msgtab throw_msgtab
       drop              \ invalid TOS (was xt)
       r>                \ get error code back
    then ;
-
-' (throw) is throw
+is throw
 
 : abort   -1 throw ;
 
