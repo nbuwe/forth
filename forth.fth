@@ -533,6 +533,11 @@ $40 constant &sflag
    until
    2drop false ;
 
+: find   ( c-addr -- c-addr 0 | xt 1 | xt -1 )
+   dup count search-current
+   dup if rot drop then ;
+
+
 \ helper for ' and the like that do the parse/search combo
 : (')   ( "<spaces>name" -- 0 | xt 1 | xt -1 )
    parse-word ?parsed search-current ;
