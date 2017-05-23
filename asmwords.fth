@@ -29,7 +29,6 @@ predef~ roll roll
 \ predef~ 2dup _two_dup
 \ predef~ 2swap two_swap
 \ predef~ 2over two_over
-predef~ depth depth
 predef~ >r to_r
 predef~ r> r_from
 predef~ r@ r_fetch

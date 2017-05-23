@@ -580,22 +580,6 @@ ASMWORD("2over", two_over)
 #endif
 
 
-#ifdef MORE_ASM_WORDS
-!!! DEPTH - CORE 6.1.1200
-!!!     ( -- +n )
-ASMWORD("depth", depth)
-	mov	PSP, r1
-	SPILL_TOS
-	mov.l	.L_depth_sp0, TOS
-	sub	r1, TOS
-	jmp	@NEXT
-	 shlr2	TOS
-	.p2align 2
-.L_depth_sp0:	.long	stack_bottom
-	ASMEND(depth)
-#endif
-
-
 !!! >R - CORE 6.1.0580
 !!!     ( x -- ) ( R: -- x )
 ASMWORD(">r", to_r)

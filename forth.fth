@@ -21,6 +21,8 @@
 \ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 \ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+: depth   ( -- +n )   sp@ sp0 swap - 2 rshift ;
+
 : +!   ( n|u a-addr -- )   dup @ rot + swap ! ;
 : 1+!   ( a-addr -- )   dup @ 1+ swap ! ;
 
