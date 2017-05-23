@@ -1263,6 +1263,26 @@ ASMWORD("?branch", question_branch)
 	ASMEND(question_branch)
 
 
+### I - CORE 6.1.1680
+ASMWORD("i", i_4th)
+	SPILL_TOS
+	lwz	%TOS, 0(%RSP)		# adjusted current
+	lwz	%TMP, 4(%RSP)		# adjustment
+	subf	%TOS, %TMP, %TOS	# normalize current
+	blr
+	ASMEND(i_4th)
+
+
+### J - CORE 6.1.1730
+ASMWORD("j", j_4th)
+	SPILL_TOS
+	lwz	%TOS, 12(%RSP)		# adjusted current
+	lwz	%TMP, 16(%RSP)		# adjustment
+	subf	%TOS, %TMP, %TOS	# normalize current
+	blr
+	ASMEND(i_4th)
+
+
 
 /* Machine-independent words in threaded code. */
 #include "forth.S"

@@ -104,14 +104,6 @@ defer throw
       (goto) (do)               \ enter the loop
    then ;
 
-\ XXX: I and (especially!) J should really be defined in asm as we
-\ spelunk the depths of the return stack
-: i
-   r>   \ shoo our return address to get to the loop params
-   2r@  \ limit current --
-   swap -   \ normalize current, see (do)
-   swap >r ;  \ restore return address
-
 : leave   ( R: leave-addr limit current -- )  \ return after the loop
    r> drop      \ return address
    2r> 2drop ;  \ loop counter and limit

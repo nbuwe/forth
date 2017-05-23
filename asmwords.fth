@@ -97,8 +97,8 @@ predef~ lit lit
 \ predef~ 2lit two_lit
 predef~ branch branch
 predef~ ?branch question_branch
-\ predef~ i i
-\ predef~ j j_4th
+predef~ i i_4th
+predef~ j j_4th
 
 \ C words
 predef~ ms/rem ms_slash_rem
