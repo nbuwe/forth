@@ -453,10 +453,10 @@ ASMWORD("nip", nip)
 !!! TUCK - CORE EXT 6.2.2300
 !!!     ( x1 x2 -- x2 x1 x2 )
 ASMWORD("tuck", tuck)
-	mov.l	@PSP+, r0
-	SPILL_TOS
+	mov.l	@PSP, r0	! fetch x1
+	mov.l	TOS, @PSP	! store x2
 	jmp	@NEXT
-	 mov.l	r0, @-PSP
+	 mov.l	r0, @-PSP	! push x1
 	ASMEND(tuck)
 #endif
 
@@ -465,10 +465,10 @@ ASMWORD("tuck", tuck)
 !!! ROT - CORE 6.1.2160
 !!!     ( x1 x2 x3 -- x2 x3 x1 )
 ASMWORD("rot", rot)
-	mov.l	@PSP+, r0
-	mov.l	@PSP+, r1
-	mov.l	r0, @-PSP
-	mov.l	TOS, @-PSP
+	mov.l	@PSP, r2
+	mov.l	@(4, PSP), r1
+	mov.l	TOS, @PSP	! x3
+	mov.l	r2, @(4, PSP)
 	jmp	@NEXT
 	 mov	r1, TOS
 	ASMEND(rot)
@@ -479,12 +479,12 @@ ASMWORD("rot", rot)
 !!! -ROT - non-standard, inverse of ROT
 !!!     ( x1 x2 x3 -- x3 x1 x2 )
 ASMWORD("-rot", minus_rot)
-	mov.l	@PSP+, r1
-	mov.l	@PSP+, r2
-	mov.l	TOS, @-PSP
-	mov.l	r2, @-PSP
+	mov.l	@PSP, r2
+	mov.l	@(4, PSP), r1
+	mov.l	r1, @PSP
+	mov.l	TOS, @(4, PSP)	! x3
 	jmp	@NEXT
-	 mov	r1, TOS
+	 mov	r2, TOS
 	ASMEND(minus_rot)
 #endif
 
