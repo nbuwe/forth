@@ -65,6 +65,8 @@
 : cell-   ( a-addr1 -- a-addr2 )   4 - ;
 : cells   ( n1 -- n2 )   2 lshift ;
 : aligned   ( addr -- a-addr )   3 + -4 and ;
+: aligned?   ( addr -- flag )   3 and not ;
+
 
 : 2@   dup cell+ @ swap @ ;
 : 2lit   r> dup 2@ rot 2 cells + >r ;
@@ -477,8 +479,25 @@ $40 constant &sflag
 : n>link   name-count + aligned ;
 : name>    n>link link> ;
 
-\ XXX: TODO: don't need for now
-\ : >name   ... ;
+: >name   ( xt -- nfa)
+   dup aligned? not if drop 0 exit then \ must be aligned
+   >link        \ LFA is the aligned address after name
+   dup          \ keep a copy for comparisons
+   dup 32 -     \ limit - the farthest away that NFA can be
+   swap cell- do        \ start one cell before LFA and step backwards
+      \ The byte may have its upper bit set (potential immediate
+      \ flag), since 8-bit characters are not allowed in a name.
+      \ If the byte is less than 32, it's not a printable character
+      \ and must be the name count byte.
+      i c@ [ &iflag $1f or invert ] literal and 0= if
+         \ looks like a count byte, but is the count right?
+         dup i n>link = if
+            drop i
+            unloop exit
+         then
+      then
+   [ -1 cells ] literal +loop
+   drop 0 ;
 
 
 \ Traditional Forth's FIND takes counted string from traditional
