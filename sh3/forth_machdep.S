@@ -734,40 +734,6 @@ ASMWORD(">", greater_than)
 	ASMEND(greater_than)
 
 
-#ifdef MORE_ASM_WORDS
-!!! MAX - CORE 6.1.1870
-!!!     ( n1 n2 -- n3 )
-ASMWORD("max", max)
-	mov.l	@PSP+, r0
-	cmp/ge	r0, TOS		! TOS > r0?
-	bt	0f
-
-	jmp	@NEXT
-	 mov	r0, TOS
-
-0:	jmp	@NEXT
-	 nop
-	ASMEND(max)
-#endif
-
-
-#ifdef MORE_ASM_WORDS
-!!! MIN - CORE 6.1.1880
-!!!     ( n1 n2 -- n3 )
-ASMWORD("min", min)
-	mov.l	@PSP+, r0
-	cmp/ge	TOS, r0		! TOS < r0?
-	bt	0f
-
-	jmp	@NEXT
-	 mov	r0, TOS
-
-0:	jmp	@NEXT
-	 nop
-	ASMEND(min)
-#endif
-
-
 !!! U< - CORE 6.1.2340
 !!!     ( u1 u2 -- flag )
 ASMWORD("u<", u_less_than)

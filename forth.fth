@@ -41,6 +41,9 @@
    -           \ test - low
    r> u< ;
 
+: max  ( n1 n2 -- n3 )   2dup < if swap then drop ;
+: min  ( n1 n2 -- n3 )   2dup > if swap then drop ;
+
 
 \ cdef ms/rem   (  d1 n1 -- n2  d2 )   \ symmetric 64/32 -> r32 q64
 \ cdef mf/mod   (  d1 n1 -- n2  d2 )   \   floored 64/32 -> m32 q64
