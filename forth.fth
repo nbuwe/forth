@@ -67,7 +67,8 @@
 : cell-   ( a-addr1 -- a-addr2 )   4 - ;
 : cells   ( n1 -- n2 )   2 lshift ;
 : aligned   ( addr -- a-addr )   3 + -4 and ;
-: aligned?   ( addr -- flag )   3 and not ;
+: unaligned?   ( addr -- flag )   3 and ;
+: aligned?   ( addr -- flag )   unaligned? not ;
 
 
 : 2@   dup cell+ @ swap @ ;
@@ -474,7 +475,7 @@ $40 constant &sflag
 : name>    n>link link> ;
 
 : >name   ( xt -- nfa)
-   dup aligned? not if drop 0 exit then \ must be aligned
+   dup unaligned? if drop 0 exit then \ must be aligned
    >link        \ LFA is the aligned address after name
    dup          \ keep a copy for comparisons
    dup 32 -     \ limit - the farthest away that NFA can be
