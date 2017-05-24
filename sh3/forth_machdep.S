@@ -224,49 +224,6 @@ CONSTANT("sp0", sp0)	.long	stack_bottom
 CONSTANT("rp0", rp0)	.long	rstack_bottom
 
 
-!!! Current stack pointer.
-!!!     ( -- sp )
-!!!
-!!! XXX: Both SP@ and SP0 don't try to hide the fact that we keep TOS
-!!! in a register.  This has implications in MI forth code, e.g. in .S
-!!! or DEPTH.
-!!!
-!!! The cell just above SP0 is not part of stack - it's a place to
-!!! spill invalid TOS register when we push the first value onto the
-!!! stack.  The TOS is in a register, so to spill it into memory, DUP
-!!! it.
-ASMWORD("sp@", sp_fetch)
-	mov	PSP, r0
-	SPILL_TOS
-	jmp	@NEXT
-	 mov	r0, TOS
-	ASMEND(sp_fetch)
-
-
-!!! SP!
-ASMWORD("sp!", sp_store)
-	jmp	@NEXT
-	 mov	TOS, PSP
-	ASMEND(sp_fetch)
-
-
-!!! RP@
-ASMWORD("rp@", rp_fetch)
-	SPILL_TOS
-	jmp	@NEXT
-	 mov	RSP, TOS
-	ASMEND(rp_fetch)
-
-
-!!! RP!
-ASMWORD("rp!", rp_store)
-	mov	TOS, RSP
-	jmp	@NEXT
-	 FILL_TOS
-	ASMEND(rp_fetch)
-
-
-
 !!! Asm part of BYE that returns control to the C code that started
 !!! the Forth system.  The stacks are not reset and can be inspected.
 ASMWORD("(bye)", bye_parens)
@@ -553,6 +510,49 @@ ASMWORD("2over", two_over)
 	jmp	@NEXT
 	 mov	r0, TOS
 	ASMEND(two_over)
+
+
+
+!!! Current stack pointer.
+!!!     ( -- sp )
+!!!
+!!! XXX: Both SP@ and SP0 don't try to hide the fact that we keep TOS
+!!! in a register.  This has implications in MI forth code, e.g. in .S
+!!! or DEPTH.
+!!!
+!!! The cell just above SP0 is not part of stack - it's a place to
+!!! spill invalid TOS register when we push the first value onto the
+!!! stack.  The TOS is in a register, so to spill it into memory, DUP
+!!! it.
+ASMWORD("sp@", sp_fetch)
+	mov	PSP, r0
+	SPILL_TOS
+	jmp	@NEXT
+	 mov	r0, TOS
+	ASMEND(sp_fetch)
+
+
+!!! SP!
+ASMWORD("sp!", sp_store)
+	jmp	@NEXT
+	 mov	TOS, PSP
+	ASMEND(sp_fetch)
+
+
+!!! RP@
+ASMWORD("rp@", rp_fetch)
+	SPILL_TOS
+	jmp	@NEXT
+	 mov	RSP, TOS
+	ASMEND(rp_fetch)
+
+
+!!! RP!
+ASMWORD("rp!", rp_store)
+	mov	TOS, RSP
+	jmp	@NEXT
+	 FILL_TOS
+	ASMEND(rp_fetch)
 
 
 !!! >R - CORE 6.1.0580
