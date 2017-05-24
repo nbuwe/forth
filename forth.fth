@@ -26,7 +26,7 @@
 : +!   ( n|u a-addr -- )   dup @ rot + swap ! ;
 : 1+!   ( a-addr -- )   dup @ 1+ swap ! ;
 
-: count   dup c@ swap 1+ swap ;
+: count   ( c-addr1 -- c-addr2 u )   dup c@ swap 1+ swap ;
 
 : 2drop   drop drop ;
 : 2dup   over over ;

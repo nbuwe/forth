@@ -1091,18 +1091,6 @@ ASMWORD("2!", two_store)
  * Strings
  */
 
-#if 0 && defined(MORE_ASM_WORDS)
-!!! COUNT - CORE 6.1.0980
-!!!     ( c-addr1 -- c-addr2 u )
-ASMWORD("count", count)
-	mov.b	@TOS+, r0	! fetch count (sign-extended), advance ptr
-	SPILL_TOS		! string contents address
-	jmp	@NEXT
-	 extu.b	r0, TOS		! zero-extend the count
-	ASMEND(count)
-#endif
-
-
 !!! CMOVE - STRING 17.6.1.0910
 !!!     ( src dst len -- )
 !!! NB: char-by-char left-to-right copy is required by the standard

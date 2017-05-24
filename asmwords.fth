@@ -73,7 +73,6 @@ predef~ c@ c_fetch
 predef~ c! c_store
 \ predef~ 2@ two_fetch
 predef~ 2! two_store
-\ predef~ count count
 predef~ cmove cmove
 predef~ cmove> cmove_up
 predef~ compare compare
