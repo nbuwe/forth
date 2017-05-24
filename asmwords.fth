@@ -67,12 +67,6 @@ predef~ or or
 predef~ xor xor
 predef~ lshift lshift
 predef~ rshift rshift
-\ predef~ aligned aligned
-\ predef~ cell+ cell_plus
-\ predef~ cell- cell_minus
-\ predef~ cells cells
-\ predef~ char+ char_plus
-\ predef~ chars chars
 predef~ @ fetch
 predef~ ! store
 \ predef~ +! plus_store
