@@ -301,14 +301,14 @@ variable >in
    here ;
 
 
-: base-0   ( base - '0' upper )   \ range of arabic digits; for "within"
+: base-0   ( base -- '0' upper )   \ range of arabic digits; for "within"
    dup #10 <= if
       [char] 0 tuck +
    else
       drop [char] 0 [ char 9 1+ ] literal
    then ;
 
-: base-a   ( base  - 'a' upper)   \ range of alphabetic digits; for within
+: base-a   ( base  -- 'a' upper)   \ range of alphabetic digits; for within
    10 - [char] a tuck + ;
 
 : digit?   ( char base -- value true | false )
