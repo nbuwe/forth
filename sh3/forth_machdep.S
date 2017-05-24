@@ -24,13 +24,6 @@
  */
 #include <forth.h>
 
-/*
- * Should we provide just the bare minimum of asm words to test MI
- * forth implementations and simplify porting, or more asm words to
- * get a bit more speed once initial porting is done?
- */
-#define MORE_ASM_WORDS 1
-
 #define TOS	r8	/* top of parameter stack lives in a register */
 #define PSP	r9	/* parameter stack pointer */
 #define RSP	r10	/* return stack pointer */
@@ -405,7 +398,6 @@ ASMWORD("dup", dup)
 	ASMEND(dup)
 
 
-#ifdef MORE_ASM_WORDS
 !!! ?DUP - CORE 6.1.0630
 !!!     ( x -- 0 | x x )
 ASMWORD("?dup", question_dup)
@@ -416,7 +408,6 @@ ASMWORD("?dup", question_dup)
 1:	jmp	@NEXT
 	 nop			! do nothing if zero
 	ASMEND(question_dup)
-#endif
 
 
 !!! SWAP - CORE 6.1.2260
@@ -439,17 +430,14 @@ ASMWORD("over", over)
 	ASMEND(over)
 
 
-#ifdef MORE_ASM_WORDS
 !!! NIP - CORE EXT 6.2.1930
 !!!     ( x1 x2 -- x2 )
 ASMWORD("nip", nip)
 	jmp	@NEXT
 	 add	#4, PSP
 	ASMEND(nip)
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! TUCK - CORE EXT 6.2.2300
 !!!     ( x1 x2 -- x2 x1 x2 )
 ASMWORD("tuck", tuck)
@@ -458,10 +446,8 @@ ASMWORD("tuck", tuck)
 	jmp	@NEXT
 	 mov.l	r0, @-PSP	! push x1
 	ASMEND(tuck)
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! ROT - CORE 6.1.2160
 !!!     ( x1 x2 x3 -- x2 x3 x1 )
 ASMWORD("rot", rot)
@@ -472,10 +458,8 @@ ASMWORD("rot", rot)
 	jmp	@NEXT
 	 mov	r1, TOS
 	ASMEND(rot)
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! -ROT - non-standard, inverse of ROT
 !!!     ( x1 x2 x3 -- x3 x1 x2 )
 ASMWORD("-rot", minus_rot)
@@ -486,7 +470,6 @@ ASMWORD("-rot", minus_rot)
 	jmp	@NEXT
 	 mov	r2, TOS
 	ASMEND(minus_rot)
-#endif
 
 
 !!! PICK - CORE EXT 6.2.2030
@@ -527,7 +510,6 @@ ASMWORD("roll", roll)
 	ASMEND(roll)
 
 
-#ifdef MORE_ASM_WORDS
 !!! 2DROP - CORE 6.1.0370
 !!!     ( x1 x2 -- )
 ASMWORD("2drop", two_drop)
@@ -535,10 +517,8 @@ ASMWORD("2drop", two_drop)
 	jmp	@NEXT
 	 FILL_TOS
 	ASMEND(two_drop)
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! 2DUP - CORE 6.1.0380
 !!!     ( x1 x2 -- x1 x2 x1 x2 )
 ASMWORD("2dup", two_dup)
@@ -547,10 +527,8 @@ ASMWORD("2dup", two_dup)
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
 	ASMEND(two_dup)
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! 2SWAP - CORE 6.1.0430
 !!!     ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
 ASMWORD("2swap", two_swap)
@@ -563,10 +541,8 @@ ASMWORD("2swap", two_swap)
 	jmp	@NEXT
 	 mov	r2, TOS
 	ASMEND(two_swap)
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! 2OVER - CORE 6.1.0400
 !!!     ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )
 ASMWORD("2over", two_over)
@@ -577,7 +553,6 @@ ASMWORD("2over", two_over)
 	jmp	@NEXT
 	 mov	r0, TOS
 	ASMEND(two_over)
-#endif
 
 
 !!! >R - CORE 6.1.0580
@@ -655,7 +630,6 @@ ASMWORD("0=", zero_equals)
 	ASMEND(zero_equals)
 
 
-#ifdef MORE_ASM_WORDS
 !!! 0<> - CORE-EXT 6.2.0260
 !!!     ( x -- flag )
 ASMWORD("0<>", zero_not_equals)
@@ -665,7 +639,6 @@ ASMWORD("0<>", zero_not_equals)
 	jmp	@NEXT
 	 not	TOS, TOS
 	ASMEND(zero_not_equals)
-#endif
 
 
 !!! 0> - CORE-EXT 6.2.0280
@@ -761,7 +734,6 @@ ASMWORD("u>", u_greater_than)
  * Arithmetic and bit-wise operations
  */
 
-#ifdef MORE_ASM_WORDS
 !!! FALSE - CORE-EXT 6.2.1485
 !!!     ( -- false )
 ASMWORD("false", false)
@@ -769,10 +741,8 @@ ASMWORD("false", false)
 	jmp	@NEXT
 	 mov	#0, TOS
 	ASMEND(false)
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! TRUE - CORE-EXT 6.2.2298
 !!!     ( -- true )
 ASMWORD("true", true)
@@ -780,7 +750,6 @@ ASMWORD("true", true)
 	jmp	@NEXT
 	 mov	#-1, TOS
 	ASMEND(true)
-#endif
 
 
 !!! NEGATE - CORE 6.1.1910
@@ -791,7 +760,6 @@ ASMWORD("negate", negate)
 	ASMEND(negate)
 
 
-#ifdef MORE_ASM_WORDS
 !!! ABS - CORE 6.1.0690
 !!!     ( n -- u )
 ASMWORD("abs", abs)
@@ -801,7 +769,6 @@ ASMWORD("abs", abs)
 1:	jmp	@NEXT
 	 nop
 	ASMEND(abs)
-#endif
 
 
 !!! + - CORE 6.1.0120
@@ -836,24 +803,20 @@ ASMWORD("-", minus)
 	ASMEND(minus)
 
 
-#ifdef MORE_ASM_WORDS
 !!! 1+ - CORE 6.1.0290
 !!!     ( n1|u1 -- n2|u2 )
 ASMWORD("1+", one_plus)
 	jmp	@NEXT
 	 add	#1, TOS
 	ASMEND(one_plus)
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! 1- - CORE 6.1.0300
 !!!     ( n1|u1 -- n2|u2 )
 ASMWORD("1-", one_minus)
 	jmp	@NEXT
 	 add	#-1, TOS
 	ASMEND(one_minus)
-#endif
 
 
 !!! * - CORE 6.1.0090
@@ -1013,7 +976,6 @@ ASMWORD("!", store)
 	ASMEND(store)
 
 
-#ifdef MORE_ASM_WORDS
 !!! +! - CORE 6.1.0130
 !!!     ( n|u a-addr -- )
 ASMWORD("+!", plus_store)
@@ -1024,10 +986,8 @@ ASMWORD("+!", plus_store)
 	jmp	@NEXT
 	 FILL_TOS
 	ASMEND(plus_store)
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! 1+! - nonstandard
 !!!     ( a-addr -- )
 ASMWORD("1+!", one_plus_store)
@@ -1037,7 +997,6 @@ ASMWORD("1+!", one_plus_store)
 	jmp	@NEXT
 	 FILL_TOS
 	ASMEND(one_plus_store)
-#endif
 
 
 !!! C@ - CORE 6.1.0870
@@ -1059,7 +1018,6 @@ ASMWORD("c!", c_store)
 	ASMEND(c_store)
 
 
-#ifdef MORE_ASM_WORDS
 !!! 2@ - CORE 6.1.0350
 !!!     ( a-addr -- x1 x2 )
 ASMWORD("2@", two_fetch)
@@ -1068,10 +1026,8 @@ ASMWORD("2@", two_fetch)
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
 	ASMEND(two_fetch)
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! 2! - CORE 6.1.0310
 !!!     ( x1 x2 a-addr -- )
 ASMWORD("2!", two_store)
@@ -1083,7 +1039,6 @@ ASMWORD("2!", two_store)
 	jmp	@NEXT
 	 add	#12, PSP
 	ASMEND(two_store)
-#endif
 
 
 
@@ -1314,7 +1269,6 @@ ASMWORD("lit", lit)
 	ASMEND(lit)
 
 
-#ifdef MORE_ASM_WORDS
 !!! 2LIT - auxiliary for 2LITERAL (DOUBLE 8.6.1.0390)
 ASMWORD("2lit", two_lit)
 	SPILL_TOS
@@ -1323,7 +1277,6 @@ ASMWORD("2lit", two_lit)
 	jmp	@NEXT
 	 mov.l	r0, @-PSP
 	ASMEND(two_lit)
-#endif
 
 
 !!! BRANCH - auxiliary for ELSE &co
@@ -1345,7 +1298,6 @@ ASMWORD("?branch", question_branch)
 	ASMEND(question_branch)
 
 
-#ifdef MORE_ASM_WORDS
 !!! I - CORE 6.1.1680
 ASMWORD("i", i_4th)
 	SPILL_TOS
@@ -1354,10 +1306,8 @@ ASMWORD("i", i_4th)
 	jmp	@NEXT
 	 sub	r0, TOS
 	ASMEND(i_4th)
-#endif
 
 
-#ifdef MORE_ASM_WORDS
 !!! J - 6.1.1730
 ASMWORD("j", j_4th)
 	SPILL_TOS
@@ -1366,7 +1316,6 @@ ASMWORD("j", j_4th)
 	jmp	@NEXT
 	 sub	r0, TOS
 	ASMEND(j_4th)
-#endif
 
 
 /* Machine-independent words in threaded code. */
