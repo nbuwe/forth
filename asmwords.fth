@@ -67,8 +67,6 @@ predef~ lshift lshift
 predef~ rshift rshift
 predef~ @ fetch
 predef~ ! store
-\ predef~ +! plus_store
-\ predef~ 1+! one_plus_store
 predef~ c@ c_fetch
 predef~ c! c_store
 \ predef~ 2@ two_fetch

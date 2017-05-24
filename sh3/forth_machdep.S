@@ -976,29 +976,6 @@ ASMWORD("!", store)
 	ASMEND(store)
 
 
-!!! +! - CORE 6.1.0130
-!!!     ( n|u a-addr -- )
-ASMWORD("+!", plus_store)
-	mov.l	@PSP+, r0	! value increment
-	mov.l	@TOS, r1	! fetch current value
-	add	r1, r0
-	mov.l	r0, @TOS	! store new value
-	jmp	@NEXT
-	 FILL_TOS
-	ASMEND(plus_store)
-
-
-!!! 1+! - nonstandard
-!!!     ( a-addr -- )
-ASMWORD("1+!", one_plus_store)
-	mov.l	@TOS, r1	! fetch current value
-	add	#1, r1		! increment
-	mov.l	r1, @TOS	! store sum
-	jmp	@NEXT
-	 FILL_TOS
-	ASMEND(one_plus_store)
-
-
 !!! C@ - CORE 6.1.0870
 !!!     ( c-addr -- char )
 ASMWORD("c@", c_fetch)
