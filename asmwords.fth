@@ -43,8 +43,6 @@ predef~ = equals
 predef~ <> not_equals
 predef~ < less_than
 predef~ > greater_than
-predef~ max max
-predef~ min min
 predef~ u< u_less_than
 predef~ u> u_greater_than
 predef~ false false
