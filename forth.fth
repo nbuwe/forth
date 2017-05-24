@@ -28,10 +28,6 @@
 
 : count   ( c-addr1 -- c-addr2 u )   dup c@ swap 1+ swap ;
 
-: 2drop   drop drop ;
-: 2dup   over over ;
-: 2swap   3 roll 3 roll ;
-
 : not   ( x -- flag)   0= ;
 : <=   ( n1 n2 -- flag )   > not ;
 : >=   ( n1 n2 -- flag )   < not ;

@@ -512,6 +512,52 @@ ASMWORD("roll", roll)
 	ASMEND(roll)
 
 
+### 2DROP - CORE 6.1.0370
+###     ( x1 x2 -- )
+ASMWORD("2drop", two_drop)
+	addi	%PSP, %PSP, 4
+	FILL_TOS
+	blr
+	ASMEND(two_drop)
+
+
+### 2DUP - CORE 6.1.0380
+###     ( x1 x2 -- x1 x2 x1 x2 )
+ASMWORD("2dup", two_dup)
+	lwz	%TMP, 0(%PSP)		# fetch x1
+	SPILL_TOS			# push x2
+	stwu	%TMP, -4(%PSP)		# push x1
+	blr
+	ASMEND(two_dup)
+
+
+### 2SWAP - CORE 6.1.0430
+###     ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
+ASMWORD("2swap", two_swap)
+	lwz	%TMP, 0(%PSP)		# fetch x3
+	lwz	%r15, 4(%PSP)		# fetch x2
+	lwz	%r16, 8(%PSP)		# fetch x1
+	stw	%TMP, 8(%PSP)		# store x3
+	stw	%TOS, 4(%PSP)		# store x4
+	stw	%r16, 0(%PSP)		# store x1
+	mr	%TOS, %r15		# x2
+	blr
+	ASMEND(two_swap)
+
+
+### 2OVER - CORE 6.1.0400
+###     ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )
+ASMWORD("2over", two_over)
+	lwz	%r15, 4(%PSP)		# fetch x2
+	lwz	%r16, 8(%PSP)		# fetch x1
+	SPILL_TOS			# push x4
+	stwu	%r16, -4(%PSP)		# push x1
+	mr	%TOS, %r15		# x2
+	blr
+	ASMEND(two_over)
+
+
+
 ### Current stack pointer.
 ###     ( -- sp )
 ###

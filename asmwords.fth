@@ -25,10 +25,10 @@ predef~ rot rot
 predef~ -rot minus_rot
 predef~ pick pick
 predef~ roll roll
-\ predef~ 2drop two_drop
-\ predef~ 2dup _two_dup
-\ predef~ 2swap two_swap
-\ predef~ 2over two_over
+predef~ 2drop two_drop
+predef~ 2dup two_dup
+predef~ 2swap two_swap
+predef~ 2over two_over
 predef~ >r to_r
 predef~ r> r_from
 predef~ r@ r_fetch
