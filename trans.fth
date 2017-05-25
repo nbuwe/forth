@@ -191,7 +191,7 @@ variable tversion   0 tversion !
 : comment   ." /* " -trailing type space ." */" cr ;
 
 : tliteral    .long ." lit, " 0 .r cr ;
-: t2literal   .long ." _2lit, " 0 .r ." , " 0 .r cr ;
+: t2literal   .long ." two_lit, " 0 .r ." , " 0 .r cr ;
 : tcompile,   .long >body type-sym cr ;
 
 : t[']

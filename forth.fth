@@ -70,9 +70,6 @@
 : aligned?   ( addr -- flag )   unaligned? not ;
 
 
-: 2@   dup cell+ @ swap @ ;
-: 2lit   r> dup 2@ rot 2 cells + >r ;
-
 : d>s   ( d -- n )   drop ;
 : d0=   ( xd -- flag)   or 0= ;
 : d0<   ( xd -- flag)   nip 0< ;
@@ -158,6 +155,7 @@ variable base
 
 : ,    (    x -- )   here 1 cells allot  ! ;
 : c,   ( char -- )   here 1 chars allot c! ;
+: 2,   (    d -- )   here 2 cells allot 2! ;
 
 : string,   ( c-addr u -- )   \ reserve space and store string
    here swap dup allot move ;
@@ -682,7 +680,8 @@ predef~ next-code next_code
 : (;code)   r>   latest name> ! ; \ the asm code after this word
 : (;alit)   r> @ latest name> ! ; \ the address compiled after this word
 
-: constant   create , does> @ ;
+: constant    create  , does>  @ ;
+: 2constant   create 2, does> 2@ ;
 
 predef~ call-code call_code \ XXX
 

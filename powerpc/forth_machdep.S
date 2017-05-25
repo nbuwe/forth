@@ -1047,6 +1047,29 @@ ASMWORD("c!", c_store)
 	ASMEND(c_store)
 
 
+### 2@ - CORE 6.1.0350
+###     ( a-addr -- x1 x2 )
+ASMWORD("2@", two_fetch)
+	lwz	%TMP, 4(%TOS)
+	lwz	%TOS, 0(%TOS)	# lower address goes to the top
+	stwu	%TMP, -4(%PSP)
+	blr
+	ASMEND(two_fetch)
+
+
+### 2! - CORE 6.1.0310
+###     ( x1 x2 a-addr -- )
+ASMWORD("2!", two_store)
+	lwz	%TMP, 0(%PSP)
+	lwz	%r15, 4(%PSP)
+	stw	%TMP, 0(%TOS)	# top -> lower address
+	stw	%r15, 4(%TOS)
+	lwz	%TOS, 8(%PSP)	# fill tos
+	addi	%PSP, %PSP, 12
+	blr
+	ASMEND(two_store)
+
+
 
 /**
  * Strings
@@ -1287,6 +1310,17 @@ ASMWORD("lit", lit)
 	addi	%IP, %IP, 4
 	blr
 	ASMEND(lit)
+
+
+### 2LIT - auxiliary for 2LITERAL (DOUBLE 8.6.1.0390)
+ASMWORD("2lit", two_lit)
+	SPILL_TOS
+	lwz	%TOS, 0(%IP)	# lower address goes to the top
+	lwz	%TMP, 4(%IP)
+	stwu	%TMP, -4(%PSP)
+	addi	%IP, %IP, 8
+	blr
+	ASMEND(two_lit)
 
 
 ### BRANCH - auxiliary for ELSE &co

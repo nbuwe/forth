@@ -69,7 +69,7 @@ predef~ @ fetch
 predef~ ! store
 predef~ c@ c_fetch
 predef~ c! c_store
-\ predef~ 2@ two_fetch
+predef~ 2@ two_fetch
 predef~ 2! two_store
 predef~ cmove cmove
 predef~ cmove> cmove_up
@@ -82,7 +82,7 @@ predef~ d+ d_plus
 predef~ m* m_star
 predef~ um* um_star
 predef~ lit lit
-\ predef~ 2lit two_lit
+predef~ 2lit two_lit
 predef~ branch branch
 predef~ ?branch question_branch
 predef~ i i_4th
