@@ -379,10 +379,10 @@ also meta definitions previous
 : postpone
    t(') ?dup if
       1+ if   \ immediate
-	 tcompile,
+         tcompile,
       else
-	 .long ." compile" cr
-	 tcompile,
+         .long ." compile" cr
+         tcompile,
       then
    else
       \ ... undefined word
