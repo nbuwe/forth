@@ -1333,6 +1333,36 @@ ASMWORD("d-", d_minus)
 #undef	D2lo
 
 
+### D2* - DOUBLE 8.6.1.1090
+###     ( xd1 -- xd2 )
+ASMWORD("d2*", d_two_star)
+#	define	LO	r20
+	lwz	%LO, 0(%PSP)
+	srwi	%TMP, %LO, 31	# upper bit of lo
+	slwi	%TOS, %TOS, 1
+	slwi	%LO, %LO, 1
+	or	%TOS, %TOS, %TMP # carry over
+	stw	%LO, 0(%PSP)
+	blr
+	ASMEND(d_two_star)
+#undef	LO
+
+
+### D2/ - DOUBLE 8.6.1.1100
+###     ( xd1 -- xd2 )
+ASMWORD("d2/", d_two_slash)
+#	define	LO	r20
+	lwz	%LO, 0(%PSP)
+	slwi	%TMP, %TOS, 31	# lower bit of hi
+	srwi	%LO, %LO, 1
+	srwi	%TOS, %TOS, 1
+	or	%LO, %LO, %TMP # carry over
+	stw	%LO, 0(%PSP)
+	blr
+	ASMEND(d_two_slash)
+#undef	LO
+
+
 ### M* - CORE 6.1.1810
 ###     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
 ASMWORD("m*", m_star)

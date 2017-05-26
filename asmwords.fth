@@ -82,6 +82,8 @@ predef~ dnegate dnegate
 predef~ dabs dabs
 predef~ d+ d_plus
 predef~ d- d_minus
+predef~ d2* d_two_star
+predef~ d2/ d_two_slash
 predef~ m* m_star
 predef~ um* um_star
 predef~ lit lit
