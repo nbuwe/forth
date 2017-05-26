@@ -1207,6 +1207,22 @@ ASMWORD("d+", d_plus)
 	ASMEND(d_plus)
 
 
+!!! D- - DOUBLE 8.6.1.1050
+!!!     ( d1|ud1 d2|ud2 -- d3|ud3 )
+ASMWORD("d-", d_minus)
+	mov.l	@(8, PSP), r0	! lo(d1)
+	mov.l	@PSP, r2	! lo(d2)
+	mov.l	@(4, PSP), r1	! hi(d1)
+	clrt
+	subc	r2, r0		! lo
+	subc	TOS, r1		! hi
+	mov.l	r0, @(8, PSP)
+	mov	r1, TOS
+	jmp	@NEXT
+	 add	#8, PSP
+	ASMEND(d_minus)
+
+
 !!! M* - CORE 6.1.1810
 !!!     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
 ASMWORD("m*", m_star)

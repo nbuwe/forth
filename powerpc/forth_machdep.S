@@ -1272,6 +1272,27 @@ ASMWORD("d+", d_plus)
 #undef	D2lo
 
 
+### D- - DOUBLE 8.6.1.1050
+###     ( d1|ud1 d2|ud2 -- d3|ud3 )
+ASMWORD("d-", d_minus)
+#	define	D1lo	r20
+#	define	D1hi	r21
+#	define	D2lo	r22
+	#	D2hi	TOS
+	lwz	%D1lo, 8(%PSP)
+	lwz	%D2lo, 0(%PSP)
+	lwz	%D1hi, 4(%PSP)
+	subfc	%D2lo, %D2lo, %D1lo
+	subfe	%TOS, %TOS, %D1hi
+	stw	%D2lo, 8(%PSP)
+	addi	%PSP, %PSP, 8
+	blr
+	ASMEND(d_minus)
+#undef	D1lo
+#undef	D1hi
+#undef	D2lo
+
+
 ### M* - CORE 6.1.1810
 ###     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
 ASMWORD("m*", m_star)
