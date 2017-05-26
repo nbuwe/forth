@@ -75,6 +75,9 @@
 : d0<   ( xd -- flag)   nip 0< ;
 : d=    ( xd1 xd2 -- flag )   rot = if = else 2drop false then ;
 
+: dmax  ( d1 d2 -- d3 )   2over 2over d<     if 2swap then 2drop ;
+: dmin  ( d1 d2 -- d3 )   2over 2over d< not if 2swap then 2drop ;
+
 : on     true swap ! ;
 : off   false swap ! ;
 
