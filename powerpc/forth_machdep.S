@@ -1240,6 +1240,31 @@ ASMWORD("s>d", s2d)
 	ASMEND(s2d)
 
 
+### D< - DOUBLE 8.6.1.1110
+###     ( d1 d2 -- flag )
+ASMWORD("d<", d_less_than)
+#	define	D1lo	r20
+#	define	D1hi	r21
+#	define	D2lo	r22
+	#	D2hi	TOS
+	lwz	%D2lo, 0(%PSP)
+	lwz	%D1hi, 4(%PSP)
+	lwz	%D1lo, 8(%PSP)
+	addi	%PSP, %PSP, 12
+	cmp	%cr0, %D1hi, %TOS
+	li	%TOS, -1
+	bltlr	%cr0
+	beq	%cr0, .L_dlt_check_lo
+	li	%TOS, 0
+	blr
+.L_dlt_check_lo:
+	cmpl	%cr0, %D1lo, %D2lo
+	bltlr	%cr0		# TOS is already -1
+	li	%TOS, 0
+	blr
+	ASMEND(d_less_than)
+
+
 ### DNEGATE - DOUBLE 8.6.1.1230
 ###     ( d1 -- d2 )
 ASMWORD("dnegate", dnegate)
