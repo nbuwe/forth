@@ -216,6 +216,20 @@ variable hld
 : u.r   ( u n -- )
    >r (u.) r>   over - spaces   type ;
 
+: (d.)   ( d -- c-addr u )
+   tuck    \ keep a copy for sign
+   dabs
+   <# #s rot sign #> ;
+
+: d.   ( d -- )   (d.) type space ;
+: d.r   ( d n -- )
+   >r (d.) r>   over - spaces   type ;
+
+: (ud.)   ( ud -- c-addr u )   <# #s #> ;
+: ud.   ( ud -- )   (ud.) type space ;
+: ud.r   ( ud n -- )
+   >r (ud.) r>   over - spaces   type ;
+
 : .s
    sp@ sp0 = if exit then
    dup         \ spill TOS to memory
