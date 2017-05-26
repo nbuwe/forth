@@ -77,8 +77,11 @@ predef~ compare compare
 predef~ fill fill
 predef~ move move
 predef~ s>d s2d
+predef~ d< d_less_than
 predef~ dnegate dnegate
+predef~ dabs dabs
 predef~ d+ d_plus
+predef~ d- d_minus
 predef~ m* m_star
 predef~ um* um_star
 predef~ lit lit
