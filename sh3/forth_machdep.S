@@ -1193,6 +1193,20 @@ ASMWORD("dnegate", dnegate)
 	 mov.l	r0, @PSP
 
 
+!!! DABS - DOUBLE 8.6.1.1160
+!!!     ( d1 -- d2 )
+ASMWORD("dabs", dabs)
+	cmp/pz	TOS
+	bt	1f
+	mov.l	@PSP, r0	! lo
+	negc	r0, r0		! carry: T = 0 from cmp/pz
+	negc	TOS, TOS
+	mov.l	r0, @PSP
+1:	jmp	@NEXT
+	 nop
+	ASMEND(dabs)
+
+
 !!! D+ - DOUBLE 8.6.1.1040 
 !!!     ( d1|ud1 d2|ud2 -- d3|ud3 )
 ASMWORD("d+", d_plus)

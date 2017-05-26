@@ -1251,6 +1251,21 @@ ASMWORD("dnegate", dnegate)
 	ASMEND(dnegate)
 
 
+### DABS - DOUBLE 8.6.1.1160
+###     ( d1 -- d2 )
+ASMWORD("dabs", dabs)
+	lwz	%TMP, 0(%PSP)		# lo
+	srawi	%r16, %TOS, 31		# sign
+	srawi	%r15, %TOS, 31		# sign
+	xor	%TMP, %r16, %TMP	# lo
+	xor	%TOS, %r15, %TOS	# hi
+	subfc	%TMP, %r16, %TMP	# lo
+	subfe	%TOS, %r15, %TOS	# hi
+	stw	%TMP, 0(%PSP)
+	blr
+	ASMEND(dabs)
+
+
 ### D+ - DOUBLE 8.6.1.1040 
 ###     ( d1|ud1 d2|ud2 -- d3|ud3 )
 ASMWORD("d+", d_plus)
