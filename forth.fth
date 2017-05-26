@@ -78,6 +78,8 @@
 : dmax  ( d1 d2 -- d3 )   2over 2over d<     if 2swap then 2drop ;
 : dmin  ( d1 d2 -- d3 )   2over 2over d< not if 2swap then 2drop ;
 
+: m+   ( d1|ud1 n -- d2|ud2 )   s>d d+ ;
+
 : on     true swap ! ;
 : off   false swap ! ;
 
