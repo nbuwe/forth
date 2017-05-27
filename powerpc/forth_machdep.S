@@ -941,7 +941,7 @@ ASMWORD("2*", two_star)
 ### 2/ - CORE 6.1.0330
 ###     ( x1 -- x2 )
 ASMWORD("2/", two_slash)
-	srwi	%TOS, %TOS, 1
+	srawi	%TOS, %TOS, 1
 	blr
 	ASMEND(two_slash)
 
