@@ -395,6 +395,11 @@ also meta definitions previous
    [char] " parse
    .long ." DOTQ(" "type" ." )" cr ; immediate
 
+: s"
+   ?comp
+   [char] " parse
+   .long ." SQ(" "type" ." )" cr ; immediate
+
 : ahead  ?comp          (ahead) 1 ; immediate
 : if     ?comp          (if) 1 ; immediate
 : else   ?comp 1 ?pairs (ahead) swap (then) 1 ;  immediate
