@@ -388,7 +388,7 @@ variable >in
       dup base-a
       r> $20 or dup >r   \ downcase char
       -rot within if
-         drop r> [char] a - #10 +
+         drop r> [ char a #10 - ] literal -
          true exit
       then
    then
