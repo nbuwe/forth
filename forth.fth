@@ -83,20 +83,6 @@
 : on     true swap ! ;
 : off   false swap ! ;
 
-: cmove   ( src dst len -- )   \ left-to-right char-by-char
-   dup 1 < if exit then
-   ( len ) 0 do
-      over i + c@ over i + c!
-   loop
-   2drop ;
-
-: cmove>   ( src dst len -- )   \ right-to-left char-by-char
-   dup 1 < if exit then
-   ( len ) 1- 0 swap do
-      over i + c@ over i + c!
-   -1 +loop
-   2drop ;
-
 
 defer throw
 
@@ -188,6 +174,23 @@ variable base
 : erase   ( c-addr u -- )   dup 0= if 2drop else  0 fill then ;
 : blank   ( c-addr u -- )   dup 0= if 2drop else bl fill then ;
 
+: /string   ( c-addr1 u1 n -- c-addr2 u2 )   rot over +   -rot - ;
+
+: cmove   ( src dst len -- )   \ left-to-right char-by-char
+   dup 1 < if exit then
+   ( len ) 0 do
+      over i + c@ over i + c!
+   loop
+   2drop ;
+
+: cmove>   ( src dst len -- )   \ right-to-left char-by-char
+   dup 1 < if exit then
+   ( len ) 1- 0 swap do
+      over i + c@ over i + c!
+   -1 +loop
+   2drop ;
+
+
 : cr      $0a emit ;
 : space   bl emit ;
 : spaces   ( n -- )
@@ -201,8 +204,6 @@ variable base
 \ cword~ type emit_impl
 \ cword~ accept accept_4th
 
-\ XXX: do in asm
-: /string   ( c-addr1 u1 n -- c-addr2 u2 )   rot over +   -rot - ;
 
 variable hld
 : <#   ( -- )   pad hld ! ;
