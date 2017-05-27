@@ -206,6 +206,21 @@ variable base
    loop
    2drop r> ;                   \ return length comparison
 
+: search   ( c-addr1 u1 c-addr2 u2 -- c-addr3 u3 flag )
+   2 pick over -   \ c-addr1 u1 c-addr2 u2 u1-u2
+   dup 0< if
+      drop 2drop
+      false exit
+   then
+   1+ 0 ?do   \ c-addr1 u1 c-addr2 u2
+      3 pick i + over 2over   \ c-addr1 u1 c-addr2 u2 c-addr1+i u2
+      compare 0= if
+         2drop i /string
+         unloop
+         true exit
+      then
+   loop ;
+
 
 : cr      $0a emit ;
 : space   bl emit ;
