@@ -173,12 +173,12 @@
 
 
 #define QUOTESTR(word, str)				  \
-	/* .long */ _lparen_/**/word/**/_dquote_rparen, (22f - 21f) ; \
+	/* .long */ _lparen/**/word/**/_dquote_rparen, (22f - 21f) ; \
 21:	.ascii	str					; \
 22:	.p2align 2, 0 /* force new directive with ; */	;
 
 #define SQ(str)		QUOTESTR(s, str)	/* s"     */
-#define DOTQ(str)	QUOTESTR(dot, str)	/* ."     */
+#define DOTQ(str)	QUOTESTR(_dot, str)	/* ."     */
 #define ABORTQ(str)	QUOTESTR(abort, str)	/* abort" */
 
 #define THR13	"Undefined word"
