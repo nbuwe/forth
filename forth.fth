@@ -250,6 +250,8 @@ variable hld
 : ud.r   ( ud n -- )
    >r (ud.) r>   over - spaces   type ;
 
+: ?   @ . ;
+
 : .s
    sp@ sp0 = if exit then
    dup         \ spill TOS to memory
