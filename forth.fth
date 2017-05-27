@@ -694,6 +694,7 @@ predef~ next-code next_code
 
 : variable    create 1 cells allot ;
 : 2variable   create 2 cells allot ;
+: buffer:     create allot ;
 
 \ set CFA of the latest word to ...
 : (;code)   r>   latest name> ! ; \ the asm code after this word
