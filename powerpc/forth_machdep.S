@@ -1075,62 +1075,6 @@ ASMWORD("2!", two_store)
  * Strings
  */
 
-### COMPARE - STRING 17.6.1.0935
-###     ( c-addr1 u1 c-addr2 u2 -- n )
-ASMWORD("compare", compare)
-#	define	S1	r20
-#	define	U1	r21
-#	define	C1	r22
-#	define	S2	r23
-#	define	U2	r24
-#	define	C2	r25
-	lwz	%S1, 8(%PSP)
-	lwz	%U1, 4(%PSP)
-	lwz	%S2, 0(%PSP)
-	mr	%U2, %TOS
-	addi	%PSP, %PSP, 12
-
-.Loop:
-	cmpi	%cr0, %U1, 0
-	cmpi	%cr1, %U2, 0
-	bne+	%cr0, .L_u1_pos
-
-	## u1 == 0
-	bne+	%cr1, .L_s1_first	# u2 != 0; s1 is shorter
-
-	## u1 == 0 && u2 == 0; strings are equal
-	li	%TOS, 0
-	blr
-
-.L_u1_pos:
-	beq-	%cr1, .L_s2_first	# u2 != 0; s1 is longer
-
-	## have more chars, compare them
-	lbz	%C1, 0(%S1)
-	lbz	%C2, 0(%S2)
-	addi	%S1, %S1, 1
-	addi	%S2, %S2, 1
-	addi	%U1, %U1, -1
-	addi	%U2, %U2, -1
-	cmp	%cr0, %C1, %C2
-	beq-	%cr0, .Loop		# while c1 == c2
-
-	bgt	%cr0, .L_s2_first
-.L_s1_first:
-	li	%TOS, -1
-	blr
-.L_s2_first:
-	li	%TOS, 1
-	blr
-	ASMEND(compare)
-#undef	S1
-#undef	U1
-#undef	C1
-#undef	S2
-#undef	U2
-#undef	C2
-
-
 ### FILL - CORE 6.1.1540
 ###     ( c-addr u char -- )
 ASMWORD("fill", fill)

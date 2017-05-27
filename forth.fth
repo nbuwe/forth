@@ -32,6 +32,9 @@
 : <=   ( n1 n2 -- flag )   > not ;
 : >=   ( n1 n2 -- flag )   < not ;
 
+: signum   ( n -- -1|0|1 )   dup 0< swap 0> - ;   \ "sign" is taken
+: <=>      ( n1 n2 -- -1|0|1 )   - signum ;       \ 3 way comparison
+
 : within   ( test low high -- flag )
    over - >r   \ high - low
    -           \ test - low
@@ -189,6 +192,19 @@ variable base
       over i + c@ over i + c!
    -1 +loop
    2drop ;
+
+: compare   ( c-addr1 u1 c-addr2 u2 -- -1|0|1 )
+   rot swap     \ c-addr1 c-addr2 u1 u2
+   2dup <=> >r  \ if strings are equal up to the shorter length
+   min 0 ?do    \ c-addr1 c-addr2
+      over i + c@  over i + c@
+      <=> ?dup if
+         unloop r> drop         \ drop length comparison
+         -rot 2drop             \ drop strings
+         exit                   \ return result of <=>
+      then
+   loop
+   2drop r> ;                   \ return length comparison
 
 
 : cr      $0a emit ;

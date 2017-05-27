@@ -1023,54 +1023,6 @@ ASMWORD("2!", two_store)
  * Strings
  */
 
-!!! COMPARE - STRING 17.6.1.0935
-!!!     ( c-addr1 u1 c-addr2 u2 -- n )
-ASMWORD("compare", compare)
-	!!	       TOS	! u2
-	mov.l	@PSP+, r7	! ca2
-	mov.l	@PSP+, r6	! u1
-	mov.l	@PSP+, r5	! ca1
-
-	tst	r6, r6		! u1 == 0?
-.Loop:
-	bf.s	.L_u1_pos
-	 tst	TOS, TOS	! u2 == 0?
-
-	movt	TOS		!  0 if u2 != 0; 1 if u2 == 0
-	jmp	@NEXT
-	 add	#-1, TOS	! -1 if u2 != 0; 0 if u2 == 0
-
-.L_u1_pos:
-	bf.s	.L_u1u2_pos
-	 nop
-	jmp	@NEXT
-	 mov	#1, TOS
-
-.L_u1u2_pos:
-	mov.b	@r5+, r0
-	add	#-1, r6
-
-	mov.b	@r7+, r1
-	add	#-1, TOS
-
-	extu.b	r0, r0
-	extu.b	r1, r1
-
-	cmp/eq	r0, r1
-	bt.s	.Loop
-	 tst	r6, r6
-
-	cmp/hi	r1, r0		! r0 > r1?
-	bt	1f
-
-	jmp	@NEXT
-	 mov	#-1, TOS	! *ca1 < *ca2
-
-1:	jmp	@NEXT
-	 mov	#1, TOS		! *ca1 > *ca2
-	ASMEND(compare)
-
-
 !!! FILL - CORE 6.1.1540
 !!!     ( c-addr u char -- )
 ASMWORD("fill", fill)
