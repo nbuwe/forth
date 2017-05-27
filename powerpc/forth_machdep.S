@@ -1075,63 +1075,6 @@ ASMWORD("2!", two_store)
  * Strings
  */
 
-### CMOVE - STRING 17.6.1.0910
-###     ( src dst len -- )
-### NB: char-by-char left-to-right copy is required by the standard
-ASMWORD("cmove", cmove)
-#	define	SRC	r20
-#	define	DST	r21
-#	define	IDX	r22
-
-	cmpi	%cr0, %TOS, 0
-	beq-	9f
-
-	lwz	%SRC, 4(%PSP)
-	lwz	%DST, 0(%PSP)
-	li	%IDX, 0
-	mtctr	%TOS
-1:
-	lbzx	%r0, %SRC, %IDX
-	stbx	%r0, %DST, %IDX
-	addi	%IDX, %IDX, 1
-	bdnz	1b
-9:
-	lwz	%TOS, 8(%PSP)
-	addi	%PSP, %PSP, 12
-	blr
-	ASMEND(cmove)
-#undef	SRC
-#undef	DST
-#undef	IDX
-
-
-### CMOVE> - STRING 17.6.1.0920
-###     ( src dst len -- )
-### NB: char-by-char right-to-left copy is required by the standard
-ASMWORD("cmove>", cmove_up)
-#	define	SRC	r20
-#	define	DST	r21
-
-	cmpi	%cr0, %TOS, 0
-	beq-	9f
-
-	lwz	%SRC, 4(%PSP)
-	lwz	%DST, 0(%PSP)
-	mtctr	%TOS
-1:
-	addi	%TOS, %TOS, -1
-	lbzx	%r0, %SRC, %TOS
-	stbx	%r0, %DST, %TOS
-	bdnz	1b
-9:
-	lwz	%TOS, 8(%PSP)
-	addi	%PSP, %PSP, 12
-	blr
-	ASMEND(cmove_up)
-#undef	SRC
-#undef	DST
-
-
 ### COMPARE - STRING 17.6.1.0935
 ###     ( c-addr1 u1 c-addr2 u2 -- n )
 ASMWORD("compare", compare)

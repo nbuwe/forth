@@ -83,6 +83,21 @@
 : on     true swap ! ;
 : off   false swap ! ;
 
+: cmove   ( src dst len -- )   \ left-to-right char-by-char
+   dup 1 < if exit then
+   ( len ) 0 do
+      over i + c@ over i + c!
+   loop
+   2drop ;
+
+: cmove>   ( src dst len -- )   \ right-to-left char-by-char
+   dup 1 < if exit then
+   ( len ) 1- 0 swap do
+      over i + c@ over i + c!
+   -1 +loop
+   2drop ;
+
+
 defer throw
 
 

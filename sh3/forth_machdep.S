@@ -1023,55 +1023,6 @@ ASMWORD("2!", two_store)
  * Strings
  */
 
-!!! CMOVE - STRING 17.6.1.0910
-!!!     ( src dst len -- )
-!!! NB: char-by-char left-to-right copy is required by the standard
-ASMWORD("cmove", cmove)
-	!!	TOS		! len
-	mov.l	@PSP, r1	! dst
-	mov.l	@(4, PSP), r0	! src
-
-	tst	TOS, TOS	! len == 0?
-	bt	9f
-
-1:	mov.b	@r0+, r2
-	mov.b	r2, @r1
-	dt	TOS
-	bf/s	1b
-	 add	#1, r1
-
-9:	add	#8, PSP
-	jmp	@NEXT
-	 FILL_TOS
-	ASMEND(cmove)
-
-
-!!! CMOVE> - STRING 17.6.1.0920
-!!!     ( src dst len -- )
-!!! NB: char-by-char right-to-left copy is required by the standard
-ASMWORD("cmove>", cmove_up)
-	!!	TOS		! len
-	mov.l	@PSP, r1	! dst
-	mov.l	@(4, PSP), r0	! src
-
-	tst	TOS, TOS	! len == 0?
-	bt	9f
-
-	add	TOS, r0
-	add	TOS, r1
-
-1:	add	#-1, r0
-	mov.b	@r0, r2
-	mov.b	r2, @-r1
-	dt	TOS
-	bf	1b
-
-9:	add	#8, PSP
-	jmp	@NEXT
-	 FILL_TOS
-	ASMEND(cmove_up)
-
-
 !!! COMPARE - STRING 17.6.1.0935
 !!!     ( c-addr1 u1 c-addr2 u2 -- n )
 ASMWORD("compare", compare)
