@@ -632,6 +632,7 @@ ASMWORD("r@", r_fetch)
 ###     ( -- x1 x2 ) ( R: x1 x2 -- )
 ASMWORD("2>r", two_to_r)
 	lwz	%TMP, 0(%PSP)
+	addi	%PSP, %PSP, 4
 	stw	%TMP, -4(%RSP)
 	stwu	%TOS, -8(%RSP)
 	FILL_TOS
