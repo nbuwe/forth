@@ -345,6 +345,8 @@ variable >in
 : \   $0a parse 2drop ; immediate
 : (   [char] ) parse 2drop ; immediate
 
+: .(   [char] ) parse type ; immediate
+
 : parse-word   ( "<spaces>name<space>" -- c-addr u )
    bl skip-delim bl parse ;
 
