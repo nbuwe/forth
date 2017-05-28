@@ -205,7 +205,7 @@ mf_slash_mod_impl(cell_t *stack)
 #endif
 
     /* fix rounding if signs are different */
-    if (remainder != 0 && stack[0] ^ stack[1] < 0) {
+    if (remainder != 0 && ((int32_t)stack[0] ^ (int32_t)stack[1]) < 0) {
 	--quotient;
 	remainder += divisor;
     }
