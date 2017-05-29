@@ -1358,4 +1358,4 @@ ASMWORD("j", j_4th)
 	.section ".bss"
 .L_DATA_SPACE: /* begins HERE */
 .FENCE = .
-	.space	8192
+	.space	4096 * 8
