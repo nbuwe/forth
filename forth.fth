@@ -796,6 +796,9 @@ predef~ call-code call_code \ XXX
    here   \ xt we leave on the stack
    compile call-code ] ;
 
+\ XXX: doesn't work with :NONAME
+: recurse   latest name> compile, ; immediate
+
 
 : defer ( "name" -- )
    create compile abort
