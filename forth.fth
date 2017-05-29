@@ -912,3 +912,6 @@ predef~ call-code call_code \ XXX
    compile (+loop)
    <resolve     \ jump to the beginning of the loop
    >resolve ; immediate \ leave address after the loop
+
+\ XXX: stub for now
+: environment?   2drop false ;
