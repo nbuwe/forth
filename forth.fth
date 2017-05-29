@@ -174,6 +174,10 @@ variable base
 
 32 constant bl
 
+\ XXX: bare minimum for the case-insensitive ICOMPARE below
+: isupper   ( char -- flag )   [char] A [ char Z 1+ ] literal within ;
+: tolower   ( char -- char )   dup isupper if $20 or then ;
+
 : erase   ( c-addr u -- )   dup 0= if 2drop else  0 fill then ;
 : blank   ( c-addr u -- )   dup 0= if 2drop else bl fill then ;
 
@@ -198,6 +202,19 @@ variable base
    2dup <=> >r  \ if strings are equal up to the shorter length
    min 0 ?do    \ c-addr1 c-addr2
       over i + c@  over i + c@
+      <=> ?dup if
+         unloop r> drop         \ drop length comparison
+         -rot 2drop             \ drop strings
+         exit                   \ return result of <=>
+      then
+   loop
+   2drop r> ;                   \ return length comparison
+
+: icompare   ( c-addr1 u1 c-addr2 u2 -- -1|0|1 )   \ case-insensitive
+   rot swap     \ c-addr1 c-addr2 u1 u2
+   2dup <=> >r  \ if strings are equal up to the shorter length
+   min 0 ?do    \ c-addr1 c-addr2
+      over i + c@ tolower  over i + c@ tolower
       <=> ?dup if
          unloop r> drop         \ drop length comparison
          -rot 2drop             \ drop strings
@@ -578,7 +595,7 @@ $40 constant &sflag
    latest begin   \ ... nfa --
       dup smudged? not if
          >r   \ stash away NFA
-         2dup r@ name-count compare if
+         2dup r@ name-count icompare if
             \ not the word we are searching for
             r>   \ get back NFA
          else
