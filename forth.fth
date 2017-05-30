@@ -169,6 +169,9 @@ variable base
 : string,   ( c-addr u -- )   \ reserve space and store string
    here swap dup allot move ;
 
+: code,   ( c-addr u -- )   \ store binary code
+   2dup string, sync-i$ ;
+
 : pad   ( -- c-addr )   here 128 + ;
 
 
@@ -784,7 +787,7 @@ predef~ call-code call_code \ XXX
 : does> ?comp
    compile (;code)
    does-thunk  dup @ swap cell+ swap \ code len -- (like sliteral)
-   string, ; immediate
+   code, ; immediate
 
 
 : :noname

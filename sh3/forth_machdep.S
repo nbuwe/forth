@@ -1267,6 +1267,28 @@ ASMWORD("j", j_4th)
 	ASMEND(j_4th)
 
 
+!!! SYNC-I$   ( c-addr u -- )
+!!!     XXX: This is not actually implemented yet (port-sh3/52260).
+!!!     I have a local change in my kernel, not yet in committable shape.
+ASMWORD("sync-i$", sync_icache)
+	mov.l	.Lsync_icache_sysarch, r0
+	!! build sh3_sync_icache_args = { .addr , .len } on the stack.
+	!! c-addr u -- are in the wrong order
+	mov.l	@PSP, r1	! fetch address
+	mov.l	TOS, @PSP	! length
+	mov.l	r1, @-PSP	! address
+	mov	#0, r4		! number = SH3_SYNC_ICACHE
+	jsr	@r0
+	 mov	PSP, r5		! args = &sh3_sync_icache_args
+	add	#8, PSP
+	jsr	@NEXT
+	 FILL_TOS
+	.p2align 2
+.Lsync_icache_sysarch:
+	.long	sysarch
+	ASMEND(sync_icache)
+
+
 /* Machine-independent words in threaded code. */
 #include "forth.S"
 

@@ -93,6 +93,8 @@ predef~ ?branch question_branch
 predef~ i i_4th
 predef~ j j_4th
 
+predef~ sync-i$ sync_icache
+
 \ C words
 predef~ ms/rem ms_slash_rem
 predef~ mf/mod mf_slash_mod

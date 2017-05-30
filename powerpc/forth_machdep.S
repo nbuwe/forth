@@ -1342,6 +1342,13 @@ ASMWORD("j", j_4th)
 	ASMEND(i_4th)
 
 
+### XXX: nothing to do on ppc, just 2DROP the args
+ASMWORD("sync-i$", sync_icache)
+	addi	%PSP, %PSP, 4
+	FILL_TOS
+	blr
+	ASMEND(breakpoint)
+
 
 /* Machine-independent words in threaded code. */
 #include "forth.S"
