@@ -187,18 +187,18 @@ variable base
 : /string   ( c-addr1 u1 n -- c-addr2 u2 )   rot over +   -rot - ;
 
 : cmove   ( src dst len -- )   \ left-to-right char-by-char
-   dup 1 < if exit then
-   ( len ) 0 do
-      over i + c@ over i + c!
-   loop
-   2drop ;
+   ?dup if
+      0 do
+         over i + c@  over i + c!
+      loop
+   then 2drop ;
 
 : cmove>   ( src dst len -- )   \ right-to-left char-by-char
-   dup 1 < if exit then
-   ( len ) 1- 0 swap do
-      over i + c@ over i + c!
-   -1 +loop
-   2drop ;
+   ?dup if
+      ( len ) 1- 0 swap do
+         over i + c@  over i + c!
+      -1 +loop
+   then 2drop ;
 
 : compare   ( c-addr1 u1 c-addr2 u2 -- -1|0|1 )
    rot swap     \ c-addr1 c-addr2 u1 u2
