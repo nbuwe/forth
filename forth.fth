@@ -710,7 +710,6 @@ predef~ throw-msgtab throw_msgtab
                (abort) recurse
             then
          then
-
    repeat
    bye ;
 
