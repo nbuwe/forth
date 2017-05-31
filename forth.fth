@@ -244,12 +244,7 @@ variable base
 
 : cr      $0a emit ;
 : space   bl emit ;
-: spaces   ( n -- )
-   dup 0> if
-      0 do space loop
-   else
-      drop
-   then ;
+: spaces   ( n -- )   0 max 0 ?do space loop ;
 
 \ cword~ emit emit_impl
 \ cword~ type emit_impl
