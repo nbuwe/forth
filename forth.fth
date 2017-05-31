@@ -170,7 +170,7 @@ variable base
    here swap dup allot move ;
 
 : code,   ( c-addr u -- )   \ store binary code
-   2dup string, sync-i$ ;
+   here over 2>r  string,  2r> sync-i$ ;
 
 : pad   ( -- c-addr )   here 128 + ;
 
