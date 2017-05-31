@@ -181,8 +181,8 @@ variable base
 : isupper   ( char -- flag )   [char] A [ char Z 1+ ] literal within ;
 : tolower   ( char -- char )   dup isupper if $20 or then ;
 
-: erase   ( c-addr u -- )   dup 0= if 2drop else  0 fill then ;
-: blank   ( c-addr u -- )   dup 0= if 2drop else bl fill then ;
+: erase   ( c-addr u -- )   dup if  0 fill else 2drop then ;
+: blank   ( c-addr u -- )   dup if bl fill else 2drop then ;
 
 : /string   ( c-addr1 u1 n -- c-addr2 u2 )   rot over +   -rot - ;
 
