@@ -759,6 +759,7 @@ predef~ throw-msgtab throw_msgtab
       refill while
          ['] interpret catch
          ?dup if
+            postpone [ \ if we failed while compiling, abort compilation
             dup report-exception
             -2 0 within if  \ ABORT" (-2) or ABORT (-1)?
                ." ABORT" cr
