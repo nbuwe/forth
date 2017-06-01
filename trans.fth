@@ -329,6 +329,10 @@ also meta definitions previous
    s" VARIABLE" emitdef
    .long 0 0 .r cr ;
 
+: 2variable
+   s" VARIABLE" emitdef
+   .long 0 0 .r ." , " 0 0 .r cr ;
+
 : buffer:
    s" VARIABLE" emitdef
    tab ." .skip" tab 0 .r cr ;
