@@ -679,7 +679,7 @@ $40 constant &sflag
                postpone literal
             then
          else
-            type [char] ? emit cr
+            type ."  ?" cr  -13 throw
          then
       then
    again ;
