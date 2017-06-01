@@ -320,6 +320,7 @@ variable >in
    dup -1 = if drop false exit then
    #tib !  0 >in !  true ;
 
+: source-id   ( -- 0 | -1 )   0 ;
 : source   ( -- c-addr u )   tib #tib @ ;
 
 : skip-delim   ( char -- )
@@ -699,7 +700,9 @@ predef~ throw-msgtab throw_msgtab
    decimal
    postpone [
    begin
-      state @ not if ." ok " then
+      source-id 0= if
+         state @ 0= if ."  ok " then
+      then
       refill while
          ['] interpret catch
          ?dup if
