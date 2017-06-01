@@ -433,6 +433,21 @@ variable >in
    here ;
 
 
+: char-literal?  ( str len -- str len 0 | n 1 )   \ Forth2012 'c' literals
+   dup 3 = if
+      over   \ get a copy of "str" to the top
+      dup c@ [char] ' = if
+         dup 2 + c@ [char] ' = if
+            1+ c@ dup bl > and   \ str len 0|c --
+            dup if
+               >r 2drop r>
+               1 exit
+            then
+         then
+      then
+      drop
+   then false ;
+
 : base-0   ( base -- '0' upper )   \ range of arabic digits; for "within"
    dup #10 <= if
       [char] 0 tuck +
@@ -492,8 +507,8 @@ variable >in
    2r> + 0 ;
 
 \ XXX: TODO: refactor and split
-\ XXX: TODO: handle <cnum> := '<char>'
 : number?   ( str len -- 0 | n 1 | d 2 )
+   char-literal? ?dup if exit then
    base @ >r    \ save base in case of sigil
    false >r     \ minus sign
    \ Forth 200x #<dec>, $<hex>, %<bin> base sigils
