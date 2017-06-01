@@ -334,18 +334,46 @@ variable hld
    drop ;
 
 
-\ XXX: only support tib for now
-\ constant tib
+\ TODO: use VALUE
+variable (source-id)
+2variable (source)
+
+: source-id   ( -- -1 | 0 | fileid )   (source-id) @ ;
+: source   ( -- c-addr u )   (source) 2@ ;
+
 variable #tib
 variable >in
 
-: refill
-   tib 4096 accept
-   dup -1 = if drop false exit then
-   #tib !  0 >in !  true ;
+: default-input
+   tib 0 (source) 2!
+   (source-id) off
+   >in off ;
 
-: source-id   ( -- 0 | -1 )   0 ;
-: source   ( -- c-addr u )   tib #tib @ ;
+4 constant #save-input
+: save-input   ( -- xn ... x1 n )
+   >in @  (source) 2@  (source-id) @  #save-input ;
+
+: restore-input   ( xn ... x1 n -- flag )
+   #save-input - ?dup if
+      #save-input + 0 ?do drop loop
+      true
+   else
+      (source-id) !  (source) 2!  >in !
+      false
+   then ;
+
+: refill
+   source-id ?dup if   \ string (-1) or file
+      false            \ strings can't be refilled, files not yet supported
+   else   \ stdin
+      tib 4096 accept
+      dup 0< if
+         drop false
+      else
+         dup #tib !  (source) !  >in off  true
+      then
+   then ;
+
 
 : skip-delim   ( char -- )
    >r   \ stash away the delimiter
@@ -721,6 +749,7 @@ predef~ throw-msgtab throw_msgtab
 
 : quit
    (quit)
+   default-input
    decimal
    postpone [
    begin
@@ -763,6 +792,13 @@ is throw
 : abort   -1 throw ;
 
 
+: evaluate   ( ... c-addr u -- ... )
+   save-input n>r
+   (source) 2!  (source-id) on  >in off
+   ['] interpret catch
+   nr> restore-input
+   if abort ( " RESTORE-INPUT failed" ) then   \ XXX: add ABORT" to transpiler
+   throw ;
 
 
 \ ==================== defining words &co
