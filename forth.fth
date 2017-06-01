@@ -725,7 +725,7 @@ predef~ throw-msgtab throw_msgtab
    postpone [
    begin
       source-id 0= if
-         state @ 0= if ."  ok " then
+         state @ 0= if ." ok " then
       then
       refill while
          ['] interpret catch
