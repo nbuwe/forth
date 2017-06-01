@@ -21,6 +21,9 @@
 \ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 \ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+\ Portions of this code are based on Forth 2012 reference
+\ implementation https://forth-standard.org/standard/implement
+
 : depth   ( -- +n )   sp@ sp0 swap - 2 rshift ;
 
 : +!   ( n|u a-addr -- )   dup @ rot + swap ! ;
@@ -82,6 +85,27 @@
 : dmin  ( d1 d2 -- d3 )   2over 2over d< not if 2swap then 2drop ;
 
 : m+   ( d1|ud1 n -- d2|ud2 )   s>d d+ ;
+
+\ transfer n items and count to the return stack
+: n>r   ( xn .. x1 n -- ; R: -- x1 .. xn n )
+   dup
+   begin
+      dup while
+         rot r> swap >r >r       \ xn .. n n -- ;  R: .. x1 --
+         1-                      \ xn .. n 'n -- ; R: .. x1 --
+   repeat
+   drop                          \ n -- ; R: x1 .. xn --
+   r> swap >r >r ;
+
+\ pull N items and count off the return stack
+: nr> ( -- xn .. x1 n ; R: x1 .. xn n -- )
+   r> r> swap >r dup
+   begin
+      dup while
+         r> r> swap >r -rot
+         1-
+   repeat
+   drop ;
 
 : on     true swap ! ;
 : off   false swap ! ;
