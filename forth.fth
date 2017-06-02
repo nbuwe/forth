@@ -171,12 +171,6 @@ variable handler \ handler off
    0 ;                  \ normal completion
 
 
-variable base
-
-: decimal   #10 base ! ;
-: hex       #16 base ! ;
-
-
 \ variable dp
 : here   ( -- addr )   dp @ ;
 : dp!    ( addr -- )   dp ! ;
@@ -187,9 +181,6 @@ variable base
 : ,    (    x -- )   here 1 cells allot  ! ;
 : c,   ( char -- )   here 1 chars allot c! ;
 : 2,   (    d -- )   here 2 cells allot 2! ;
-
-: count    ( c-addr1 -- c-addr2 u )   dup 1+    swap c@ ;
-: $count   ( c-addr1 -- c-addr2 u )   dup cell+ swap  @ ;
 
 : string,   ( c-addr u -- )   \ reserve space and store string
    here swap dup allot move ;
@@ -208,6 +199,9 @@ variable base
 
 : erase   ( c-addr u -- )   dup if  0 fill else 2drop then ;
 : blank   ( c-addr u -- )   dup if bl fill else 2drop then ;
+
+: count    ( c-addr1 -- c-addr2 u )   dup 1+    swap c@ ;
+: $count   ( c-addr1 -- c-addr2 u )   dup cell+ swap  @ ;
 
 : /string   ( c-addr1 u1 n -- c-addr2 u2 )   rot over +   -rot - ;
 
@@ -289,6 +283,10 @@ variable base
 \ cword~ type emit_impl
 \ cword~ accept accept_4th
 
+
+variable base
+: decimal   #10 base ! ;
+: hex       #16 base ! ;
 
 variable hld
 : <#   ( -- )   pad hld ! ;
