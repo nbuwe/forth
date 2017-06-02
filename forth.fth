@@ -29,8 +29,6 @@
 : +!   ( n|u a-addr -- )   dup @ rot + swap ! ;
 : 1+!   ( a-addr -- )   dup @ 1+ swap ! ;
 
-: count   ( c-addr1 -- c-addr2 u )   dup c@ swap 1+ swap ;
-
 : not   ( x -- flag)   0= ;
 : <=   ( n1 n2 -- flag )   > not ;
 : >=   ( n1 n2 -- flag )   < not ;
@@ -189,6 +187,9 @@ variable base
 : ,    (    x -- )   here 1 cells allot  ! ;
 : c,   ( char -- )   here 1 chars allot c! ;
 : 2,   (    d -- )   here 2 cells allot 2! ;
+
+: count    ( c-addr1 -- c-addr2 u )   dup 1+    swap c@ ;
+: $count   ( c-addr1 -- c-addr2 u )   dup cell+ swap  @ ;
 
 : string,   ( c-addr u -- )   \ reserve space and store string
    here swap dup allot move ;
@@ -595,17 +596,11 @@ variable state
 : [char]     ?comp char postpone literal ; immediate
 
 
-: (c")
-   r> dup count + aligned >r ;
-
-: (s")
-   r> dup cell+ swap @
-   2dup + aligned >r ;
+: (c")   r> dup count + aligned >r ;
+: (s")   r> $count 2dup + aligned >r ;
 
 : (.")
-   r> dup cell+ swap @
-   2dup + aligned >r
-   \ XXX: the above is (s")
+   r> $count 2dup + aligned >r   \ XXX: (S") - a copy b/c of R>
    type ;
 
 
@@ -762,8 +757,7 @@ predef~ throw-msgtab throw_msgtab
    dup -2 = if
       drop
       abort-message @ ?dup if
-         dup @ swap cell+ swap
-         type cr
+         $count type cr
          abort-message off
       then
    else
@@ -873,7 +867,7 @@ predef~ call-code call_code \ XXX
 
 : does> ?comp
    compile (;code)
-   does-thunk  dup @ swap cell+ swap \ code len -- (like sliteral)
+   does-thunk $count \ code len -- (like sliteral)
    code, ; immediate
 
 
@@ -941,7 +935,7 @@ predef~ call-code call_code \ XXX
       -2 throw
    else
       \ skip the abort message after us; cf. (s")
-      r> dup cell+ swap @ + aligned >r
+      r> $count + aligned >r
    then ;
 
 : abort"  ( x | 0 -- )
