@@ -276,7 +276,8 @@ variable base
          unloop
          true exit
       then
-   loop ;
+   loop
+   2drop 0 ;
 
 
 : cr      $0a emit ;
