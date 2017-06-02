@@ -923,6 +923,11 @@ predef~ call-code call_code \ XXX
 : s"   ?comp compile" (s") ; immediate
 : ."   ?comp compile" (.") ; immediate
 
+: sliteral   ( c-addr u -- ;  run-time -- c-addr u )
+   ?comp
+   ['] (s") compile,
+   dup , string, align ; immediate
+
 : c"
    ?comp
    [char] " parse   \ XXX: TODO: handle failure
