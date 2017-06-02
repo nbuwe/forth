@@ -8,7 +8,7 @@ __divmoddi4 in asm from scratch is boring and kinda pointless).
 Currently sh3 and 32-bit powerpc are supported.
 
 The core of the interpreter for sh3 is 14 instructions (two of which
-are nops in delay slots).  About 70 asm words tally up to about 500
+are nops in delay slots).  About 90 asm words tally up to about 500
 instructions.  Nearly all of them are short trivial sequences, like
 adding two numbers, etc.  I'd say that someone familiar with the
 target ISA can port == write the asm core in an evening or two.  I
