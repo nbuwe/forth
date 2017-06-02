@@ -1301,7 +1301,8 @@ ASMWORD("sync-i$", sync_icache)
 
 	.size	heap, . - heap
 
-	.section ".bss"
+!	.section ".bss"
+	.p2align 2
 .L_DATA_SPACE: /* begins HERE */
 .FENCE = .
-	.space	4096 * 8
+	.space	4096 * 8, 0xc3 /* breakpoint trap */

@@ -224,6 +224,19 @@ variable base
       -1 +loop
    then 2drop ;
 
+: -trailing   ( c-addr u1 -- c-addr u2 )
+   dup if
+      2dup over + 1-   \ str len str str+len-1
+      do
+         i c@ bl <> if
+            drop              \ u1
+            dup i 1+ swap -   \ u2 = s+1-str
+            unloop exit
+         then
+      -1 +loop
+      drop 0
+   then ;
+
 : compare   ( c-addr1 u1 c-addr2 u2 -- -1|0|1 )
    rot swap     \ c-addr1 c-addr2 u1 u2
    2dup <=> >r  \ if strings are equal up to the shorter length
