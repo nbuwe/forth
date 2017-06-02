@@ -194,7 +194,7 @@ variable handler \ handler off
 32 constant bl
 
 \ XXX: bare minimum for the case-insensitive ICOMPARE below
-: isupper   ( char -- flag )   [char] A [ char Z 1+ ] literal within ;
+: isupper   ( char -- flag )   'A' [ 'Z' 1+ ] literal within ;
 : tolower   ( char -- char )   dup isupper if $20 or then ;
 
 : erase   ( c-addr u -- )   dup if  0 fill else 2drop then ;
@@ -293,14 +293,14 @@ variable hld
 : hold   ( char -- )   -1 hld +! hld @ c! ;
 : #>   ( xd -- c-addr u )   2drop hld @ pad over - ;
 
-: sign   ( n -- )   0< if [char] - hold then ;
+: sign   ( n -- )   0< if '-' hold then ;
 
 : #   ( ud1 -- ud2 )   \ convert one digit
    base @ mu/mod rot   \ remainder
    dup 9 > if
-      [ char a #10 - ] literal
+      [ 'a' #10 - ] literal
    else
-      [char] 0
+      '0'
    then
    + hold ;
 
@@ -424,9 +424,9 @@ variable >in
    swap ;            \ result length
 
 : \   $0a parse 2drop ; immediate
-: (   [char] ) parse 2drop ; immediate
+: (   ')' parse 2drop ; immediate
 
-: .(   [char] ) parse type ; immediate
+: .(   ')' parse type ; immediate
 
 : parse-word   ( "<spaces>name<space>" -- c-addr u )
    bl skip-delim bl parse ;
@@ -449,8 +449,8 @@ variable >in
 : char-literal?  ( str len -- str len 0 | n 1 )   \ Forth 2012 'c' literals
    dup 3 = if
       over   \ get a copy of "str" to the top
-      dup c@ [char] ' = if
-         dup 2 + c@ [char] ' = if
+      dup c@ ''' = if
+         dup 2 + c@ ''' = if
             1+ c@ dup bl > and   \ str len 0|c --
             dup if
                >r 2drop r>
@@ -463,13 +463,13 @@ variable >in
 
 : base-0   ( base -- '0' upper )   \ range of arabic digits; for "within"
    dup #10 <= if
-      [char] 0 tuck +
+      '0' tuck +
    else
-      drop [char] 0 [ char 9 1+ ] literal
+      drop '0' [ '9' 1+ ] literal
    then ;
 
 : base-a   ( base  -- 'a' upper)   \ range of alphabetic digits; for within
-   10 - [char] a tuck + ;
+   10 - 'a' tuck + ;
 
 : digit?   ( char base -- value true | false )
    swap >r   \ stash away the char
@@ -477,7 +477,7 @@ variable >in
    dup base-0
    r@
    -rot within if
-      drop r> [char] 0 -
+      drop r> '0' -
       true exit
    then
    \ does base use alpha digits?
@@ -486,7 +486,7 @@ variable >in
       dup base-a
       r> $20 or dup >r   \ downcase char
       -rot within if
-         drop r> [ char a #10 - ] literal -
+         drop r> [ 'a' #10 - ] literal -
          true exit
       then
    then
@@ -528,10 +528,10 @@ variable >in
    dup 1 > if
       over c@
       \ XXX: TODO: case
-           dup [char] # = if #10
-      else dup [char] $ = if #16
-      else dup [char] % = if #2
-      else                   0
+           dup '#' = if #10
+      else dup '$' = if #16
+      else dup '%' = if #2
+      else               0
       then then then
       nip
       ?dup if
@@ -541,7 +541,7 @@ variable >in
    then
    \ minus sign
    dup 1 > if
-      over c@ [char] - = if
+      over c@ '-' = if
          r> drop true >r
          1 /string
       then
@@ -557,7 +557,7 @@ variable >in
       1 exit
    else
       dup 1 = if
-         over c@ [char] . = if
+         over c@ '.' = if
             \ dot at the end, double cell number
             2drop   \ string
             r> if dnegate then
@@ -907,7 +907,7 @@ predef~ call-code call_code \ XXX
 
 : compile"
    r> dup cell+ >r @   \ fetch runtime word after us (like compile)
-   [char] " parse      \ XXX: TODO: handle failure
+   '"' parse           \ XXX: TODO: handle failure
    rot compile,        \ compile runtime word
    dup , string,       \ compile string
    align ;
@@ -922,7 +922,7 @@ predef~ call-code call_code \ XXX
 
 : c"
    ?comp
-   [char] " parse   \ XXX: TODO: handle failure
+   '"' parse   \ XXX: TODO: handle failure
    compile (c")
    dup c, string,
    align ; immediate
