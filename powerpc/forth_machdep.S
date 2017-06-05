@@ -104,7 +104,7 @@ ENTRY(start_forth)
 	stw	%r31, 124(%sp)
 	## end prologue
 
-	## LR is fixed with next_code so that we can get always there
+	## LR is fixed with next_code so that we can always get there
         ## with just "blr".  BYE knows its return address statically
         ## (see below), so we don't need LR to record it.
 	lis	%NEXT, next_code@ha
@@ -163,18 +163,6 @@ ENTRY(start_forth)
 	blr
 
 
-### ====================================================================
-
-/*
- * Address of this code will be written into the code field
- * This code will be directly called by the interpreter
- * PFA of the defined word will be in TOS
- */
-#define DOES_ASM(label)		  \
-	.p2align 2		; \
-	.type	label@function	; \
-  label:			;
-
 
 ### ====================================================================
 /**
@@ -184,6 +172,11 @@ ENTRY(start_forth)
  */
 
 	.data			# XXX: need writable+executable
+
+#define CODE(label)		  \
+	.p2align 2		; \
+	.type	label@function	; \
+  label:			;
 
 	.p2align 2
 	.global	heap
@@ -205,53 +198,11 @@ heap:
 	.long	0	# there's no parameters, but provide a stub
 
 
-### Where the stacks are.
-CONSTANT("sp0", sp0)	.long	stack_bottom
-CONSTANT("rp0", rp0)	.long	rstack_bottom
-
-
-### Asm part of ABORT that resets parameter and return stacks
-### Must be the first word called by ABORT.
-ASMWORD("(abort)", abort_parens)
-	lis	%RSP, rstack_bottom@ha		# reset return stack
-	la	%RSP, rstack_bottom@l(%RSP)
-	lis	%PSP, stack_bottom@ha		# reset parameter stack
-	la	%PSP, stack_bottom@l(%PSP)
-	li	%TOS, 0				# clear TOS just in case
-	blr
-	ASMEND(abort_parens)
-
-
-### Asm part of QUIT that resets return stack.
-### Must be the first word called by QUIT.
-ASMWORD("(quit)", quit_parens)
-	lis	%RSP, rstack_bottom@ha		# reset return stack
-	la	%RSP, rstack_bottom@l(%RSP)
-	blr
-	ASMEND(quit_parens)
-
-
-### Asm part of BYE that returns control to the C code that started
-### the Forth system.  The stacks are not reset and can be inspected.
-ASMWORD("(bye)", bye_parens)
-	lis	%TMP, .L_BYE_RETURNS_HERE@ha
-	la	%TMP, .L_BYE_RETURNS_HERE@l(%TMP)
-	mtctr	%TMP
-	bctr
-	ASMEND(bye_parens)
-
-
-### nop to use as a gdb breakpoint
-ASMWORD("breakpoint", breakpoint)
-	blr
-	ASMEND(breakpoint)
-
-
 /**
  * Threaded code interpreter.
  *
- * Executing a word means calling it's code with it's body at the top
- * of the parameter stack.
+ * Executing a word means calling its code with the address of its
+ * body at the top of the parameter stack.
  *
  * The real core of the interpreter is "next_code" that interprets
  * endless stream of words.  Some of those words are forth definitions
@@ -274,8 +225,7 @@ ASMWORD("execute", execute)
 
 
 ### Code field of asm words points here.
-### This should eventually become the DOES> part of CODE
-DOES_ASM(asm_does)
+CODE(asm_does)
 	mtctr	%TOS		# PFA: word's body is its asm code
 	FILL_TOS		# PFA is consumed
 	bctr
@@ -284,7 +234,7 @@ DOES_ASM(asm_does)
 
 ### Code field of C words points here.  The body contains the C
 ### funtion address.  Call it as PSP = (*PFA)(PSP);
-DOES_ASM(c_does)
+CODE(c_does)
 	lwz	%TOS, 0(%TOS)	# function pointer from word's body
 	mr	%r3, %PSP	# pass PSP as argument
 	mtctr	%TOS
@@ -296,52 +246,8 @@ DOES_ASM(c_does)
 	.size c_does, .-c_does
 
 
-/*
- * For words with DOES> part (that contains forth code by definition)
- * the address of the following asm code will be compiled into the
- * code field of the defined word.
- *
- * This code does an equivalent of jumping to "CALL" with 1f in TOS,
- * but inlined and since we jump to "NEXT" directly we can avoid
- * messing with TOS at all.
- */
-#define DOES_4TH(label)		  \
-  DOES_ASM(label)		; \
-	mtctr	%DOES		; \
-	bctrl			; \
-	/* threaded code follows */
-
-/*
- * Forth code to compile the above.  This will be part of DOES>
- *
- *   7f c9 03 a6	mtctr   %r30	# %DOES contains does_code
- *   4e 80 04 21	bctrl
- */
-#define COMPILE_DOES_CODE		  \
-	.long	lit, 0x7fc903a6, _comma	; \
-	.long	lit, 0x4e800421, _comma
-
-/*
- * Generate an instance for DOES> thunk to decouple MD asm from MI
- * forth code that can just copy the thunk when compiling DOES>
- */
-CONSTANT("does-thunk", does_thunk)
-	.long	0f
-0:	.long	9f - does_thunk_code
-	DOES_4TH(does_thunk_code)
-9:	.size	does_thunk_code, .-does_thunk_code
-
-DOES_ASM(does_code)
-	stwu	%IP, -4(%RSP)
-	mflr	%IP		# threaded code after DOES>
-	mtlr	%NEXT		# restore LR to next_code
-	b	next_code
-	.size	does_code, .-does_code
-
-
 ### Code field of colon definitions (i.e. forth words)  points here.
-### This should eventually become the DOES> part of ":"
-DOES_ASM(call_code)
+CODE(call_code)
 	stwu	%IP, -4(%RSP)	# save caller's IP
 	mr	%IP, %TOS	# set my IP (consume PFA from TOS)
 	## don't refill TOS here, just skip the spill in next_code
@@ -387,6 +293,87 @@ ASMWORD("(goto)", goto_parens)
 	mtctr	%TMP
 	bctr			# call word's code on word's body
 	ASMEND(goto_parens)
+
+
+/*
+ * For words with DOES> part (that contains forth code by definition)
+ * the address of the following asm code will be compiled into the
+ * code field of the defined word.
+ *
+ * This code does an equivalent of jumping to "CALL" with 1f in TOS,
+ * but inlined and since we jump to "NEXT" directly we can avoid
+ * messing with TOS at all.
+ */
+#define DOES_4TH(label)		  \
+  CODE(label)			; \
+	mtctr	%DOES		; \
+	bctrl			; \
+	/* threaded code follows */
+
+
+## Generate an instance for DOES> thunk to decouple MD asm from MI
+## forth code.  DOES> can just copy this instance.
+CONSTANT("does-thunk", does_thunk)
+	.long	0f
+0:	.long	9f - does_thunk_code
+	DOES_4TH(does_thunk_code)
+9:	.size	does_thunk_code, .-does_thunk_code
+
+
+### Trampoline for the does-thunk.  Its address is in %DOES.
+CODE(does_code)
+	stwu	%IP, -4(%RSP)
+	mflr	%IP		# threaded code after DOES>
+	mtlr	%NEXT		# restore LR to next_code
+	b	next_code
+	.size	does_code, .-does_code
+
+
+
+/**
+ * Start-up and termination.
+ */
+
+### Asm part of BYE that returns control to the C code that started
+### the Forth system.  The stacks are not reset and can be inspected.
+ASMWORD("(bye)", bye_parens)
+	lis	%TMP, .L_BYE_RETURNS_HERE@ha
+	la	%TMP, .L_BYE_RETURNS_HERE@l(%TMP)
+	mtctr	%TMP
+	bctr
+	ASMEND(bye_parens)
+
+
+### nop to use as a gdb breakpoint
+ASMWORD("breakpoint", breakpoint)
+	blr
+	ASMEND(breakpoint)
+
+
+### Asm part of ABORT that resets parameter and return stacks
+### Must be the first word called by ABORT.
+ASMWORD("(abort)", abort_parens)
+	lis	%PSP, stack_bottom@ha		# reset parameter stack
+	la	%PSP, stack_bottom@l(%PSP)
+	lis	%RSP, rstack_bottom@ha		# reset return stack
+	la	%RSP, rstack_bottom@l(%RSP)
+	li	%TOS, 0				# clear TOS just in case
+	blr
+	ASMEND(abort_parens)
+
+
+### Asm part of QUIT that resets return stack.
+### Must be the first word called by QUIT.
+ASMWORD("(quit)", quit_parens)
+	lis	%RSP, rstack_bottom@ha		# reset return stack
+	la	%RSP, rstack_bottom@l(%RSP)
+	blr
+	ASMEND(quit_parens)
+
+
+### Where the stacks are.
+CONSTANT("sp0", sp0)	.long	stack_bottom
+CONSTANT("rp0", rp0)	.long	rstack_bottom
 
 
 
