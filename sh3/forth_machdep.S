@@ -117,60 +117,6 @@ ENTRY(start_forth)
 
 
 !!! ====================================================================
-
-/*
- * Address of this code will be written into the code field
- * This code will be directly called by the interpreter
- * PFA of the defined word will be in TOS
- */
-#define DOES_ASM(label)		  \
-	.p2align 2		; \
-	.type	label@function	; \
-  label:			;
-
-
-/*
- * For words with DOES> part (that contains forth code by definition)
- * the address of the following asm code will be compiled into the
- * code field of the defined word.
- *
- * This code does an equivalent of jumping to "CALL" with 1f in TOS,
- * but inlined and since we jump to "NEXT" directly we can avoid
- * messing with TOS at all.
- */
-#define DOES_4TH(label)		  \
-  DOES_ASM(label)		; \
-	mova	1f, r0		; \
-	mov.l	IP, @-RSP	; \
-	jmp	@NEXT		; \
-	 mov	r0, IP		; \
-  1:	/* threaded code follows */
-
-/*
- * Forth code to compile the above.  This will be part of DOES>
- *
- *   01 c7	mova	.+8, r0
- *   b6 2a	mov.l	IP, @-RSP
- *   2b 4d	jmp	@NEXT
- *   03 6b	 mov	r0, IP
- */
-#define COMPILE_DOES_CODE		  \
-	.long	lit, 0x2ab6c701, _comma	; \
-	.long	lit, 0x6b034d2b, _comma
-
-/*
- * Generate an instance for DOES> thunk to decouple MD asm from MI
- * forth code that can just copy the thunk when compiling DOES>
- */
-CONSTANT("does-thunk", does_thunk)
-	.long	0f
-0:	.long	9f - does_thunk_code
-	DOES_4TH(does_thunk_code)
-9:	.size	does_thunk_code, .-does_thunk_code
-
-
-
-!!! ====================================================================
 /**
  *
  *				FORTH
@@ -178,6 +124,11 @@ CONSTANT("does-thunk", does_thunk)
  */
 
 	.data			! XXX: need writable+executable
+
+#define CODE(label)		  \
+	.p2align 2		; \
+	.type	label@function	; \
+  label:			;
 
 	.p2align 2
 	.global	heap
@@ -199,56 +150,11 @@ heap:
 	.long	0	! there's no parameters, but provide a stub
 
 
-!!! Asm part of ABORT that resets parameter and return stacks
-!!! Must be the first word called by ABORT.
-ASMWORD("(abort)", abort_parens)
-	mov.l	rp0_const, RSP	! reset return stack
-	mov.l	sp0_const, PSP	! reset parameter stack
-	jmp	@NEXT
-	 mov	#0, TOS		! clear TOS just in case
-	ASMEND(abort_parens)
-
-
-!!! Asm part of QUIT that resets return stack.
-!!! Must be the first word called by QUIT.
-ASMWORD("(quit)", quit_parens)
-	mov.l	rp0_const, RSP	! reset return stack
-	jmp	@NEXT
-	 nop
-	ASMEND(quit_parens)
-
-
-!!! Where the stacks are.  (ABORT) and (QUIT) just above use these
-!!! directly in assembler as literals.
-CONSTANT("sp0", sp0)	.long	stack_bottom
-CONSTANT("rp0", rp0)	.long	rstack_bottom
-
-
-!!! Asm part of BYE that returns control to the C code that started
-!!! the Forth system.  The stacks are not reset and can be inspected.
-ASMWORD("(bye)", bye_parens)
-	mov.l	.L_return, r0
-	jmp	@r0
-	 nop
-
-	.p2align 2
-.L_return:
-	.long	.L_BYE_RETURNS_HERE
-	ASMEND(bye_parens)
-
-
-!!! nop to use as a gdb breakpoint
-ASMWORD("breakpoint", breakpoint)
-	jmp	@NEXT
-	 nop
-	ASMEND(breakpoint)
-
-
 /**
  * Threaded code interpreter.
  *
- * Executing a word means calling it's code with it's body at the top
- * of the parameter stack.
+ * Executing a word means calling its code with the address of its
+ * body at the top of the parameter stack.
  *
  * The real core of the interpreter is "next_code" that interprets
  * endless stream of words.  Some of those words are forth definitions
@@ -270,8 +176,7 @@ ASMWORD("execute", execute)
 
 
 !!! Code field of asm words points here.
-!!! This should eventually become the DOES> part of CODE
-DOES_ASM(asm_does)
+CODE(asm_does)
 	jmp	@TOS		! PFA: word's body is its asm code
 	 FILL_TOS		! PFA is consumed
 	.size asm_does, .-asm_does
@@ -279,7 +184,7 @@ DOES_ASM(asm_does)
 
 !!! Code field of C words points here.  The body contains the C
 !!! funtion address.  Call it as PSP = (*PFA)(PSP);
-DOES_ASM(c_does)
+CODE(c_does)
 	mov.l	@TOS, TOS	! function pointer from word's body
 	jsr	@TOS
 	 mov	PSP, r4		! PSP as argument
@@ -289,9 +194,8 @@ DOES_ASM(c_does)
 	.size c_does, .-c_does
 
 
-!!! Code field of colon definitions (i.e. forth words)  points here.
-!!! This should eventually become the DOES> part of ":"
-DOES_ASM(call_code)
+!!! Code field of colon definitions (i.e. forth words) points here.
+CODE(call_code)
 	mov.l	IP, @-RSP	! save caller's IP
 	bra	.L_next_code_no_spill
 	 mov	TOS, IP		! set my IP (consume PFA from TOS)
@@ -332,6 +236,83 @@ ASMWORD("(goto)", goto_parens)
 	jmp	@r0		! execute word's code
 	 nop
 	ASMEND(goto_parens)
+
+
+/*
+ * For words with DOES> part (that contains forth code by definition)
+ * the address of the following asm code will be compiled into the
+ * code field of the defined word.
+ *
+ * This code does an equivalent of jumping to "CALL" with 1f in TOS,
+ * but inlined and since we jump to "NEXT" directly we can avoid
+ * messing with TOS at all.
+ */
+#define DOES_4TH(label)		  \
+  CODE(label)			; \
+	mova	1f, r0		; \
+	mov.l	IP, @-RSP	; \
+	jmp	@NEXT		; \
+	 mov	r0, IP		; \
+  1:	/* threaded code follows */
+
+
+!! Generate an instance of DOES> thunk to decouple MD asm from MI
+!! forth code.  DOES> can just copy this instance.
+CONSTANT("does-thunk", does_thunk)
+	.long	0f
+0:	.long	9f - does_thunk_code
+	DOES_4TH(does_thunk_code)
+9:	.size	does_thunk_code, .-does_thunk_code
+
+
+
+/**
+ * Start-up and termination.
+ */
+
+!!! Asm part of BYE that returns control to the C code that started
+!!! the Forth system.  The stacks are not reset and can be inspected.
+ASMWORD("(bye)", bye_parens)
+	mov.l	.L_return, r0
+	jmp	@r0
+	 nop
+
+	.p2align 2
+.L_return:
+	.long	.L_BYE_RETURNS_HERE
+	ASMEND(bye_parens)
+
+
+!!! A nop to use as a gdb breakpoint
+ASMWORD("breakpoint", breakpoint)
+	jmp	@NEXT
+	 nop
+	ASMEND(breakpoint)
+
+
+!!! Asm part of ABORT that resets parameter and return stacks
+!!! Must be the first word called by ABORT.
+ASMWORD("(abort)", abort_parens)
+	mov.l	sp0_const, PSP	! reset parameter stack
+	mov.l	rp0_const, RSP	! reset return stack
+	jmp	@NEXT
+	 mov	#0, TOS		! clear TOS just in case
+	ASMEND(abort_parens)
+
+
+!!! Asm part of QUIT that resets return stack.
+!!! Must be the first word called by QUIT.
+ASMWORD("(quit)", quit_parens)
+	mov.l	rp0_const, RSP	! reset return stack
+	jmp	@NEXT
+	 nop
+	ASMEND(quit_parens)
+
+
+!!! Where the stacks are.  (ABORT) and (QUIT) just above use these
+!!! directly in assembler as literals.
+CONSTANT("sp0", sp0)	.long	stack_bottom
+CONSTANT("rp0", rp0)	.long	rstack_bottom
 
 
 
