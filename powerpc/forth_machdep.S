@@ -201,6 +201,7 @@ heap:
 
 /**
  * Threaded code interpreter.
+ * NB: W is used to pass CFA.
  */
 
 ### Code field of colon definitions (i.e. forth words)  points here.
@@ -257,6 +258,7 @@ CODE(c_does)
 
 
 ### Default code field of CREATE'd words: push PFA
+### This is equivalent to DOES> ( nothing ) ;
 CODE(var_does)
 	SPILL_TOS
 	addi	%TOS, %W, 4	# push PFA
