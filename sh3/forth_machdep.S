@@ -228,10 +228,9 @@ next_code:
 !!! call to such word at the end of the wrapper and it will work.
 ASMWORD("(goto)", goto_parens)
 	mov.l	@IP, W		! W = CFA of the next word to execute
-	mov.l	@RSP+, IP	! NB: this is what makes it a tail call
 	mov.l	@W+, r0		! fetch code address and advance W to PFA
 	jmp	@r0		! execute word's code
-	 nop
+	 mov.l	@RSP+, IP	! NB: this is what makes it a tail call
 	ASMEND(goto_parens)
 
 
