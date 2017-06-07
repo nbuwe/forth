@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2016 Valery Ushakov
+ * Copyright (c) 2009-2017 Valery Ushakov
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
