@@ -154,13 +154,14 @@ heap:
 
 /**
  * Threaded code interpreter.
+ * NB: W is used to pass PFA.
  */
 
 !!! Code field of colon definitions (i.e. forth words) points here.
 CODE(call_code)
 	mov.l	IP, @-RSP	! save caller's IP
 	bra	next_code
-	 mov	W, IP		! set my IP
+	 mov	W, IP		! set my IP to PFA
 	.size call_code, .-call_code
 
 
