@@ -117,6 +117,7 @@ ENTRY(start_forth)
 .L_abort_body:	.long	abort_body
 
 
+
 !!! ====================================================================
 /**
  *
@@ -153,50 +154,7 @@ heap:
 
 /**
  * Threaded code interpreter.
- *
- * Executing a word means calling its code with the address of its
- * body at the top of the parameter stack.
- *
- * The real core of the interpreter is "next_code" that interprets
- * endless stream of words.  Some of those words are forth definitions
- * that begin with "call_code" in their code field and end with EXIT.
- * That diverts execution by saving/restoring IP before proceeding to
- * "next_code".
  */
-
-!!! EXECUTE - CORE 6.1.1370
-!!!     ( i*x xt -- j*x )
-!!!
-!!! With indirect threaded code the execution token (xt) is the
-!!! address of the code field (CFA).  See also next_code.
-ASMWORD("execute", execute)
-	mov.l	@TOS+, r0	! fetch code address and advance TOS to PFA
-	mov	TOS, W
-	jmp	@r0		! call word's code on word's body
-	 FILL_TOS
-	ASMEND(execute)
-
-
-!!! Default code field of CREATE'd words: push PFA
-CODE(var_does)
-	SPILL_TOS
-	jmp	@NEXT
-	 mov	W, TOS
-	.size var_does, .-var_does
-
-
-!!! Code field of C words points here.  The body contains the C
-!!! funtion address.  Call it as PSP = (*PFA)(PSP);
-CODE(c_does)
-	mov.l	@W, W		! function pointer from word's body
-	SPILL_TOS		! for the function to see it
-	jsr	@W
-	 mov	PSP, r4		! PSP as argument
-	mov	r0, PSP		! function may adjust PSP to push/pop cells
-	jmp	@NEXT
-	 FILL_TOS
-	.size c_does, .-c_does
-
 
 !!! Code field of colon definitions (i.e. forth words) points here.
 CODE(call_code)
@@ -234,15 +192,31 @@ ASMWORD("(goto)", goto_parens)
 	ASMEND(goto_parens)
 
 
-/*
- * For words with DOES> part (that contains forth code by definition)
- * the address of the following asm code will be compiled into the
- * code field of the defined word.
- *
- * This code does an equivalent of jumping to "CALL" with 1f in TOS,
- * but inlined and since we jump to "NEXT" directly we can avoid
- * messing with TOS at all.
- */
+!!! Code field of C words points here.  The body contains the C
+!!! funtion address.  Call it as PSP = (*PFA)(PSP);
+CODE(c_does)
+	mov.l	@W, W		! function pointer from word's body
+	SPILL_TOS		! for the function to see it
+	jsr	@W
+	 mov	PSP, r4		! PSP as argument
+	mov	r0, PSP		! function may adjust PSP to push/pop cells
+	jmp	@NEXT
+	 FILL_TOS
+	.size c_does, .-c_does
+
+
+!!! Default code field of CREATE'd words: push PFA
+!!! This is equivalent to DOES> ( nothing ) ;
+CODE(var_does)
+	SPILL_TOS
+	jmp	@NEXT
+	 mov	W, TOS
+	.size var_does, .-var_does
+
+
+!!! This thunk is compiled by DOES> in the defining word before the
+!!! threaded code for the DOES> part.  Defined word gets thunk's
+!!! address as its code.
 #define DOES_4TH(label)		  \
   CODE(label)			; \
 	SPILL_TOS		; \
@@ -261,6 +235,16 @@ CONSTANT("does-thunk", does_thunk)
 0:	.long	9f - does_thunk_code
 	DOES_4TH(does_thunk_code)
 9:	.size	does_thunk_code, .-does_thunk_code
+
+
+!!! EXECUTE - CORE 6.1.1370
+!!!     ( i*x xt -- j*x )
+ASMWORD("execute", execute)
+	mov.l	@TOS+, r0	! fetch code address and advance TOS to PFA
+	mov	TOS, W
+	jmp	@r0		! call word's code on word's body
+	 FILL_TOS
+	ASMEND(execute)
 
 
 
