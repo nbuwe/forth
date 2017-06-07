@@ -25,7 +25,8 @@
 #include <forth.h>
 
 
-#define TMP	r14	/* %r0 is too magic and literal %r14 is too opaque */
+#define W	r14	/* "work" register */
+#define TMP	W
 #define TOS	r26	/* top of parameter stack lives in a register */
 #define PSP	r27	/* parameter stack pointer */
 #define RSP	r28	/* return stack pointer */
@@ -217,27 +218,29 @@ heap:
 ### With indirect threaded code the execution token (xt) is the
 ### address of the code field (CFA).  See also next_code.
 ASMWORD("execute", execute)
-	lwz	%TMP, 0(%TOS)	# fetch code address
-	addi	%TOS, %TOS, 4	# advance TOS to PFA
-	mtctr	%TMP
+	lwz	%r0, 0(%TOS)	# fetch code address
+	addi	%W, %TOS, 4	# set W to PFA
+	FILL_TOS
+	mtctr	%r0
 	bctr			# call word's code on word's body
 	ASMEND(execute)
 
 
-### Code field of asm words points here.
-CODE(asm_does)
-	mtctr	%TOS		# PFA: word's body is its asm code
-	FILL_TOS		# PFA is consumed
-	bctr
-	.size asm_does, .-asm_does
+### Default code field of CREATE'd words: push PFA
+CODE(var_does)
+	SPILL_TOS
+	mr	%TOS, %W
+	blr
+	.size var_does, .-var_does
 
 
 ### Code field of C words points here.  The body contains the C
 ### funtion address.  Call it as PSP = (*PFA)(PSP);
 CODE(c_does)
-	lwz	%TOS, 0(%TOS)	# function pointer from word's body
+	lwz	%W, 0(%W)	# function pointer from word's body
+	SPILL_TOS		# for the function to see it
 	mr	%r3, %PSP	# pass PSP as argument
-	mtctr	%TOS
+	mtctr	%W
 	bctrl
 	mr	%PSP, %r3	# return value is the new %PSP
 	mtlr	%NEXT		# restore next_code
@@ -249,10 +252,8 @@ CODE(c_does)
 ### Code field of colon definitions (i.e. forth words)  points here.
 CODE(call_code)
 	stwu	%IP, -4(%RSP)	# save caller's IP
-	mr	%IP, %TOS	# set my IP (consume PFA from TOS)
-	## don't refill TOS here, just skip the spill in next_code
-	## and let next_code set vacant TOS to next word PFA
-	b	.L_next_code_no_spill
+	mr	%IP, %W		# set my IP
+	b	next_code
 	.size call_code, .-call_code
 
 
@@ -263,14 +264,11 @@ ASMWORD("exit", exit_4th)
 	addi	%RSP, %RSP, 4
 	## FALLTHROUGH to "NEXT"
 next_code:
-	SPILL_TOS
-  .L_next_code_no_spill:	# -- entry point for call_code to jump to
-	lwz	%TOS, 0(%IP)	# CFA of the next word to execute
+	lwz	%W, 0(%IP)	# W = CFA of the next word to execute
 	addi	%IP, %IP, 4	#  and advance IP
-	## this is the code of EXECUTE
-	lwz	%TMP, 0(%TOS)	# fetch code address
-	addi	%TOS, %TOS, 4	# advance TOS to PFA
-	mtctr	%TMP
+	lwz	%r0, 0(%W)	# fetch code address
+	addi	%W, %W, 4	# advance W to PFA
+	mtctr	%r0
 	bctr			# call word's code on word's body
 
 
@@ -281,16 +279,12 @@ next_code:
 ### the cell after them, like LIT, BRANCH, etc.  Just make the tail
 ### call to such word at the end of the wrapper and it will work.
 ASMWORD("(goto)", goto_parens)
-	SPILL_TOS
-	lwz	%TOS, 0(%IP)	# CFA of the next word to execute
-
+	lwz	%W, 0(%IP)	# W = CFA of the next word to execute
 	lwz	%IP, 0(%RSP)	# pop return address
 	addi	%RSP, %RSP, 4
-
-	## this is the code of EXECUTE
-	lwz	%TMP, 0(%TOS)	# fetch code address
-	addi	%TOS, %TOS, 4	# advance TOS to PFA
-	mtctr	%TMP
+	lwz	%r0, 0(%W)	# fetch code address
+	addi	%W, %W, 4	# advance W to PFA
+	mtctr	%r0
 	bctr			# call word's code on word's body
 	ASMEND(goto_parens)
 
@@ -322,6 +316,8 @@ CONSTANT("does-thunk", does_thunk)
 
 ### Trampoline for the does-thunk.  Its address is in %DOES.
 CODE(does_code)
+	SPILL_TOS
+	mr	%TOS, %W
 	stwu	%IP, -4(%RSP)
 	mflr	%IP		# threaded code after DOES>
 	mtlr	%NEXT		# restore LR to next_code

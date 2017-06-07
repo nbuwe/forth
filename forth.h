@@ -45,7 +45,7 @@
 #define DEFCODE_ASM(label)		  \
 	/* Code Field */		  \
   NAMED_CELL(label)			; \
-	.long	asm_does		; \
+	.long	label/**/_code		; \
 	/* Parameter Field */		  \
 	.type	label/**/_code@function ; \
   label/**/_code:			;
@@ -81,7 +81,7 @@
 #define DEFCODE_VAR(label)	  \
 	/* Code Field */	  \
   NAMED_CELL(label)		; \
-	.long	next_code	; \
+	.long	var_does	; \
 	/* Parameter Field */	  \
   NAMED_CELL(label/**/_var)
 

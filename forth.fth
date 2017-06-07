@@ -826,9 +826,9 @@ is throw
 \ ==================== defining words &co
 
 
-\ XXX: TODO: symbol next-code
+\ XXX: TODO: symbol var-does
 \ where symbol is like constant with asm symbol as value
-predef~ next-code next_code
+predef~ var-does var_does
 
 : create
    parse-word ?parsed
@@ -840,7 +840,7 @@ predef~ next-code next_code
    r> current @ !
    \ Code Field
    \ XXX: for now we need to protect next-code with compile
-   compile next-code ;
+   compile var-does ;
 
 : variable    create 1 cells allot ;
 : 2variable   create 2 cells allot ;

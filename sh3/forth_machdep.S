@@ -28,6 +28,7 @@
 #define PSP	r9	/* parameter stack pointer */
 #define RSP	r10	/* return stack pointer */
 #define IP	r11	/* instruction pointer */
+#define W	r12	/* "work" register */
 #define NEXT	r13	/* "next" address to avoid memory loads */
 
 #define SPILL_TOS	mov.l	TOS, @-PSP
@@ -170,23 +171,26 @@ heap:
 !!! address of the code field (CFA).  See also next_code.
 ASMWORD("execute", execute)
 	mov.l	@TOS+, r0	! fetch code address and advance TOS to PFA
+	mov	TOS, W
 	jmp	@r0		! call word's code on word's body
-	 nop
+	 FILL_TOS
 	ASMEND(execute)
 
 
-!!! Code field of asm words points here.
-CODE(asm_does)
-	jmp	@TOS		! PFA: word's body is its asm code
-	 FILL_TOS		! PFA is consumed
-	.size asm_does, .-asm_does
+!!! Default code field of CREATE'd words: push PFA
+CODE(var_does)
+	SPILL_TOS
+	jmp	@NEXT
+	 mov	W, TOS
+	.size var_does, .-var_does
 
 
 !!! Code field of C words points here.  The body contains the C
 !!! funtion address.  Call it as PSP = (*PFA)(PSP);
 CODE(c_does)
-	mov.l	@TOS, TOS	! function pointer from word's body
-	jsr	@TOS
+	mov.l	@W, W		! function pointer from word's body
+	SPILL_TOS		! for the function to see it
+	jsr	@W
 	 mov	PSP, r4		! PSP as argument
 	mov	r0, PSP		! function may adjust PSP to push/pop cells
 	jmp	@NEXT
@@ -197,10 +201,8 @@ CODE(c_does)
 !!! Code field of colon definitions (i.e. forth words) points here.
 CODE(call_code)
 	mov.l	IP, @-RSP	! save caller's IP
-	bra	.L_next_code_no_spill
-	 mov	TOS, IP		! set my IP (consume PFA from TOS)
-	!! don't refill TOS here, just skip the spill in next_code
-	!! and let next_code set vacant TOS to next word PFA
+	bra	next_code
+	 mov	W, IP		! set my IP
 	.size call_code, .-call_code
 
 
@@ -210,29 +212,24 @@ ASMWORD("exit", exit_4th)
 	mov.l	@RSP+, IP	! pop return address
 	!! FALLTHROUGH to "NEXT"
 next_code:
-	SPILL_TOS
-  .L_next_code_no_spill:	! -- entry point for call_code to jump to
-	mov.l	@IP+, TOS	! TOS = CFA of the next word to execute
+	mov.l	@IP+, W		! W = CFA of the next word to execute
 				!  and advance IP
-	!! this is the code of EXECUTE
-	mov.l	@TOS+, r0	! fetch code address and advance TOS to PFA
+	mov.l	@W+, r0		! fetch code address and advance W to PFA
 	jmp	@r0		! execute word's code
 	 nop
 	ASMEND(exit_4th)
 
 
 !!! tail-call - note that the difference from EXIT is the order of
-!!! CFA := @IP and IP := @RSP+
+!!! W := @IP and IP := @RSP+
 !!!
 !!! This makes it possible to add a wrapper around words that examine
 !!! the cell after them, like LIT, BRANCH, etc.  Just make the tail
 !!! call to such word at the end of the wrapper and it will work.
 ASMWORD("(goto)", goto_parens)
-	SPILL_TOS
-	mov.l	@IP, TOS	! TOS = CFA of the next word to execute
+	mov.l	@IP, W		! W = CFA of the next word to execute
 	mov.l	@RSP+, IP	! NB: this is what makes it a tail call
-	!! this is the code of EXECUTE
-	mov.l	@TOS+, r0	! fetch code address and advance TOS to PFA
+	mov.l	@W+, r0		! fetch code address and advance W to PFA
 	jmp	@r0		! execute word's code
 	 nop
 	ASMEND(goto_parens)
@@ -249,6 +246,8 @@ ASMWORD("(goto)", goto_parens)
  */
 #define DOES_4TH(label)		  \
   CODE(label)			; \
+	SPILL_TOS		; \
+	mov	W, TOS		; \
 	mova	1f, r0		; \
 	mov.l	IP, @-RSP	; \
 	jmp	@NEXT		; \
