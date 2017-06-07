@@ -206,7 +206,7 @@ heap:
 ### Code field of colon definitions (i.e. forth words)  points here.
 CODE(call_code)
 	stwu	%IP, -4(%RSP)	# save caller's IP
-	mr	%IP, %W		# set my IP
+	addi	%IP, %W, 4	# set my IP to PFA
 	b	next_code
 	.size call_code, .-call_code
 
@@ -221,7 +221,6 @@ next_code:
 	lwz	%W, 0(%IP)	# W = CFA of the next word to execute
 	addi	%IP, %IP, 4	#  and advance IP
 	lwz	%r0, 0(%W)	# fetch code address
-	addi	%W, %W, 4	# advance W to PFA
 	mtctr	%r0
 	bctr			# call word's code on word's body
 
@@ -237,7 +236,6 @@ ASMWORD("(goto)", goto_parens)
 	lwz	%IP, 0(%RSP)	# pop return address
 	addi	%RSP, %RSP, 4
 	lwz	%r0, 0(%W)	# fetch code address
-	addi	%W, %W, 4	# advance W to PFA
 	mtctr	%r0
 	bctr			# call word's code on word's body
 	ASMEND(goto_parens)
@@ -246,7 +244,7 @@ ASMWORD("(goto)", goto_parens)
 ### Code field of C words points here.  The body contains the C
 ### funtion address.  Call it as PSP = (*PFA)(PSP);
 CODE(c_does)
-	lwz	%W, 0(%W)	# function pointer from word's body
+	lwz	%W, 4(%W)	# function pointer from word's body
 	SPILL_TOS		# for the function to see it
 	mr	%r3, %PSP	# pass PSP as argument
 	mtctr	%W
@@ -261,7 +259,7 @@ CODE(c_does)
 ### Default code field of CREATE'd words: push PFA
 CODE(var_does)
 	SPILL_TOS
-	mr	%TOS, %W
+	addi	%TOS, %W, 4	# push PFA
 	blr
 	.size var_does, .-var_does
 
@@ -288,7 +286,7 @@ CONSTANT("does-thunk", does_thunk)
 ### Trampoline for the does-thunk.  Its address is in %DOES.
 CODE(does_code)
 	SPILL_TOS
-	mr	%TOS, %W
+	addi	%TOS, %W, 4	# push PFA
 	stwu	%IP, -4(%RSP)
 	mflr	%IP		# threaded code after DOES>
 	mtlr	%NEXT		# restore LR to next_code
@@ -300,7 +298,7 @@ CODE(does_code)
 ###     ( i*x xt -- j*x )
 ASMWORD("execute", execute)
 	lwz	%r0, 0(%TOS)	# fetch code address
-	addi	%W, %TOS, 4	# set W to PFA
+	mr	%W, %TOS	# set W to CFA
 	FILL_TOS
 	mtctr	%r0
 	bctr			# call word's code on word's body
