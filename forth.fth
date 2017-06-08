@@ -281,7 +281,7 @@ variable handler \ handler off
 
 \ cword~ emit emit_impl
 \ cword~ type type_impl
-\ cword~ accept accept_4th
+\ cword~ accept accept_impl
 
 
 variable base
