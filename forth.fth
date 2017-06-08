@@ -354,6 +354,7 @@ variable (source-id)
 : source-id   ( -- -1 | 0 | fileid )   (source-id) @ ;
 : source   ( -- c-addr u )   (source) 2@ ;
 
+\ ... constant tib
 variable #tib
 variable >in
 
