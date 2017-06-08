@@ -275,14 +275,12 @@ variable handler \ handler off
    2drop 0 ;
 
 
+\ cword~ emit emit_impl
+\ cword~ type type_impl
+
 : cr      $0a emit ;
 : space   bl emit ;
 : spaces   ( n -- )   0 max 0 ?do space loop ;
-
-\ cword~ emit emit_impl
-\ cword~ type type_impl
-\ cword~ accept accept_impl
-
 
 variable base
 : decimal   #10 base ! ;
@@ -346,6 +344,8 @@ variable hld
    [ -1 cells ] literal +loop
    drop ;
 
+
+\ cword~ accept accept_impl
 
 \ TODO: use VALUE
 variable (source-id)
