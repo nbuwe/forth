@@ -98,37 +98,47 @@ type_impl(cell_t *stack)
 cell_t *
 accept_impl(cell_t *stack)
 {
-    size_t buflen = stack[0];
+    const size_t buflen = stack[0];
     char *buf = (char *)stack[1];
+    int len = 0;
+    int c;
 
-    size_t clen = 0;
-
-    char *cbuf;
-    char *ret;
-
-    cbuf = malloc(buflen + 1); /* +1 for NUL added by fgets(3) */
-    if (cbuf == NULL) {
-	goto out;
+    if (buflen == 0) {
+	if (feof(stdin) || ferror(stdin)) {
+	    len = -1;
+	    goto out;
+	}
     }
 
-    ret = fgets(cbuf, buflen + 1, stdin);
-    if (ret == NULL) {
-	clen = -1;
-	goto out;
+    flockfile(stdin);
+    while (len < buflen) {
+	c = getc_unlocked(stdin);
+
+	if (c == EOF) {
+	    if (len == 0)
+		len = -1;
+	    break;
+	}
+
+	if (c == '\n')
+	    break;
+
+	buf[len++] = c;
     }
 
-    clen = strlen(cbuf);
+    /* peek at the next character and drop it if it's a newline */
+    if (len == buflen) {
+	c = getc_unlocked(stdin);
 
-    if (clen > 0 && cbuf[clen - 1] == '\n')
-	cbuf[--clen] = '\0';
+	if (c != '\n' && c != EOF)
+	    ungetc(c, stdin);
+    }
 
-    memcpy(buf, cbuf, clen);
-
+    funlockfile(stdin);
   out:
-    free(cbuf);
 
     ++stack;
-    stack[0] = clen;
+    stack[0] = len;
     return stack;
 }
 
