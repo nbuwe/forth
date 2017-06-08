@@ -280,7 +280,7 @@ variable handler \ handler off
 : spaces   ( n -- )   0 max 0 ?do space loop ;
 
 \ cword~ emit emit_impl
-\ cword~ type emit_impl
+\ cword~ type type_impl
 \ cword~ accept accept_4th
 
 
