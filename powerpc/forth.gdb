@@ -1,3 +1,5 @@
+# -*- mode: gdb-script -*-
+
 break *(&breakpoint_code)
 
 define pstack
