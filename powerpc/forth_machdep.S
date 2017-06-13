@@ -594,7 +594,7 @@ ASMWORD("r@", r_fetch)
 
 
 ### 2>R CORE EXT 6.2.0340
-###     ( -- x1 x2 ) ( R: x1 x2 -- )
+###     ( x1 x2 -- ) ( R: -- x1 x2 )
 ASMWORD("2>r", two_to_r)
 	lwz	%TMP, 0(%PSP)
 	addi	%PSP, %PSP, 4
