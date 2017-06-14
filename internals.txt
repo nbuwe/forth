@@ -1,0 +1,183 @@
+-*- coding: utf-8 -*-
+
+* Foreword
+
+This Forth was written mostly as a study.  The license disclaimer of
+"fitness for a particular purpose" is not just a ritualistic
+incantation.
+
+I got enough early exposure to Forth first back in USSR where
+mainframe terminals at my University had a Forth running locally, and
+then with Sun's OpenBoot PROM (later Open FirmWare).  A few years ago
+(quite a few by now) I had a private slowly freewheeling email chat
+with a friend about nothing in particular, including meaning of life,
+obscure corners of the C standard, and mice.  Inevitably Lisp and
+Forth came up and I realized my understanding of Forth was rather
+superficial, so I wrote this interpreter and a bit of scaffolding to
+test it in a couple of evenings.  It's been gathering dust until
+several years later when I was down with a flu and accidentally wrote
+most of the missing bits for distraction and entertainment.  And then
+a real interactive system was not that far away, so I just had to
+complete it.  Than transpiler sort of grew out of dirt and rags
+spontaneously.  Did I mention we discussed mice?
+
+
+* Threaded code
+
+There are many good descriptions of what is threaded code
+
+A very good and short summary can be found in
+
+  FIG UK, "The Heart of Forth"
+  http://www.figuk.plus.com/build/heart.htm
+
+Much more detailed explanation with implementations for several (now
+ancient) CPUs is provided by the "Moving Forth" article series:
+
+  Brad Rodriguez, "Moving Forth"
+  http://www.bradrodriguez.com/papers/moving1.htm
+
+In Russian the best book about Forth is
+
+  Баранов, Ноздрунов, "Язык Форт и его реализации"
+  (Baranov, Nozdrunov, "Forth and its implementations")
+
+I actually consider it one of the best texts about Forth overall.  As
+a book it's up there with classic like K&R.
+
+And of course there's literate Jones Forth for i386
+
+  https://rwmj.wordpress.com/2010/08/07/jonesforth-git-repository/
+
+
+Notes below are just a summary of a few key points.
+
+A Forth word has name, link, code and parameter fields.  Name and link
+are for organizing words into vocabularies and are not relevant to the
+threaded code interpreter.  A common abbreviation is to talk about
+word's NFA (name field address), LFA (link), CFA (code), and PFA
+(parameter).
+
+In the indirect threaded code the code field of a word contains the
+address of the code for this class of words.  The parameters field
+contains word's data and is interpreted (in general sense) by word's
+code.
+
+Executing a Forth word is, simply, calling its code on its data!
+
+Word's data can be anything and it's up to word's code to ascribe
+meaning to it.
+
+The absolute nucleus of the threaded code interpreter is its "next"
+code that executes the endless stream of words.
+
+  next:	W = mem(IP);	// word's CFA
+  	IP += cell;
+	goto mem(W);	// fetch code address from CFA and jump there
+
+Some words contain assembler code (NB: in the parameters field) and
+their code (in the code field) arranges for that assembler code to be
+executed.  Usually CFA of assembler words just contains word's PFA as
+a shortcut.  Assembler words end with a jump to "next". For example:
+
+  plus:	/* code field */
+	.long plus_code
+  plus_code:
+	/* asm in parameters field */
+	a = pop();
+	b = pop();
+	push(a + b);
+	goto next;
+
+Some words contain threaded code, a list of other words, represented
+with their CFAs.  They have the address of "call" (or "enter"), i.e. a
+recursive call to the threaded code interpreter, in their code field.
+Threaded code of a word ends with EXIT, a Forth word that contains the
+machine code for "exit" (or "return"), which ends the recursive
+invocation of the interpreter and returns to the execution of the
+caller.
+
+  call: rpush(IP);	// save caller's next IP on the return stack
+  	IP = W + cell;	// PFA of the word contains threaded code
+	goto next;	// enter interpreter recursively
+
+  exit:	IP = rpop();	// restore caller's IP
+	goto next;	// get back to interpreting the caller
+
+Data words by default just push their PFA to the parameter stack.
+Newly CREATE'd words contain this code in their code field.
+
+  var:	push(W + cell);	// PFA
+  	goto next;
+
+These words don't have any behavior (code) associated with the data.
+You can define the new behavior in Forth with DOES> (or in assembler
+with ;CODE if your Forth has it).  More on this later.
+
+
+* What is W?
+
+Brad Rodriguez in his "Moving Forth" notes:
+
+  ... an important but rarely-elucidated principle: the address of the
+  Forth word just entered is kept in W.  CODE words don't need this
+  information, but all other kinds of Forth words do.
+
+Indeed, W is a bit confusing at the first glance.  Or at least it was
+to me.  I think the best way to think about W is this.
+
+As I said above, executing a Forth word means calling its code on its
+data.  But what exactly "on" in that definition means in an
+environment where there are no parameter passing except via parameter
+stack?  So we can reformulate the definition and the pseudo-code as
+follows.
+
+Executing a words means pushing its PFA onto the parameter stack and
+jumping to the word's code (whose address is in its CFA).  I.e.
+
+  // NB: for illustration purposes only!
+
+  next: TMP = mem(IP);		// CFA
+	IP += cell;
+	push(TMP + cell);	// PFA
+	goto mem(TMP);	
+
+  // asm words now need a trampoline in their code field
+  asm:  TMP = pop();		// PFA from the stack
+	goto TMP;
+
+  call: rpush(IP);
+	IP = pop();		// PFA from the stack
+	goto next;
+
+"exit" remains the same.  "var" is no longer necessary, as PFA is
+pushed onto the stack by "next".  Instead of "var" data words can
+simply use "next" as their code as a shortcut to return to the
+interpreter directly.
+
+Actually, this was the first version of interpreter I wrote.
+
+You can immediately see that this version does push(PFA) in "next"
+only to immediately pop it in "asm" or "call".  That's quite
+inefficient.  Here's where W comes in, but now we know what it really
+is.
+
+W is a transient top-of-stack optimization that is private between
+"next" and all code in words' code fields!
+
+Since we don't pollute the stack with PFA of asm words, we can get rid
+of the "asm" trampoline that has to pop it and just jump to word's
+body directly.
+
+Code that needs to manifest the PFA to the Forth world (e.g. VARIABLE
+or DOES>) need to de-optimize and spill that transient top-of-stack
+where Forth code can see it.  Hence we now need "var" to do that
+de-optimization where earlier we could just go directly to "next".
+
+As a further optimization we don't have to set W to PFA in "next" if
+our host assembler doesn't have a convenient instruction or addressing
+mode for that.  E.g. on SuperH where post-increment addressing mode is
+available we can use it "next" to advance W from CFA to PFA for free.
+On PowerPC there's no post-increment, so we let "next" leave W set to
+CFA and adjust it to PFA only in the code that needs it ("call" or
+"var").
