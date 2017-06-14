@@ -147,8 +147,7 @@ heap:
 CODE(call_code)
 	mov	%IP, -4(%RSP)	# save caller's IP
 	add	$-4, %RSP
-	mov	%W, %IP
-	add	$4, %IP		# set my IP to PFA
+	lea	4(%W), %IP	# set my IP to PFA
 	jmp	next_code
 	.size call_code, .-call_code
 
@@ -196,8 +195,7 @@ CODE(c_does)
 ### This is equivalent to DOES> ( nothing ) ;
 CODE(var_does)
 	SPILL_TOS
-	mov	%W, %TOS
-	add	$4, %TOS	# push PFA
+	lea	4(%W), %TOS	# push PFA
 	jmp	next_code
 	.size var_does, .-var_does
 
@@ -225,8 +223,7 @@ CONSTANT("does-thunk", does_thunk)
 ### Trampoline for the does-thunk.  Its address is in %DOES.
 CODE(does_code)
 	SPILL_TOS
-	mov	%W, %TOS
-	add	$4, %TOS	# push PFA
+	lea	4(%W), %TOS	# push PFA
 	mov	%IP, -4(%RSP)	# save caller's IP
 	add	$-4, %RSP
 	pop	%IP			# inside does_thunk_code
