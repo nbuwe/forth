@@ -179,7 +179,7 @@ ASMWORD("(goto)", goto_parens)
 
 
 ### Code field of C words points here.  The body contains the C
-### funtion address.  Call it as PSP = (*PFA)(PSP);
+### function address.  Call it as PSP = (*PFA)(PSP);
 CODE(c_does)
 	mov	4(%W), %W	# function pointer from word's body
 	SPILL_TOS		# for the function to see it
