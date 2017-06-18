@@ -187,16 +187,8 @@
 #define DOTQ(str)	QUOTESTR(_dot, str)	/* ."     */
 #define ABORTQ(str)	QUOTESTR(abort, str)	/* abort" */
 
-#define THR13	"Undefined word"
-#define THR14	"Interpreting a compile-only word"
-#define THR15	"Invalid FORGET"
-#define THR16	"Attempt to use zero-length string as a name"
-#define THR22	"Control structure mismatch"
-#define THR32	"Invalid name argument"
-
-/* XXX: for now, implement in terms of abort" */
 #define THROW(code) \
-	/* .long */ lit, (code), ABORTQ(__CONCAT(THR,code))
+	/* .long */ lit, (code), throw
 
 #define THEN_THROW(code)			  \
 	/* .long */ OR_ELSE(0f), THROW(code)	; \
