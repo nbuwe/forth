@@ -27,11 +27,16 @@
 
 #include <machine/asm.h>
 
-#define	__CONCAT(x,y)	x ## y
-#define	__STRING(x)	#x
+/* Don't depend on whether <machine/asm.h> has these or doesn't */
+#undef  __CONCAT
+#define __CONCAT(x,y)   x ## y
+#undef  __STRING
+#define __STRING(x)     #x
 
-#define	___STRING(x)	__STRING(x)
-#define	___CONCAT(x,y)	__CONCAT(x,y)
+#undef  ___CONCAT
+#undef  ___STRING
+#define ___STRING(x)    __STRING(x)
+#define ___CONCAT(x,y)  __CONCAT(x,y)
 
 
 /**
