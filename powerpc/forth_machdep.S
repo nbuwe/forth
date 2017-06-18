@@ -1238,7 +1238,7 @@ ASMWORD("um*", um_star)
 	mulhwu	%TOS, %TMP, %TOS
 	stw	%LO, 0(%PSP)
 	blr
-	ASMEND(m_star)
+	ASMEND(um_star)
 #undef	LO
 
 
@@ -1304,7 +1304,7 @@ ASMWORD("j", j_4th)
 	lwz	%TMP, 16(%RSP)		# adjustment
 	subf	%TOS, %TMP, %TOS	# normalize current
 	blr
-	ASMEND(i_4th)
+	ASMEND(j_4th)
 
 
 ### XXX: nothing to do on ppc, just 2DROP the args
@@ -1312,7 +1312,7 @@ ASMWORD("sync-i$", sync_icache)
 	addi	%PSP, %PSP, 4
 	FILL_TOS
 	blr
-	ASMEND(breakpoint)
+	ASMEND(sync_icache)
 
 
 /* Machine-independent words in threaded code. */
