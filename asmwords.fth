@@ -71,9 +71,6 @@ predef~ c@ c_fetch
 predef~ c! c_store
 predef~ 2@ two_fetch
 predef~ 2! two_store
-predef~ cmove cmove
-predef~ cmove> cmove_up
-predef~ compare compare
 predef~ fill fill
 predef~ move move
 predef~ s>d s2d
