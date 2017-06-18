@@ -27,6 +27,12 @@
 
 #include <machine/asm.h>
 
+#define	__CONCAT(x,y)	x ## y
+#define	__STRING(x)	#x
+
+#define	___STRING(x)	__STRING(x)
+#define	___CONCAT(x,y)	__CONCAT(x,y)
+
 
 /**
  *
@@ -37,21 +43,21 @@
 
 #define NAMED_CELL(label)	  \
 	.p2align 2		; \
-	.type	label@object	; \
+	.type	label, @object	; \
 	.size	label, 4	; \
   label:			;
 
 
-#define DEFCODE_ASM(label)		  \
-	/* Code Field */		  \
-  NAMED_CELL(label)			; \
-	.long	label/**/_code		; \
-	/* Parameter Field */		  \
-	.type	label/**/_code@function ; \
-  label/**/_code:			;
+#define DEFCODE_ASM(label)			  \
+	/* Code Field */			  \
+  NAMED_CELL(label)				; \
+	.long	__CONCAT(label,_code)		; \
+	/* Parameter Field */			  \
+	.type	__CONCAT(label,_code),@function	; \
+  __CONCAT(label,_code):
 
 #define ASMEND(label) \
-	.size	label/**/_code, . - label/**/_code
+	.size	__CONCAT(label,_code), .-__CONCAT(label,_code)
 
 
 #define DEFCODE_C(label)		  \
@@ -59,7 +65,7 @@
   NAMED_CELL(label)			; \
 	.long	c_does			; \
 	/* Parameter Field */	  	  \
-  NAMED_CELL(label/**/_fn)
+  NAMED_CELL(__CONCAT(label,_fn))
 
 
 #define DEFCODE_4TH(label)	  \
@@ -67,7 +73,7 @@
   NAMED_CELL(label)		; \
 	.long	call_code	; \
 	/* Parameter Field */	  \
-  label/**/_body:		;
+  __CONCAT(label,_body):
 
 
 #define DEFCODE_DEFER(label)	  \
@@ -75,7 +81,7 @@
   NAMED_CELL(label)		; \
 	.long	defer_does	; \
 	/* Parameter Field */	  \
-  NAMED_CELL(label/**/_xt)
+  NAMED_CELL(__CONCAT(label,_xt))
 
 
 #define DEFCODE_VAR(label)	  \
@@ -83,7 +89,7 @@
   NAMED_CELL(label)		; \
 	.long	var_does	; \
 	/* Parameter Field */	  \
-  NAMED_CELL(label/**/_var)
+  NAMED_CELL(__CONCAT(label,_var))
 
 
 #define DEFCODE_CONST(label)	  \
@@ -91,19 +97,14 @@
   NAMED_CELL(label)		; \
 	.long	constant_does	; \
 	/* Parameter Field */	  \
-  NAMED_CELL(label/**/_const)
+  NAMED_CELL(__CONCAT(label,_const))
 
 
 #define EXIT_4TH		  \
 	.long	exit_4th
 
 
-/*
- * XXX: unfortunately with traditional cpp we cannot use .L prefix
- * here, since we would also need to pass the label argument around
- * without preceding space, which is very fragile.
- */
-#define NFA_LABEL(label) label/**/$nfa
+#define NFA_LABEL(label) __CONCAT(.L,label)
 
 /*
  * Hand-compiled forth code uses IMMWORD() that passes IFLAG
@@ -121,7 +122,6 @@
  */
 #define NAME_FIELD(name, flags, label)    \
 	.p2align 2, 0			; \
-	.local	NFA_LABEL(label)	; \
   NFA_LABEL(label):			  \
 	.byte	IMMEDIATE | flags | (2f-1f)	; \
 1:	.ascii	name			; \
@@ -137,7 +137,7 @@
 #define DEFWORD(name, flags, defcode, label)	  \
   	NAME_FIELD(name, flags, label)		; \
 	/* Link Field */			  \
-  NAMED_CELL(label/**/_lnk)			; \
+  NAMED_CELL(__CONCAT(label,_lnk))		; \
 	.long	.LASTNFA			; \
   .LASTNFA = NFA_LABEL(label)			; \
 	defcode(label)
@@ -172,10 +172,11 @@
 #define THEN_RETURN(word) /* .long */ OR_ELSE(0f), word, exit_4th; 0:;
 
 
-#define QUOTESTR(word, str)				  \
-	/* .long */ _lparen/**/word/**/_dquote_rparen, (22f - 21f) ; \
-21:	.ascii	str					; \
-22:	.p2align 2, 0 /* force new directive with ; */	;
+#define QUOTESTR(word, str)						  \
+	/* .long */ ___CONCAT(_lparen,__CONCAT(word,_dquote_rparen))	; \
+	.long	(22f - 21f)						; \
+21:	.ascii	str							; \
+22:	.p2align 2, 0 /* force new directive with ; */			;
 
 #define SQ(str)		QUOTESTR(s, str)	/* s"     */
 #define DOTQ(str)	QUOTESTR(_dot, str)	/* ."     */
@@ -190,7 +191,7 @@
 
 /* XXX: for now, implement in terms of abort" */
 #define THROW(code) \
-	/* .long */ lit, (code), ABORTQ(THR/**/code)
+	/* .long */ lit, (code), ABORTQ(__CONCAT(THR,code))
 
 #define THEN_THROW(code)			  \
 	/* .long */ OR_ELSE(0f), THROW(code)	; \

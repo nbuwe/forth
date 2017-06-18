@@ -50,7 +50,7 @@ CONSTANT("throw-msgtab", throw_msgtab)
 9:	/* end of table */
 
 #define	THRMSG(code, message)	\
-.Lthrmsg/**/code:		\
+.Lthrmsg##code:		\
 	.byte	  (9f - 1f);	\
 1:	.ascii	  message;	\
 9:	.p2align  2, 0

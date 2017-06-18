@@ -10,9 +10,6 @@ CPPFLAGS += -I. -I${.CURDIR} -I${.CURDIR}/${MACHINE_CPU}
 SRCS = main.c forth_machdep.S
 GDBINIT = ${.CURDIR}/${MACHINE_CPU}/forth.gdb
 
-# use traditional cpp for asm, since sh3 uses # for immediates
-CPPFLAGS.forth_machdep.S = --traditional-cpp
-
 forth.S: forth.fth asmwords.fth trans.fth
 	gforth ${.CURDIR}/trans.fth -e bye > forth.S
 
