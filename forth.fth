@@ -603,9 +603,8 @@ variable state
    type ;
 
 
-\ XXX: 2variable current
-predef current
-: latest   current @ @ ;
+: get-current   current @ ;
+: latest   get-current @ ;
 
 
 : >body   cell+ ;
@@ -652,21 +651,9 @@ $40 constant &sflag
    [ -1 cells ] literal +loop
    drop 0 ;
 
-
-\ Traditional Forth's FIND takes counted string from traditional
-\ WORD, but that requires temporary space to hold the counted
-\ string, so ANS Forth suggests using PARSE instead.  The
-\ corresponding word to search the <c-addr, u> string is
-\ SEARCH-WORDLIST.
-\
-\ SEARCH-CURRENT is interim chimera until proper vocabularies are
-\ provided.  For now we only have single wordlist, so:
-\
-\    : search-current ( c-addr u -- 0 | xt 1 | xt -1 )
-\       get-current search-wordlist ;
-: search-current
-   ?dup 0= if drop 0 exit then   \ can't find empty string
-   latest begin   \ ... nfa --
+: search-wordlist   ( c-addr u wid -- 0 | xt 1 | xt -1 )
+   over 0= if drop 2drop false exit then   \ can't find empty string
+   @ begin   \ ... nfa --
       dup smudged? not if
          >r   \ stash away NFA
          2dup r@ name-count icompare if
@@ -685,6 +672,12 @@ $40 constant &sflag
       ?dup 0=
    until
    2drop false ;
+
+\ SEARCH-CURRENT is interim chimera until proper vocabularies are
+\ provided.  For now we only have single wordlist anyway.
+: search-current ( c-addr u -- 0 | xt 1 | xt -1 )
+   get-current search-wordlist ;
+
 
 : find   ( c-addr -- c-addr 0 | xt 1 | xt -1 )
    dup count search-current

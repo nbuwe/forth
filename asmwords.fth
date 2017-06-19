@@ -103,3 +103,6 @@ predef~ accept accept_4th
 
 predef tib \ constant address
 predef dp 
+
+predef current
+predef~ forth-wordlist forth_wordlist 

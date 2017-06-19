@@ -127,15 +127,16 @@ heap:
  */
 	.p2align 2, 0
 	## Name Field
-.LASTNFA = .		# init .LASTNFA for subsequent DEFWORDs
-	.byte	0x80	# empty name, immediate (just in case?)
+.LASTNFA = .			# init .LASTNFA for subsequent DEFWORDs
+	.byte	0x40		# empty name, smudged
 	## Link Field
 	.p2align 2, 0
-	.long	0	# terminate the LFA-linked list
+	.long	0		# terminate the LFA-linked wordlist
 	## Code Field
-	.long	0	# XXX: use some sentinel code?  just crash for now
+	.long	0		# XXX: use some sentinel code?
 	## Parameter Field
-	.long	0	# there's no parameters, but provide a stub
+.LFORTH_WID:
+	.long	.LATEST		# head of the wordlist
 
 
 /**

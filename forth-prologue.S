@@ -22,9 +22,10 @@ CWORD("type", type)
 CWORD("accept", accept_4th)	/* XXX: avoid name clash with accept(2) */
 	.long	_C_LABEL(accept_impl)
 
+CONSTANT("forth-wordlist", forth_wordlist)
+	.long	.LFORTH_WID
+
 VARIABLE("current", current)
-	.long	. + 4
-	/* this will be part of a vocabulary */
-	.long .LATEST
+	.long	.LFORTH_WID
 
 #include "forth-throw.S"
