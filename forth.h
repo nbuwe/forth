@@ -46,11 +46,14 @@
  */
 
 
-#define NAMED_CELL(label)	  \
+#define NAMED_CELLS(n, label)	  \
 	.p2align 2		; \
 	.type	label, @object	; \
-	.size	label, 4	; \
+	.size	label, (n) * 4	; \
   label:			;
+
+#define NAMED_CELL(label) \
+  NAMED_CELLS(1, label)
 
 
 #define DEFCODE_ASM(label)			  \
@@ -81,14 +84,6 @@
   __CONCAT(label,_body):
 
 
-#define DEFCODE_DEFER(label)	  \
-	/* Code Field */	  \
-  NAMED_CELL(label)		; \
-	.long	defer_does	; \
-	/* Parameter Field */	  \
-  NAMED_CELL(__CONCAT(label,_xt))
-
-
 #define DEFCODE_VAR(label)	  \
 	/* Code Field */	  \
   NAMED_CELL(label)		; \
@@ -97,12 +92,18 @@
   NAMED_CELL(__CONCAT(label,_var))
 
 
-#define DEFCODE_CONST(label)	  \
-	/* Code Field */	  \
-  NAMED_CELL(label)		; \
-	.long	constant_does	; \
-	/* Parameter Field */	  \
-  NAMED_CELL(__CONCAT(label,_const))
+/* NB: Relies on the fact that transpiler's DOES> emits "_does" suffix */
+#define DEFCODE_DOES(label, creator, n, suffix)	  \
+	/* Code Field */			  \
+  NAMED_CELL(label)				; \
+	.long	__CONCAT(creator,_does)		; \
+	/* Parameter Field */			  \
+  NAMED_CELLS(n, __CONCAT(label,suffix))
+
+
+#define DEFCODE_CONST(label)	DEFCODE_DOES(label, constant, 1, _const)
+#define DEFCODE_2CONST(label)	DEFCODE_DOES(label, _2constant, 2, _2const)
+#define DEFCODE_DEFER(label)	DEFCODE_DOES(label, defer, 1, _xt)
 
 
 #define EXIT_4TH		  \
@@ -157,6 +158,8 @@
 #define DEFER(name, label)	DEFWORD(name,     0, DEFCODE_DEFER, label)
 #define CONSTANT(name, label)	DEFWORD(name,     0, DEFCODE_CONST, label)
 #define VARIABLE(name, label)	DEFWORD(name,     0, DEFCODE_VAR,   label)
+
+#define TWO_CONSTANT(name, label) DEFWORD(name, 0, DEFCODE_2CONST, label)
 
 #define NONAME(label)				  \
 	NAME_FIELD("", SFLAG, label)		; \

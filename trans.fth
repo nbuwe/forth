@@ -350,7 +350,7 @@ also meta definitions previous
    cr ." NONAME(" tlatest-sym ." )" cr
    thide reset-labels transpile ;
 
-\ XXX: CONSTANT() macro refers to "constant_does"
+\ NB: DEFCODE_DOES() macro depends on "_does" suffix used here
 : does> ?comp
    .long ." _lparen_semicoloncode_rparen"  cr
    ." DOES_4TH(" treveal tlatest-sym thide ." _does)" cr ; immediate
