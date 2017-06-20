@@ -190,6 +190,9 @@ variable tversion   0 tversion !
 : .long   tab ." .long" tab ;
 : comment   ." /* " -trailing type space ." */" cr ;
 
+: tallot      tab ." .skip" tab 0 .r cr ;
+: t,          .long 0 .r cr ;
+
 : tliteral    .long ." lit, " 0 .r cr ;
 : t2literal   .long ." two_lit, " 0 .r ." , " 0 .r cr ;
 : tcompile,   .long >body type-sym cr ;
@@ -322,20 +325,11 @@ also meta definitions previous
 
 : constant
    meta-constant
-   s" CONSTANT" emitdef
-   .long 0 .r cr ;
+   s" CONSTANT" emitdef t, ;
 
-: variable
-   s" VARIABLE" emitdef
-   .long 0 0 .r cr ;
-
-: 2variable
-   s" VARIABLE" emitdef
-   .long 0 0 .r ." , " 0 0 .r cr ;
-
-: buffer:
-   s" VARIABLE" emitdef
-   tab ." .skip" tab 0 .r cr ;
+: variable    s" VARIABLE" emitdef  0 t, ;
+: 2variable   s" VARIABLE" emitdef  0 t, 0 t, ;
+: buffer:     s" VARIABLE" emitdef  tallot ;
 
 : [   postpone [ ; immediate
 : ]   transpile ;
