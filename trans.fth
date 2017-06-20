@@ -275,9 +275,16 @@ variable tversion   0 tversion !
 \ make real constant definitions in the meta vocabulary so that
 \ interpreted code can use them
 : meta-constant
+   get-current >r  >in @ >r
    meta-wid set-current
-   >in @  over constant  >in !
-   target-wid set-current ;
+   dup constant
+   r> >in !  r> set-current ;
+
+: meta-2constant
+   get-current >r  >in @ >r
+   meta-wid set-current
+   2dup 2constant
+   r> >in !  r> set-current ;
 
 
 : ?comp   state @ 0= if  -14 throw then ; \ interpreting a compile-only word
@@ -323,13 +330,13 @@ also meta definitions previous
 : aligned   cell+ 1- cell negate and ;
 : align   ." p2align 2, 0" cr ;
 
-: constant
-   meta-constant
-   s" CONSTANT" emitdef t, ;
-
 : variable    s" VARIABLE" emitdef  0 t, ;
 : 2variable   s" VARIABLE" emitdef  0 t, 0 t, ;
 : buffer:     s" VARIABLE" emitdef  tallot ;
+
+: constant    meta-constant   s" CONSTANT" emitdef t, ;
+: 2constant   meta-2constant  s" TWO_CONSTANT" emitdef t, t, ;
+
 
 : [   postpone [ ; immediate
 : ]   transpile ;
