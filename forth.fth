@@ -433,7 +433,7 @@ variable >in
    bl skip-delim bl parse ;
 
 : ?parsed   \ attempt to use zero-length string as a name
-   ?dup 0= if drop  -16 throw then ;
+   dup 0= -16 and throw ;
 
 : char   ( "<spaces>name" -- char )
    parse-word if c@ else drop 0 then ;
@@ -583,7 +583,7 @@ variable state
 : ]   state on ;
 
 : ?comp   \ interpreting a compile-only word
-   state @ 0= if  -14 throw then ;
+   state @ 0= -14 and throw ;
 
 : compile,   , ;
 : compile
@@ -688,7 +688,7 @@ $40 constant &sflag
 : (')   ( "<spaces>name" -- 0 | xt 1 | xt -1 )
    parse-word ?parsed search-current ;
 
-: '   (') ?dup if drop else ( undefined )  -13 throw then ;
+: '   (')  0= ( undefined? ) -13 and throw ;
 : [']   ?comp ' postpone literal ; immediate \ XXX: use compile,
 
 : [compile]   ?comp ' compile, ; immediate
@@ -953,8 +953,8 @@ predef~ call-code call_code \ XXX
 : (until)   compile ?branch <resolve ;
 
 
-: ?pairs   ( C: expected actual -- )
-   <> if -22 throw then ;   \ control structure mismatch
+: ?pairs   ( C: expected actual -- )   \ control structure mismatch
+   <> -22 and throw ;
 
 : ahead   ?comp          (ahead) 1 ; immediate
 : if      ?comp          (if) 1 ; immediate
