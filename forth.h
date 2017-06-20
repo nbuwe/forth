@@ -151,20 +151,23 @@
 #define	IFLAG	0x80		/* immediate */
 #define	SFLAG	0x40		/* smudge */
 
-#define WORD(name, label)	DEFWORD(name,     0, DEFCODE_4TH,   label)
-#define IMMWORD(name, label)	DEFWORD(name, IFLAG, DEFCODE_4TH,   label)
-#define ASMWORD(name, label)	DEFWORD(name,     0, DEFCODE_ASM,   label)
-#define CWORD(name, label)	DEFWORD(name,     0, DEFCODE_C,     label)
-#define DEFER(name, label)	DEFWORD(name,     0, DEFCODE_DEFER, label)
-#define CONSTANT(name, label)	DEFWORD(name,     0, DEFCODE_CONST, label)
-#define VARIABLE(name, label)	DEFWORD(name,     0, DEFCODE_VAR,   label)
+#define WORD(name, label)	DEFWORD(name, 0, DEFCODE_4TH, label)
+#define ASMWORD(name, label)	DEFWORD(name, 0, DEFCODE_ASM, label)
+#define CWORD(name, label)	DEFWORD(name, 0, DEFCODE_C, label)
+#define VARIABLE(name, label)	DEFWORD(name, 0, DEFCODE_VAR, label)
 
-#define TWO_CONSTANT(name, label) DEFWORD(name, 0, DEFCODE_2CONST, label)
+/* not used by the transpiler, only for handwritten code */
+#define IMMWORD(name, label)	DEFWORD(name, IFLAG, DEFCODE_4TH, label)
 
+/* like DEFWORD("", SFLAG, DEFCODE_4TH, label), but not linked */
 #define NONAME(label)				  \
 	NAME_FIELD("", SFLAG, label)		; \
 	.long	0	/* Link Field */	; \
 	DEFCODE_4TH(label)
+
+#define DEFER(name, label)	DEFWORD(name, 0, DEFCODE_DEFER, label)
+#define CONSTANT(name, label)	DEFWORD(name, 0, DEFCODE_CONST, label)
+#define TWO_CONSTANT(name, label) DEFWORD(name, 0, DEFCODE_2CONST, label)
 
 
 /*
