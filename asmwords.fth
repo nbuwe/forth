@@ -106,3 +106,7 @@ predef dp
 
 predef current
 predef~ forth-wordlist forth_wordlist 
+
+predef~ order-stack order_stack
+predef osp0
+predef osp

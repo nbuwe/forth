@@ -576,6 +576,39 @@ variable >in
 : convert   ( ud1 cstr -- ud2 caddr )   char+ 256 >number drop ;
 
 
+\ ==================== Wordlists
+
+$80 constant &iflag   \ immediate
+$40 constant &sflag   \ smudged
+
+: wordlist   ( -- wid )
+   align here                   \ address of this stub header
+   [ &sflag ] literal c,        \ Name Field: empty name, smudged
+   align 0 ,                    \ Link Field: no link
+   0 ,                          \ Code Field: n/a
+   here                         \ value of the wordlist - PFA
+   swap , ;                     \ Parameters Field: latest word = this
+
+: context  osp @ ;
+
+: osp-   context  dup order-stack = ( overflow  ) -49 and throw  cell- osp ! ;
+: osp+   context         dup osp0 = ( udnerflow ) -50 and throw  cell+ osp ! ;
+
+: (set-wid)  context ! ;   \ replace top value
+
+: forth   forth-wordlist (set-wid) ;
+
+: only   osp0 cell- osp !  forth ;
+: also   context @  osp- (set-wid) ;
+: previous   osp+ ;
+
+: set-current   current ! ;
+: get-current   current @  dup 0= ( deleted ) -47 and throw ;
+
+: latest   get-current @ ;
+: definitions   context @ set-current ;
+
+
 \ ====================
 
 variable state
@@ -603,17 +636,10 @@ variable state
    type ;
 
 
-: get-current   current @ ;
-: latest   get-current @ ;
-
-
 : >body   cell+ ;
 : body>   cell- ;
 : >link   cell- ;
 : link>   cell+ ;
-
-$80 constant &iflag
-$40 constant &sflag
 
 : immediate  latest c@ [ &iflag ] literal or latest c! ;
 : smudge     latest c@ [ &sflag ] literal or latest c! ;
@@ -673,20 +699,24 @@ $40 constant &sflag
    until
    2drop false ;
 
-\ SEARCH-CURRENT is interim chimera until proper vocabularies are
-\ provided.  For now we only have single wordlist anyway.
-: search-current ( c-addr u -- 0 | xt 1 | xt -1 )
-   get-current search-wordlist ;
-
+: search-context ( c-addr u -- 0 | xt 1 | xt -1 )
+   osp0 context ?do
+      2dup i @
+      search-wordlist ?dup if
+         2swap 2drop
+         unloop exit
+      then
+   [ 1 cells ] literal +loop
+   2drop false ;
 
 : find   ( c-addr -- c-addr 0 | xt 1 | xt -1 )
-   dup count search-current
+   dup count search-context
    dup if rot drop then ;
 
 
 \ helper for ' and the like that do the parse/search combo
 : (')   ( "<spaces>name" -- 0 | xt 1 | xt -1 )
-   parse-word ?parsed search-current ;
+   parse-word ?parsed search-context ;
 
 : '   (')  0= ( undefined? ) -13 and throw ;
 : [']   ?comp ' postpone literal ; immediate \ XXX: use compile,
@@ -706,7 +736,7 @@ $40 constant &sflag
 : interpret
    begin
       parse-word ?dup 0= if drop exit then
-      2dup search-current ?dup if
+      2dup search-context ?dup if
          2swap 2drop
          1+ if
             execute
@@ -846,6 +876,8 @@ predef~ var-does var_does
 
 : constant    create  , does>  @ ;
 : 2constant   create 2, does> 2@ ;
+
+: vocabulary   wordlist create ,  does>  @ (set-wid) ;
 
 predef~ call-code call_code \ XXX
 

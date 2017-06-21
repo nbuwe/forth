@@ -44,4 +44,22 @@ CONSTANT("forth-wordlist", forth_wordlist)
 VARIABLE("current", current)
 	.long	.LFORTH_WID
 
+/*
+ * 16 cells constant #order-stack 
+ * #order-stack buffer: order-stack
+ * order-stack #order-stack + constant osp0
+ * variable osp
+ * only
+ */
+VARIABLE("order-stack", order_stack)
+	.skip	15 * 4
+.Lorder_stack_pointer:
+	.long	.LFORTH_WID
+.Lorder_stack_bottom:
+
+CONSTANT("osp0", osp0)
+	.long	.Lorder_stack_bottom
+VARIABLE("osp", osp)
+	.long	.Lorder_stack_pointer
+
 #include "forth-throw.S"
