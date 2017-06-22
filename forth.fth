@@ -596,7 +596,7 @@ $40 constant &sflag   \ smudged
 
 : (set-wid)  context ! ;   \ replace top value
 
-: forth   forth-wordlist (set-wid) ;
+\ : forth   forth-wordlist (set-wid) ;
 
 : only   osp0 cell- osp !  forth ;
 : also   context @  osp- (set-wid) ;

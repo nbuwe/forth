@@ -39,10 +39,10 @@ CWORD("accept", accept_4th)	/* XXX: avoid name clash with accept(2) */
 	.long	_C_LABEL(accept_impl)
 
 CONSTANT("forth-wordlist", forth_wordlist)
-	.long	.LFORTH_WID
+	.long	forth_wid
 
 VARIABLE("current", current)
-	.long	.LFORTH_WID
+	.long	forth_wid
 
 /*
  * 16 cells constant #order-stack 
@@ -54,7 +54,7 @@ VARIABLE("current", current)
 VARIABLE("order-stack", order_stack)
 	.skip	15 * 4
 .Lorder_stack_pointer:
-	.long	.LFORTH_WID
+	.long	forth_wid
 .Lorder_stack_bottom:
 
 CONSTANT("osp0", osp0)

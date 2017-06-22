@@ -1,3 +1,5 @@
+predef forth
+
 \ constants
 predef sp0
 predef rp0

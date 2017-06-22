@@ -122,21 +122,8 @@ ENTRY(start_forth)
 	.global	heap
 heap:
 
-/*
- * Fake sentinel word that starts the vocabulary.
- */
-	.p2align 2, 0
-	## Name Field
-.LASTNFA = .			# init .LASTNFA for subsequent DEFWORDs
-	.byte	0x40		# empty name, smudged
-	## Link Field
-	.p2align 2, 0
-	.long	0		# terminate the LFA-linked wordlist
-	## Code Field
-	.long	0		# XXX: use some sentinel code?
-	## Parameter Field
-.LFORTH_WID:
-	.long	.LATEST		# head of the wordlist
+#define CURRENT forth
+VOCABULARY("forth", forth)
 
 
 /**
@@ -1180,8 +1167,8 @@ ASMWORD("sync-i$", sync_icache)
 #include "test.S"
 
 	.data
-### value for CURRENT
-.LATEST = .LASTNFA
+/* XXX: this should be automated */
+LATEST(forth) = LASTNFA(forth)
 
 	.size	heap, . - heap
 
