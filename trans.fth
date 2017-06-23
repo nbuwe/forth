@@ -323,9 +323,9 @@ variable tcurrent
 
 : in-meta ( ... xt -- ... )
    get-current >r  >in @ >r
-   meta-wid set-current
+   definitions                \ in host's shadow vocabulary
    catch
-   r> >in !  r> set-current
+   r> >in !  r> set-current   \ back to target's vocabulary
    throw ;
 
 \ make real constant definitions in the meta vocabulary so that
