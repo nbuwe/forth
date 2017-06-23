@@ -324,8 +324,9 @@ variable tcurrent
 : in-meta ( ... xt -- ... )
    get-current >r  >in @ >r
    meta-wid set-current
-   catch throw
-   r> >in !  r> set-current ;
+   catch
+   r> >in !  r> set-current
+   throw ;
 
 \ make real constant definitions in the meta vocabulary so that
 \ interpreted code can use them
