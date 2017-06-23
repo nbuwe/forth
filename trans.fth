@@ -31,17 +31,16 @@ only forth also trans definitions
       0> if 2 else 1 then
    then ;
 
+[undefined] cell- [if]
+: cell- [ 1 cells ] literal - ;
+[then]
+
 
 vocabulary meta         \ defining words for the target
 also meta context @ constant meta-wid
 previous
 
-vocabulary target       \ shadow vocabulary for the target
-also target context @ constant target-wid
-previous
-
 : search-meta   meta-wid search-wordlist ;
-: search-target   target-wid search-wordlist ;
 
 : noname-basename s" .Lnoname" ;
 
@@ -105,6 +104,37 @@ char ~ xlat: tilde
    here r@ - 1- r> c! ;
 
 
+\ target search order
+create torder-stack 8 cells allot
+here constant tosp0
+variable tosp
+
+: tcontext  tosp @ ;
+: (tset-wid)   tcontext ! ;   \ replace top value
+
+defer type-sym
+
+: shadow-vocabulary   ( tlatest "name" -- )
+   wordlist create ,
+   ." /* XXX: uwe: "
+   dup type-sym
+   ."  */" cr
+   ,
+ does>
+   (tset-wid) ;
+
+0 shadow-vocabulary target
+: tonly   tosp0 cell- tosp !  target ;
+tonly
+
+: tosp-
+   tcontext  dup torder-stack = ( overflow  ) -49 and throw
+   cell- tosp ! ;
+: tosp+
+   tcontext dup tosp0 = ( udnerflow ) -50 and throw
+   cell+ tosp ! ;
+
+
 \ target vocabulary collects shadow definitions with the following
 \ parameter data:
 \
@@ -128,9 +158,18 @@ variable tversion   0 tversion !
 : thidden?   ( xt -- )   >body @ -1 = ;
 
 : tsearch-target   ( c-addr u -- 0 | xt 1 | xt -1 )
-   search-target dup if
-      over thidden? if 2drop 0 then
-   then ;
+   tosp0 tcontext ?do
+      2dup i @
+      @ search-wordlist ?dup if
+         over thidden? if
+            2drop
+         else
+            2swap 2drop
+            unloop exit
+         then
+      then
+   [ 1 cells ] literal +loop
+   2drop false ;
 
 : t(')   ( "<spaces>name" -- 0 | xt 1 | xt -1 )
    parse-word ?parsed tsearch-target ;
@@ -152,7 +191,7 @@ variable tversion   0 tversion !
 
 : tcreate
    >in @ parse-word ?parsed
-   search-target if
+   tsearch-target if
       nip   \ consume input word
       tcreate-version
    else
@@ -160,14 +199,24 @@ variable tversion   0 tversion !
       tcreate-new
    then ;
 
-: type-sym  ( body -- )
+: type-sym'  ( body -- )
    dup cell+ count type  \ basename
    @ ?dup if             \ needs version suffix?
       [char] . emit
       0 .r
    then ;
+' type-sym' is type-sym
 
 : tlatest-sym   tlatest @ type-sym ;
+
+
+variable tcurrent
+: tget-current   tcurrent @ ;
+
+: tset-current
+   ." #undef  CURRENT" cr
+   ." #define CURRENT " dup cell+ @ type-sym cr
+   tcurrent ! ;
 
 
 \ record a mapping in the target dictionary.  this is to let the
@@ -272,19 +321,16 @@ variable tversion   0 tversion !
    [char] ) emit
    cr ;
 
-\ make real constant definitions in the meta vocabulary so that
-\ interpreted code can use them
-: meta-constant
+: in-meta ( ... xt -- ... )
    get-current >r  >in @ >r
    meta-wid set-current
-   dup constant
+   catch throw
    r> >in !  r> set-current ;
 
-: meta-2constant
-   get-current >r  >in @ >r
-   meta-wid set-current
-   2dup 2constant
-   r> >in !  r> set-current ;
+\ make real constant definitions in the meta vocabulary so that
+\ interpreted code can use them
+: shadow-constant    dup constant ;
+: shadow-2constant   2dup 2constant ;
 
 
 : ?comp   state @ 0= if  -14 throw then ; \ interpreting a compile-only word
@@ -334,8 +380,20 @@ also meta definitions previous
 : 2variable   s" VARIABLE" emitdef  0 t, 0 t, ;
 : buffer:     s" VARIABLE" emitdef  tallot ;
 
-: constant    meta-constant   s" CONSTANT" emitdef t, ;
-: 2constant   meta-2constant  s" TWO_CONSTANT" emitdef t, t, ;
+: constant    ['] shadow-constant in-meta   s" CONSTANT" emitdef t, ;
+: 2constant   ['] shadow-2constant in-meta  s" TWO_CONSTANT" emitdef t, t, ;
+
+: vocabulary
+   >in @  s" VOCABULARY" emitdef  >in !
+   tlatest @ ['] shadow-vocabulary in-meta ;
+
+: only   tonly ;
+: also   tcontext @ tosp- (tset-wid) ;
+: previous   tosp+ ;
+
+: get-current   tget-current ;
+: set-current   tset-current ;
+: definitions   tcontext @ tset-current ;
 
 
 : [   postpone [ ; immediate
@@ -427,7 +485,7 @@ also meta definitions previous
 : +loop s" _lparen_plusloop_rparen" (loop) ; immediate
 
 \ pre-populate target vocabulary with stubs for the asm words
-also target definitions previous
+' target >body @ set-current
 
 predef~ .Lnoname .Lnoname   \ XXX: placeholder
 include asmwords.fth
