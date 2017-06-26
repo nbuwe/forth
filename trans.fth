@@ -35,10 +35,13 @@ only forth also trans definitions
 : cell- [ 1 cells ] literal - ;
 [then]
 
+: >wid   ( voc-xt -- voc-wid )   also execute  context @  previous ;
+: (also-wid)   ( wid -- )   >r get-order nip r> swap set-order ;
+: .order   get-order 0 ?do . loop ;
+
 
 vocabulary meta         \ defining words for the target
-also meta context @ constant meta-wid
-previous
+' meta >wid constant meta-wid
 
 : search-meta   meta-wid search-wordlist ;
 
@@ -104,39 +107,7 @@ char ~ xlat: tilde
    here r@ - 1- r> c! ;
 
 
-\ target search order
-create torder-stack 8 cells allot
-here constant tosp0
-variable tosp
-
-: tcontext  tosp @ ;
-: (tset-wid)   tcontext ! ;   \ replace top value
-
-defer type-sym
-
-: shadow-vocabulary   ( tlatest "name" -- )
-   wordlist create ,
-   ." /* XXX: uwe: "
-   dup type-sym
-   ."  */" cr
-   ,
- does>
-   (tset-wid) ;
-
-0 shadow-vocabulary target
-: tonly   tosp0 cell- tosp !  target ;
-tonly
-
-: tosp-
-   tcontext  dup torder-stack = ( overflow  ) -49 and throw
-   cell- tosp ! ;
-: tosp+
-   tcontext dup tosp0 = ( udnerflow ) -50 and throw
-   cell+ tosp ! ;
-
-
-\ target vocabulary collects shadow definitions with the following
-\ parameter data:
+\ target vocabulary collects definitions with the following body:
 \
 \    +---+---+---+---+
 \    |    version    |
@@ -149,6 +120,94 @@ tonly
 \ redefining a word just bumps its version so that we can generate a
 \ new unique asm symbol.
 
+: type-sym  ( body -- )
+   dup cell+ count type  \ basename
+   @ ?dup if             \ needs version suffix?
+      [char] . emit
+      0 .r
+   then ;
+
+
+\ Transpiler maintains its own target search order, but it needs
+\ constants and vocabulary names work in interpreted state (which we
+\ let the host do for us).
+\
+\ When transpiler encounters VOCABULARY definition, it emits it (that
+\ also creates a word in the current target wordlist) and also creates
+\ a SHADOW-VOCABULARY that contains shadow wordlist and target
+\ wordlist for the new vocabulary, and a reference to the vocabulary
+\ name (in the current target wordlist).  Target search order and
+\ compilation "wordlist" are actually these shadow vocabularies.
+\
+\ We define ONLY &c to manipulate both host and target search orders
+\ in lockstep.  The host's compilation wordlist is the target's.
+\ Sometimes we temporarily switch to its shadow if target defines new
+\ constants or vocabularies.
+
+\ shadow-vocabulary structure
+: svoc-shadow                         @ ;
+: svoc-target   [ 1 cells ] literal + @ ;
+: svoc-sym      [ 2 cells ] literal + @ ;
+
+create torder-stack 8 cells allot
+here constant tosp0
+variable tosp
+
+: tcontext  tosp @ ;
+: (tset-wid)   tcontext ! ;   \ replace top value
+
+variable tcurrent
+: tget-current   tcurrent @ ;
+: tset-current   tcurrent ! ;
+
+: torder
+   tosp0 tcontext ?do
+      i @ svoc-sym type-sym
+      ."  (" i @ svoc-target . ." ) "
+   [ 1 cells ] literal +loop ;
+
+: in-meta ( xt -- )
+   \ ." IN-META: current: " get-current . cr
+   get-current >r
+   tget-current svoc-shadow set-current   \ in host's shadow vocabulary
+   \ ." IN-META: switch2: " get-current . cr
+   catch
+   ( XXX ) dup if ." CAUGHT " dup . cr then
+   r> set-current                         \ back to target's vocabulary
+   throw ;
+
+
+: shadow-vocabulary-does!
+ does>
+   dup svoc-sym
+      ." /* XXX: use: " type-sym  ."  */" cr
+   dup svoc-shadow (also-wid)   \ add host's shadow to host's search order
+   (tset-wid) ;                 \ add this svoc to target's search order
+
+: shadow-vocabulary   ( tlatest "name" -- )
+   dup ." /* XXX: def: " type-sym  ."  */" cr
+   wordlist wordlist
+   ." /* shadow: " dup . ."  target: " over . ."  */" cr
+   create ( shadow ) , ( target ) , ( tlatest ) ,
+   shadow-vocabulary-does! ;
+
+\ target is shadowed by meta
+wordlist constant target-wid
+create target
+   meta-wid , target-wid , here cell+ ,
+   0 , 0 ,
+ shadow-vocabulary-does!
+
+: tonly   tosp0 cell- tosp !  target ;
+
+: tosp-
+   tcontext  dup torder-stack = ( overflow  ) -49 and throw
+   cell- tosp ! ;
+: tosp+
+   tcontext dup tosp0 = ( udnerflow ) -50 and throw
+   cell+ tosp ! ;
+
+
 variable tlatest    0 tlatest !
 variable tversion   0 tversion !
 
@@ -159,8 +218,8 @@ variable tversion   0 tversion !
 
 : tsearch-target   ( c-addr u -- 0 | xt 1 | xt -1 )
    tosp0 tcontext ?do
-      2dup i @
-      @ search-wordlist ?dup if
+      2dup i @ svoc-target
+      search-wordlist ?dup if
          over thidden? if
             2drop
          else
@@ -199,24 +258,7 @@ variable tversion   0 tversion !
       tcreate-new
    then ;
 
-: type-sym'  ( body -- )
-   dup cell+ count type  \ basename
-   @ ?dup if             \ needs version suffix?
-      [char] . emit
-      0 .r
-   then ;
-' type-sym' is type-sym
-
 : tlatest-sym   tlatest @ type-sym ;
-
-
-variable tcurrent
-: tget-current   tcurrent @ ;
-
-: tset-current
-   ." #undef  CURRENT" cr
-   ." #define CURRENT " dup cell+ @ type-sym cr
-   tcurrent ! ;
 
 
 \ record a mapping in the target dictionary.  this is to let the
@@ -321,17 +363,8 @@ variable tcurrent
    [char] ) emit
    cr ;
 
-: in-meta ( ... xt -- ... )
-   get-current >r  >in @ >r
-   definitions                \ in host's shadow vocabulary
-   catch
-   r> >in !  r> set-current   \ back to target's vocabulary
-   throw ;
-
-\ make real constant definitions in the meta vocabulary so that
-\ interpreted code can use them
-: shadow-constant    dup constant ;
-: shadow-2constant   2dup 2constant ;
+: +emitdef
+   >in @ >r  emitdef  r> >in ! ;
 
 
 : ?comp   state @ 0= if  -14 throw then ; \ interpreting a compile-only word
@@ -381,20 +414,27 @@ also meta definitions previous
 : 2variable   s" VARIABLE" emitdef  0 t, 0 t, ;
 : buffer:     s" VARIABLE" emitdef  tallot ;
 
-: constant    ['] shadow-constant in-meta   s" CONSTANT" emitdef t, ;
-: 2constant   ['] shadow-2constant in-meta  s" TWO_CONSTANT" emitdef t, t, ;
+: constant
+   s" CONSTANT" +emitdef dup t,
+   ['] constant in-meta ;
+: 2constant
+   s" TWO_CONSTANT" +emitdef 2dup t, t,
+   ['] 2constant in-meta ;
 
 : vocabulary
-   >in @  s" VOCABULARY" emitdef  >in !
+   s" VOCABULARY" +emitdef
    tlatest @ ['] shadow-vocabulary in-meta ;
 
 : only   tonly ;
-: also   tcontext @ tosp- (tset-wid) ;
-: previous   tosp+ ;
+: also   also tcontext @ tosp- (tset-wid) ;
+: previous   previous tosp+ ;
 
-: get-current   tget-current ;
-: set-current   tset-current ;
-: definitions   tcontext @ tset-current ;
+: definitions
+   tcontext @
+   dup tset-current
+   ." #undef  CURRENT" cr
+   ." #define CURRENT " dup svoc-sym type-sym cr
+   svoc-target set-current ;
 
 
 : [   postpone [ ; immediate
@@ -485,9 +525,14 @@ also meta definitions previous
 : loop  s" _lparenloop_rparen"      (loop) ; immediate
 : +loop s" _lparen_plusloop_rparen" (loop) ; immediate
 
-\ pre-populate target vocabulary with stubs for the asm words
-' target >body @ set-current
 
+\ setup host and target search order
+tosp0 cell- tosp !
+' target >body (tset-wid)
+' target >body tset-current
+target-wid set-current
+
+\ pre-populate target vocabulary with stubs for the asm words
 predef~ .Lnoname .Lnoname   \ XXX: placeholder
 include asmwords.fth
 
