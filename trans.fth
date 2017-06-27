@@ -181,11 +181,17 @@ variable tcurrent
       ."  (" i @ svoc-target . ." ) "
    [ 1 cells ] literal +loop ;
 
+: /*order*/
+   ." /*  order: "  order ." */" cr
+   ." /* .order: " .order ." */" cr
+   ." /* torder: " torder ." */" cr ;
+
+: /*current*/
+   ." /* current: " get-current . ." */" cr ;
+
 : in-meta ( xt -- )
-   \ ." IN-META: current: " get-current . cr
    get-current >r
    tget-current svoc-shadow set-current   \ in host's shadow vocabulary
-   \ ." IN-META: switch2: " get-current . cr
    catch
    ( XXX ) dup if ." CAUGHT " dup . cr then
    r> set-current                         \ back to target's vocabulary
@@ -194,13 +200,11 @@ variable tcurrent
 
 : shadow-vocabulary-does!
  does>
-   dup svoc-sym
-      ." /* XXX: use: " type-sym  ."  */" cr
    dup svoc-shadow (also-wid)   \ add host's shadow to host's search order
-   (tset-wid) ;                 \ add this svoc to target's search order
+   (tset-wid)                   \ add this svoc to target's search order
+   /*order*/ ;
 
 : shadow-vocabulary   ( tlatest "name" -- )
-   dup ." /* XXX: def: " type-sym  ."  */" cr
    wordlist wordlist
    ." /* shadow: " dup . ."  target: " over . ."  */" cr
    create ( shadow ) , ( target ) , ( tlatest ) ,
@@ -460,9 +464,11 @@ also meta definitions previous
 : definitions
    tcontext @
    dup tset-current
+   dup svoc-target set-current
+   cr
    ." #undef  CURRENT" cr
    ." #define CURRENT " dup svoc-sym type-sym cr
-   svoc-target set-current ;
+   /*current*/ ;
 
 
 : [   postpone [ ; immediate
@@ -554,11 +560,16 @@ also meta definitions previous
 : +loop s" _lparen_plusloop_rparen" (loop) ; immediate
 
 
+\ print wordlists for FORTH a-la SHADOW-VOCABULARY
+.( /* shadow: ) ' tforth >body svoc-shadow .
+.(  target: ) ' tforth >body svoc-target .
+.(  */) cr
+
 \ setup host and target search order
 tosp0 cell- tosp !
 ' tforth >body (tset-wid)
 ' tforth >body tset-current
-tforth-wordlist set-current
+' tforth >body svoc-target set-current
 
 \ pre-populate target vocabulary with stubs for the asm words
 predef~ .Lnoname .Lnoname   \ XXX: placeholder
