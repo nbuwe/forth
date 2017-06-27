@@ -160,6 +160,9 @@ char ~ xlat: tilde
 : svoc-shadow                         @ ;
 : svoc-target   [ 1 cells ] literal + @ ;
 : svoc-sym      [ 2 cells ] literal + @ ;
+: svoc-prev     [ 3 cells ] literal +   ;
+
+variable svoc-head
 
 create torder-stack 8 cells allot
 here constant tosp0
@@ -204,15 +207,20 @@ variable tcurrent
 : shadow-vocabulary   ( tlatest "name" -- )
    wordlist wordlist
    ." /* shadow: " dup . ."  target: " over . ."  */" cr
-   create ( shadow ) , ( target ) , ( tlatest ) ,
-   shadow-vocabulary-does! ;
+   create here >r
+   ( shadow ) , ( target ) , ( tlatest ) ,
+   svoc-head @ , r> svoc-head !
+ shadow-vocabulary-does! ;
 
 \ target's FORTH is shadowed by meta
 wordlist constant tforth-wordlist
+here 0 , word, forth   \ symbol
 create tforth
-   meta-wid , tforth-wordlist , here cell+ ,
-   0 ,  word, forth
+   meta-wid , tforth-wordlist , ( symbol ) , 0 ,
  shadow-vocabulary-does!
+
+' tforth >body svoc-head !
+
 
 : tonly   tosp0 cell- tosp !  tforth ;
 
@@ -377,7 +385,16 @@ variable tversion   0 tversion !
    .\" #include \"forth-prologue.S\"" cr
    ." #undef  IMMEDIATE" cr
    ." #define IMMEDIATE .Limm0" cr ;
-: transpile-end     ." IMMEDIATE = 0" cr ;
+
+: transpile-end
+   ." IMMEDIATE = 0" cr
+   svoc-head @ begin
+      dup while
+         dup svoc-sym
+         ." LATEST(" dup type-sym ." ) = LASTNFA(" type-sym ." )" cr
+         svoc-prev @
+   repeat
+;
 
 
 \ takes the name of the CPP macro to use (e.g. WORD or VARIABLE) to
