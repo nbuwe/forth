@@ -29,4 +29,7 @@ DOES_4TH(constant_does)
 DOES_4TH(vocabulary_does)
 	.long	0
 
+.ifndef LATEST(forth)
+LATEST(forth) = LASTNFA(forth)
+.endif
 #endif /* TESTING */

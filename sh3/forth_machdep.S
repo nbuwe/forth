@@ -1248,9 +1248,6 @@ ASMWORD("sync-i$", sync_icache)
 #include "test.S"
 
 	.data
-/* XXX: this should be automated */
-LATEST(forth) = LASTNFA(forth)
-
 	.size	heap, . - heap
 
 	.section ".bss"
