@@ -565,7 +565,8 @@ also meta definitions previous
 .(  target: ) ' tforth >body svoc-target .
 .(  */) cr
 
-\ setup host and target search order
+\ setup host and target search order - this is almost ONLY DEFINITIONS
+\ except that we don't yet want META in the search order
 tosp0 cell- tosp !
 ' tforth >body (tset-wid)
 ' tforth >body tset-current
