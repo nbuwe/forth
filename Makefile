@@ -10,6 +10,9 @@ CPPFLAGS += -I. -I${.CURDIR} -I${.CURDIR}/${MACHINE_CPU}
 SRCS = main.c forth_machdep.S
 GDBINIT = ${.CURDIR}/${MACHINE_CPU}/forth.gdb
 
+# when porting to a new cpu - see test.S
+# CPPFLAGS += -DTESTING
+
 CLEANDIRFILES += forth.S
 forth.S: forth.fth asmwords.fth trans.fth
 	gforth ${.CURDIR}/trans.fth -e bye > forth.S
@@ -19,3 +22,4 @@ forth_machdep.d: ${MACHINE_CPU}/forth_machdep.S forth.S
 
 OBJMACHINE=yes
 .include <bsd.prog.mk>
+
