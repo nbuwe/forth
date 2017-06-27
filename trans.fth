@@ -226,6 +226,15 @@ create tforth
    tcontext dup tosp0 = ( udnerflow ) -50 and throw
    cell+ tosp ! ;
 
+: tdefinitions
+   tcontext @
+   dup tset-current
+   dup svoc-target set-current
+   cr
+   ." #undef  CURRENT" cr
+   ." #define CURRENT " dup svoc-sym type-sym cr
+   /*current*/ ;
+
 
 variable tlatest    0 tlatest !
 variable tversion   0 tversion !
@@ -461,14 +470,7 @@ also meta definitions previous
 : also   also tcontext @ tosp- (tset-wid) ;
 : previous   previous tosp+ ;
 
-: definitions
-   tcontext @
-   dup tset-current
-   dup svoc-target set-current
-   cr
-   ." #undef  CURRENT" cr
-   ." #define CURRENT " dup svoc-sym type-sym cr
-   /*current*/ ;
+: definitions   tdefinitions ;
 
 
 : [   postpone [ ; immediate
@@ -565,18 +567,12 @@ also meta definitions previous
 .(  target: ) ' tforth >body svoc-target .
 .(  */) cr
 
-\ setup host and target search order - this is almost ONLY DEFINITIONS
-\ except that we don't yet want META in the search order
-tosp0 cell- tosp !
-' tforth >body (tset-wid)
-' tforth >body tset-current
-' tforth >body svoc-target set-current
+\ welcome to the transpiler
+also tonly tdefinitions
 
 \ pre-populate target vocabulary with stubs for the asm words
 predef~ .Lnoname .Lnoname   \ XXX: placeholder
 include asmwords.fth
-
-also meta
 
 \ start processing target's forth text
 transpile-begin
