@@ -22,14 +22,14 @@
 \ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 vocabulary trans        \ main transpiler vocabulary
-
 only forth also trans definitions
 
-\ XXX: gforth - snumber? returns dot position
+[defined] snumber? [if] \ gforth: SNUMBER? returns dot position
 : number?
    snumber? dup if
       0> if 2 else 1 then
    then ;
+[then]
 
 [undefined] cell- [if]
 : cell- [ 1 cells ] literal - ;
@@ -49,18 +49,15 @@ vocabulary meta         \ defining words for the target
 
 : search-meta   meta-wid search-wordlist ;
 
-: noname-basename s" .Lnoname" ;
 
-
-: ?parsed
-   ?dup 0= if drop  -16 throw then ; \ attempt to use zero-length string as a name
+: ?parsed    ( u -- )   dup 0= ( empty name ) -16 and throw ;
+: ?counted   ( u -- )   dup 255 > ( too long ) -18 and throw ;
 
 : string,   ( c-addr u -- )   \ reserve space and store string
    here swap dup allot move ;
 
-: word,   \ compile as counted string, like c" but parses at run time
-   parse-word ?parsed   ( c-addr u -- )
-   \ XXX: TODO: check length
+: word,   ( "name" -- )   \ compile as counted string
+   parse-word ?parsed ?counted   \ c-addr u --
    dup c, string, ;
 
 
@@ -189,7 +186,7 @@ variable tcurrent
 : /*current*/
    ." /* current: " get-current . ." */" cr ;
 
-: in-meta ( xt -- )
+: in-meta   ( xt -- )
    get-current >r
    tget-current svoc-shadow set-current   \ in host's shadow vocabulary
    catch
@@ -258,17 +255,19 @@ variable tversion   0 tversion !
    [ 1 cells ] literal +loop
    2drop false ;
 
-: t(')   ( "<spaces>name" -- 0 | xt 1 | xt -1 )
+: t(')   ( "name" -- 0 | xt 1 | xt -1 )
    parse-word ?parsed tsearch-target ;
 
-: t'   ( "<spaces>name" -- xt )
+: t'   ( "name" -- xt )
    t(') 0= if ( undefined word ) -13 throw then ;
 
 
-: (tcreate)   ( "<spaces>name" -- )
+: noname-basename s" .Lnoname" ;
+
+: (tcreate)   ( "name" -- )
    create here tlatest !  0 dup , tversion ! ;
 
-: tcreate-new   ( "<spaces>name" -- )
+: tcreate-new   ( "name" -- )
    >in @ (tcreate) >in !
    \ make symbol name
    here >r 0 c,                     \ reserve and save count location 
@@ -383,7 +382,7 @@ variable tversion   0 tversion !
 
 \ takes the name of the CPP macro to use (e.g. WORD or VARIABLE) to
 \ define the forth name in the generated output
-: emitdef ( c-addr u "<spaces>name" -- )
+: emitdef ( c-addr u "name" -- )
    >in @ tcreate >in !  \ restore input for parse-word below
    \ the defining macro will use the not yet defined .Limm_name as the
    \ immediate flag.  if "immediate" follows this definition, it will
@@ -437,8 +436,9 @@ variable lblcnt   0 lblcnt !
 
 4 constant cell
 
-\ defining words go to the meta vocabulary, but that vocabulary is not
-\ in the search order
+
+\ defining and immediate words go to the meta vocabulary, that shadows
+\ target's "forth" vocabulary.  NB: it is NOT in the search order!
 also meta definitions previous
 
 : \   $0a parse comment ; immediate
@@ -571,7 +571,7 @@ also meta definitions previous
 also tonly tdefinitions
 
 \ pre-populate target vocabulary with stubs for the asm words
-predef~ .Lnoname .Lnoname   \ XXX: placeholder
+predef~ .Lnoname .Lnoname   \ :NONAME basename 
 include asmwords.fth
 
 \ start processing target's forth text
