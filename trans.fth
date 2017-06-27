@@ -451,6 +451,8 @@ also meta definitions previous
    s" VOCABULARY" +emitdef
    tlatest @ ['] shadow-vocabulary in-meta ;
 
+: forth   tforth ;
+
 : only   tonly ;
 : also   also tcontext @ tosp- (tset-wid) ;
 : previous   previous tosp+ ;
