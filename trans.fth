@@ -35,6 +35,10 @@ only forth also trans definitions
 : cell- [ 1 cells ] literal - ;
 [then]
 
+[undefined] (u.) [if]
+: (u.)   0 <# #s #> ;
+[then]
+
 : >wid   ( voc-xt -- voc-wid )   also execute  context @  previous ;
 : (also-wid)   ( wid -- )   >r get-order nip r> swap set-order ;
 : .order   get-order 0 ?do . loop ;
@@ -89,9 +93,8 @@ char ^ xlat: circumflex char _ xlat: _          char ` xlat: backtick
 char { xlat: lbrace     char | xlat: bar        char } xlat: rbrace
 char ~ xlat: tilde
 
-: word-xlat,
+: (word-xlat,)
    parse-word ?parsed    ( c-addr u -- )
-   here >r 0 c,          \ reserve and save count location
    over c@ [char] 0 [ char 9 1+ ] literal within if
       [char] _ c,
    then
@@ -103,7 +106,11 @@ char ~ xlat: tilde
       else
          c,                 \ copy char as-is
       then
-   loop
+   loop ;
+
+: word-xlat,
+   here >r 0 c,          \ reserve and save count location
+   (word-xlat,)
    here r@ - 1- r> c! ;
 
 
@@ -126,6 +133,14 @@ char ~ xlat: tilde
       [char] . emit
       0 .r
    then ;
+
+: sym-string,   ( body -- )
+   dup cell+ count string,   \ basename
+   @ ?dup if                 \ needs version suffix?
+      [char] . c,
+      (u.) string,
+   then ;
+   
 
 
 \ Transpiler maintains its own target search order, but it needs
@@ -191,14 +206,14 @@ variable tcurrent
    create ( shadow ) , ( target ) , ( tlatest ) ,
    shadow-vocabulary-does! ;
 
-\ target is shadowed by meta
-wordlist constant target-wid
-create target
-   meta-wid , target-wid , here cell+ ,
-   0 , 0 ,
+\ target's FORTH is shadowed by meta
+wordlist constant tforth-wordlist
+create tforth
+   meta-wid , tforth-wordlist , here cell+ ,
+   0 ,  word, forth
  shadow-vocabulary-does!
 
-: tonly   tosp0 cell- tosp !  target ;
+: tonly   tosp0 cell- tosp !  tforth ;
 
 : tosp-
    tcontext  dup torder-stack = ( overflow  ) -49 and throw
@@ -241,7 +256,18 @@ variable tversion   0 tversion !
    create here tlatest !  0 dup , tversion ! ;
 
 : tcreate-new   ( "<spaces>name" -- )
-   >in @ (tcreate) >in ! word-xlat, ;
+   >in @ (tcreate) >in !
+   \ make symbol name
+   here >r 0 c,                     \ reserve and save count location 
+   tget-current svoc-sym
+   dup cell+ count
+   s" forth" compare if
+      sym-string, [char] . c,           \ prefix with vocabulary name
+   else      
+      drop
+   then
+   (word-xlat,)
+   here r@ - 1- r> c! ;
 
 : tcreate-version   ( xt -- )
    >body tlatest !
@@ -528,9 +554,9 @@ also meta definitions previous
 
 \ setup host and target search order
 tosp0 cell- tosp !
-' target >body (tset-wid)
-' target >body tset-current
-target-wid set-current
+' tforth >body (tset-wid)
+' tforth >body tset-current
+tforth-wordlist set-current
 
 \ pre-populate target vocabulary with stubs for the asm words
 predef~ .Lnoname .Lnoname   \ XXX: placeholder
