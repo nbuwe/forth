@@ -9,6 +9,7 @@ CPPFLAGS += -I. -I${.CURDIR} -I${.CURDIR}/${MACHINE_CPU}
 
 SRCS = main.c forth_machdep.S
 SRCS += math.c
+SRCS += io-stdio.c
 GDBINIT = ${.CURDIR}/${MACHINE_CPU}/forth.gdb
 
 # when porting to a new cpu - see test.S

@@ -33,6 +33,10 @@ extern void *start_forth(/* unchecked */);
 extern int32_t stack_bottom[];
 
 
+cell_t *emit_impl(cell_t *);
+cell_t *type_impl(cell_t *);
+cell_t *accept_impl(cell_t *);
+
 cell_t *ms_slash_rem_impl(cell_t *); /* symmetric division */
 cell_t *mf_slash_mod_impl(cell_t *); /* floored */
 cell_t *mu_slash_mod_impl(cell_t *); /* unsigned */

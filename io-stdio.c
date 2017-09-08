@@ -28,27 +28,85 @@
 #include <stdio.h>
 
 
-int
-main()
+/*
+ * ( x -- )
+ */
+cell_t *
+emit_impl(cell_t *stack)
 {
-    int32_t *psp;
-    int32_t *p;
-    int32_t *bottom;
+    char c = (char)stack[0];
 
-    psp = start_forth();
+    fputc(c, stdout);
+    fflush(stdout);
 
-    /* skip placeholder for invalid TOS of an empty stack */
-    bottom = stack_bottom - 1;
+    ++stack;
+    return stack;
+}
 
-    if (psp < bottom) {
-	printf("-- STACK:\n");
-	for (p = psp; p < bottom; ++p) {
-	    printf("0x%08x  %d\n", *p, *p);
+
+/*
+ * ( c-addr u -- )
+ */
+cell_t *
+type_impl(cell_t *stack)
+{
+    size_t size = stack[0];
+    const char *data = (char *)stack[1];
+
+    fwrite(data, size, 1, stdout);
+    fflush(stdout);
+
+    stack += 2;
+    return stack;
+}
+
+
+/*
+ * ( c-addr +n1 -- +n2 )
+ */
+cell_t *
+accept_impl(cell_t *stack)
+{
+    const size_t buflen = stack[0];
+    char *buf = (char *)stack[1];
+    int len = 0;
+    int c;
+
+    if (buflen == 0) {
+	if (feof(stdin) || ferror(stdin)) {
+	    len = -1;
+	    goto out;
 	}
     }
-    else {
-	printf("-- STACK: <empty>\n");
+
+    flockfile(stdin);
+    while (len < buflen) {
+	c = getc_unlocked(stdin);
+
+	if (c == EOF) {
+	    if (len == 0)
+		len = -1;
+	    break;
+	}
+
+	if (c == '\n')
+	    break;
+
+	buf[len++] = c;
     }
-    
-    return 0;
+
+    /* peek at the next character and drop it if it's a newline */
+    if (len == buflen) {
+	c = getc_unlocked(stdin);
+
+	if (c != '\n' && c != EOF)
+	    ungetc(c, stdin);
+    }
+
+    funlockfile(stdin);
+  out:
+
+    ++stack;
+    stack[0] = len;
+    return stack;
 }
