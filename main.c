@@ -28,10 +28,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef uintptr_t cell_t;
+#include "forth-c.h"
 
-extern void *start_forth(/* unchecked */);
-extern int32_t stack_bottom[];
 
 int
 main()
