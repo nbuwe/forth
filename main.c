@@ -23,12 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "forth-c.h"
+
 #include <string.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-#include "forth-c.h"
 
 
 int

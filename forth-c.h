@@ -25,6 +25,8 @@
 #ifndef _FORTH_C_H_
 #define _FORTH_C_H_
 
+#include <stdint.h>
+
 typedef uintptr_t cell_t;
 
 extern void *start_forth(/* unchecked */);
