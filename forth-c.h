@@ -25,7 +25,11 @@
 #ifndef _FORTH_C_H_
 #define _FORTH_C_H_
 
+#ifdef _KERNEL
+#include <sys/stdint.h>
+#else
 #include <stdint.h>
+#endif
 
 typedef uintptr_t cell_t;
 
