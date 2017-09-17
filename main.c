@@ -27,6 +27,8 @@
 
 #include <stdio.h>
 
+extern void *start_forth(/* unchecked */);
+
 
 int
 main()
