@@ -280,6 +280,14 @@ ASMWORD("(quit)", quit_parens)
 	ASMEND(quit_parens)
 
 
+!!! Reset parameter stack
+ASMWORD("clear", clear)
+	mov.l	sp0_const, PSP	! reset parameter stack
+	jmp	@NEXT
+	 mov	#0, TOS		! clear TOS just in case
+	ASMEND(clear)
+
+
 !!! Where the stacks are.  (ABORT) and (QUIT) just above use these
 !!! directly in assembler as literals.
 CONSTANT("sp0", sp0)	.long	stack_bottom

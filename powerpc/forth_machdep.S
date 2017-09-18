@@ -337,6 +337,15 @@ ASMWORD("(quit)", quit_parens)
 	ASMEND(quit_parens)
 
 
+### Reset parameter stack
+ASMWORD("clear", clear)
+	lis	%PSP, stack_bottom@ha		# reset parameter stack
+	la	%PSP, stack_bottom@l(%PSP)
+	li	%TOS, 0				# clear TOS just in case
+	blr
+	ASMEND(clear)
+
+
 ### Where the stacks are.
 CONSTANT("sp0", sp0)	.long	stack_bottom
 CONSTANT("rp0", rp0)	.long	rstack_bottom
