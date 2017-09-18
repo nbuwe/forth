@@ -129,7 +129,7 @@ VOCABULARY("forth", forth)
  * NB: W is used to pass CFA.
  */
 
-### Code field of colon definitions (i.e. forth words)  points here.
+### Code field of colon definitions (i.e. forth words) points here.
 CODE(call_code)
 	mov	%IP, -4(%RSP)	# save caller's IP
 	add	$-4, %RSP
