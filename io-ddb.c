@@ -69,6 +69,7 @@ accept_impl(cell_t *stack)
     char *buf = (char *)stack[1];
     int len;
 
+    db_output_line = 0;
     len = db_readline(buf, buflen);
     if (buf[len-1] == '\n') { buf[--len] = '\0'; }
     if (buf[len-1] == '\r') { buf[--len] = '\0'; }
