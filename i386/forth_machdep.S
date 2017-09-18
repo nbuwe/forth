@@ -86,10 +86,8 @@ ENTRY(start_forth)
 	xor	%RSP, %RSP
 
 	## ABORT to forth
-	lea	abort_body + 4, %IP
-	mov	-4(%IP), %W	# CFA of (ABORT), the first word of ABORT
-	add	$4, %W		# PFA - the actual asm code of (ABORT)
-	jmp	*%W
+	lea	abort_body, %IP
+	jmp	next_code
 
 .L_BYE_RETURNS_HERE:
 	SPILL_TOS

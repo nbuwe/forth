@@ -123,12 +123,7 @@ ENTRY(start_forth)
 	## ABORT to forth
 	lis	%IP, abort_body@ha
 	la	%IP, abort_body@l(%IP)
-
-	lwz	%TMP, 0(%IP)	# CFA of (ABORT), the first word of ABORT
-	addi	%IP, %IP, 4
-	addi	%TMP, %TMP, 4	# PFA - the actual asm code of (ABORT)
-	mtctr	%TMP
-	bctr
+	blr	# NEXT
 
 .L_BYE_RETURNS_HERE:
 	SPILL_TOS

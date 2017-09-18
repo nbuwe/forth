@@ -91,9 +91,7 @@ ENTRY(start_forth)
 
 	!! ABORT to forth
 	mov.l	.L_abort_body, IP
-	mov.l	@IP+, r0		! CFA of (abort), the first word
-	add	#4, r0			! PFA - the actual code
-	jmp	@r0
+	jmp	@NEXT
 	 nop
 
 .L_BYE_RETURNS_HERE:
