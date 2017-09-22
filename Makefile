@@ -1,6 +1,7 @@
 PROG=	forth
 NOPIE=
 NOMAN=
+NOCTF=
 
 .include <bsd.own.mk>
 
