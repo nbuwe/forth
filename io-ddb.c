@@ -37,6 +37,7 @@ emit_impl(cell_t *stack)
     char c = (char)stack[0];
 
     db_putchar(c);
+    db_force_whitespace();
 
     ++stack;
     return stack;
@@ -53,6 +54,7 @@ type_impl(cell_t *stack)
     const char *data = (char *)stack[1];
 
     db_printf("%*.*s", size, size, data);
+    db_force_whitespace();
 
     stack += 2;
     return stack;
