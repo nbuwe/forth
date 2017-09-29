@@ -943,7 +943,7 @@ predef~ call-code call_code \ XXX
 
 : sliteral   ( c-addr u -- ;  run-time -- c-addr u )
    ?comp
-   ['] (s") compile,
+   postpone (s")
    dup , string, align ; immediate
 
 : c"
