@@ -178,9 +178,9 @@ variable handler \ handler off
 : align   ( -- )   here aligned dp! ;
 : allot   ( n -- )   here + dp! ;
 
-: ,    (    x -- )   here 1 cells allot  ! ;
-: c,   ( char -- )   here 1 chars allot c! ;
-: 2,   (    d -- )   here 2 cells allot 2! ;
+: ,    (    x -- )   here [ 1 cells ] literal allot  ! ;
+: c,   ( char -- )   here [ 1 chars ] literal allot c! ;
+: 2,   (    d -- )   here [ 2 cells ] literal allot 2! ;
 
 : string,   ( c-addr u -- )   \ reserve space and store string
    here swap dup allot move ;
@@ -866,8 +866,8 @@ predef~ var-does var_does
    \ XXX: for now we need to protect next-code with compile
    compile var-does ;
 
-: variable    create 1 cells allot ;
-: 2variable   create 2 cells allot ;
+: variable    create [ 1 cells ] literal allot ;
+: 2variable   create [ 2 cells ] literal allot ;
 : buffer:     create allot ;
 
 \ set CFA of the latest word to ...
