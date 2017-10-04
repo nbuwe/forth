@@ -949,7 +949,7 @@ predef~ call-code call_code \ XXX
 : c"
    ?comp
    '"' parse   \ XXX: TODO: handle failure
-   compile (c")
+   postpone (c")
    dup c, string,
    align ; immediate
 
