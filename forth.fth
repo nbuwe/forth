@@ -909,7 +909,7 @@ predef~ call-code call_code \ XXX
 
 
 : defer ( "name" -- )
-   create compile abort
+   create ['] abort ,
  does>
    @ execute ;
 
