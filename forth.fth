@@ -719,7 +719,7 @@ variable state
    parse-word ?parsed search-context ;
 
 : '   (')  0= ( undefined? ) -13 and throw ;
-: [']   ?comp ' postpone literal ; immediate \ XXX: use compile,
+: [']   ?comp ' postpone literal ; immediate
 
 : [compile]   ?comp ' compile, ; immediate
 
