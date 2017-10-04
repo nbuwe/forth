@@ -997,8 +997,8 @@ predef~ call-code call_code \ XXX
 : again  ?comp 2 ?pairs (again) ; immediate
 : until  ?comp 2 ?pairs (until) ; immediate
 
-: while  ?comp 2 ?pairs (if) 3 ;  immediate
-: repeat ?comp 3 ?pairs swap (again) (then) ;  immediate
+: while  ?comp 2 ?pairs (if) 3 ; immediate
+: repeat ?comp 3 ?pairs swap (again) (then) ; immediate
 
 : do
    ?comp

@@ -563,15 +563,15 @@ also meta definitions previous
 
 : ahead  ?comp          (ahead) 1 ; immediate
 : if     ?comp          (if) 1 ; immediate
-: else   ?comp 1 ?pairs (ahead) swap (then) 1 ;  immediate
-: then   ?comp 1 ?pairs (then) ;  immediate
+: else   ?comp 1 ?pairs (ahead) swap (then) 1 ; immediate
+: then   ?comp 1 ?pairs (then) ; immediate
 
 : begin  ?comp          (begin) 2 ; immediate
 : again  ?comp 2 ?pairs (again) ; immediate
 : until  ?comp 2 ?pairs (until) ; immediate
 
-: while  ?comp 2 ?pairs (if) 3 ;  immediate
-: repeat ?comp 3 ?pairs swap (again) (then) ;  immediate
+: while  ?comp 2 ?pairs (if) 3 ; immediate
+: repeat ?comp 3 ?pairs swap (again) (then) ; immediate
 
 : do    s" _lparendo_rparen"          (do) ; immediate
 : ?do   s" _lparen_questiondo_rparen" (do) ; immediate
