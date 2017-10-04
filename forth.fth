@@ -726,9 +726,10 @@ variable state
 : postpone
    ?comp
    (') 0< if
-      compile compile
-   then
-   compile, ; immediate
+      compile compile ,
+   else
+      compile,
+   then ; immediate
 
 
 \ ==================== repl
