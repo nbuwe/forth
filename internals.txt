@@ -18,7 +18,7 @@ test it in a couple of evenings.  It's been gathering dust until
 several years later when I was down with a flu and accidentally wrote
 most of the missing bits for distraction and entertainment.  And then
 a real interactive system was not that far away, so I just had to
-complete it.  Than transpiler sort of grew out of dirt and rags
+complete it.  Then transpiler sort of grew out of dirt and rags
 spontaneously.  Did I mention we discussed mice?
 
 
@@ -150,10 +150,10 @@ jumping to the word's code (whose address is in its CFA).  I.e.
 	IP = pop();		// PFA from the stack
 	goto next;
 
-"exit" remains the same.  "var" is no longer necessary, as PFA is
-pushed onto the stack by "next".  Instead of "var" data words can
-simply use "next" as their code as a shortcut to return to the
-interpreter directly.
+"exit" remains the same.  "var" is not necessary, as PFA is pushed
+onto the stack by "next".  Instead of "var" data words can simply use
+"next" as their code as a shortcut to return to the interpreter
+directly.
 
 Actually, this was the first version of interpreter I wrote.
 
@@ -170,14 +170,14 @@ of the "asm" trampoline that has to pop it and just jump to word's
 body directly.
 
 Code that needs to manifest the PFA to the Forth world (e.g. VARIABLE
-or DOES>) need to de-optimize and spill that transient top-of-stack
+or DOES>) needs to de-optimize and spill that transient top-of-stack
 where Forth code can see it.  Hence we now need "var" to do that
 de-optimization where earlier we could just go directly to "next".
 
 As a further optimization we don't have to set W to PFA in "next" if
 our host assembler doesn't have a convenient instruction or addressing
 mode for that.  E.g. on SuperH where post-increment addressing mode is
-available we can use it "next" to advance W from CFA to PFA for free.
-On PowerPC there's no post-increment, so we let "next" leave W set to
-CFA and adjust it to PFA only in the code that needs it ("call" or
-"var").
+available we can use it in "next" to advance W from CFA to PFA for
+free.  On PowerPC there's no post-increment, so we let "next" leave W
+set to CFA and adjust it to PFA only in the code that needs it ("call"
+or "var").
