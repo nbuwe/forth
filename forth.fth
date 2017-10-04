@@ -623,8 +623,8 @@ variable state
    r> dup cell+ >r
    @ compile, ;
 
-: literal    state @ if compile lit , then ; immediate
-: 2literal   state @ if compile 2lit , , then ; immediate
+: literal    state @ if postpone lit , then ; immediate
+: 2literal   state @ if postpone 2lit , , then ; immediate
 : [char]     ?comp char postpone literal ; immediate
 
 
@@ -886,11 +886,11 @@ predef~ call-code call_code \ XXX
    (;alit) call-code ;
 
 : ;
-   compile exit
+   postpone exit
    unsmudge postpone [ ; immediate
 
 : does> ?comp
-   compile (;code)
+   postpone (;code)
    does-thunk $count \ code len -- (like sliteral)
    code, ; immediate
 
@@ -975,14 +975,14 @@ predef~ call-code call_code \ XXX
 : <resolve   ( C: mark -- )   , ;
 
 \ forward jumps
-: (ahead)   compile  branch >mark ;
-: (if)      compile ?branch >mark ;
+: (ahead)   postpone branch >mark ;
+: (if)      postpone ?branch >mark ;
 : (then)    >resolve ;
 
 \ backward jumps
 : (begin)   <mark ;
-: (again)   compile  branch <resolve ;
-: (until)   compile ?branch <resolve ;
+: (again)   postpone  branch <resolve ;
+: (until)   postpone ?branch <resolve ;
 
 
 : ?pairs   ( C: expected actual -- )   \ control structure mismatch
@@ -1002,27 +1002,27 @@ predef~ call-code call_code \ XXX
 
 : do
    ?comp
-   compile (do)
+   postpone (do)
    >mark \ leave address
    <mark \ address to loop back to
    4 ; immediate
 
 : ?do
    ?comp
-   compile (?do)
+   postpone (?do)
    >mark \ leave address
    <mark \ address to loop back to
    4 ; immediate
 
 : loop
    ?comp 4 ?pairs
-   compile (loop)
+   postpone (loop)
    <resolve     \ jump to the beginning of the loop
    >resolve ; immediate \ leave address after the loop
 
 : +loop
    ?comp 4 ?pairs
-   compile (+loop)
+   postpone (+loop)
    <resolve     \ jump to the beginning of the loop
    >resolve ; immediate \ leave address after the loop
 
