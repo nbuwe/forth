@@ -937,7 +937,7 @@ predef~ call-code call_code \ XXX
 
 : compile"
    r> dup cell+ >r @   \ fetch runtime word after us (like compile)
-   '"' parse           \ XXX: TODO: handle failure
+   '"' parse
    rot compile,        \ compile runtime word
    dup , string,       \ compile string
    align ;
