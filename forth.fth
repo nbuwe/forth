@@ -580,6 +580,8 @@ variable >in
 
 $80 constant &iflag   \ immediate
 $40 constant &sflag   \ smudged
+\ $20 is unused
+$1f constant #name    \ name length/mask
 
 : wordlist   ( -- wid )
    align here                   \ address of this stub header
@@ -652,7 +654,7 @@ variable state
 : immediate?   ( nfa -- flag )   c@ [ &iflag ] literal and ;
 : smudged?     ( nfa -- flag )   c@ [ &sflag ] literal and ;
 
-: name-count   count $1F and ;
+: name-count   count #name and ;
 
 : n>link   name-count + aligned ;
 : name>    n>link link> ;
@@ -667,7 +669,7 @@ variable state
       \ flag), since 8-bit characters are not allowed in a name.
       \ If the byte is less than 32, it's not a printable character
       \ and must be the name count byte.
-      i c@ [ &iflag $1f or invert ] literal and 0= if
+      i c@ [ &iflag #name or invert ] literal and 0= if
          \ looks like a count byte, but is the count right?
          dup i n>link = if
             drop i
@@ -857,6 +859,7 @@ predef~ var-does var_does
 
 : create
    parse-word ?parsed
+   dup #name > ( name too long ) -19 and throw
    align here >r   \ save NFA
    \ Name Field
    dup c, string, align
@@ -949,7 +952,8 @@ predef~ call-code call_code \ XXX
 
 : c"
    ?comp
-   '"' parse   \ XXX: TODO: handle failure
+   '"' parse
+   dup $ff > ( string overflow ) -18 and throw
    postpone (c")
    dup c, string,
    align ; immediate
