@@ -157,6 +157,9 @@ defer throw
 
 : (loop)   1 (goto) (+loop) ;
 
+: bounds   ( start len -- start+len start )
+   over + swap ;
+
 
 variable handler \ handler off
 
@@ -497,8 +500,7 @@ variable >in
 
 : >number   ( ud1 s1 l1 -- ud2 s2 l2)
    2dup >r >r    \ stash away initial string
-   over + swap   \ pointer loop range
-   ?do
+   bounds ?do    \ pointer loop over s1
       i c@ base @ digit? if
          \ lo hi digit --
          swap   \ hi
