@@ -73,6 +73,9 @@
 : unaligned?   ( addr -- flag )   3 and ;
 : aligned?   ( addr -- flag )   unaligned? not ;
 
+: round-down   ( addr1 align -- addr2 )   1- invert and ;
+: round-up     ( addr1 align -- addr2 )   1- tuck + swap invert and ;
+
 
 : d>s   ( d -- n )   drop ;
 : d0=   ( xd -- flag)   or 0= ;
