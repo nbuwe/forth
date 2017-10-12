@@ -351,6 +351,43 @@ variable hld
    drop ;
 
 
+\ DUMP - this naive version always rounds the range down and up to get
+\ full lines.  The original start address is marked with a tick mark
+\ in the dump header.
+
+: .2   s>d <# # # #> type ;
+
+: (dump-header)   ( addr -- )
+   #10 spaces          \ address (8), colon and extra space
+   $f and              \ last digit of addr, it will get the tick mark
+   #16 0 do
+      i 8 = negate 1+ spaces
+      dup i = if '|' else bl then emit
+      i 0 u.r
+   loop drop
+   cr ;
+
+: dump   ( addr length -- )
+   base @ >r   hex                      \ switch to hex temporarily
+   over (dump-header)
+   over + #16 round-up                  \ end
+   swap #16 round-down                  \ start
+   do
+      i 8 u.r ':' emit                  \ address
+      i #16 bounds do                   \ bytes
+         i $7 and 0 = negate 1+ spaces
+         i c@ .2
+      loop
+      ."   |"                           \ chars
+      i #16 bounds do
+         i c@   dup bl $7f within not   \ not printable?
+         if drop '.' then emit
+      loop
+      '|' emit cr
+   #16 +loop
+   r> base ! ;                          \ restore base
+
+
 \ cword~ accept accept_impl
 
 \ TODO: use VALUE
