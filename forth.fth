@@ -365,6 +365,8 @@ variable hld
       dup i = if '|' else bl then emit
       i 0 u.r
    loop drop
+   3 spaces
+   ." 0123456789abcdef"
    cr ;
 
 : dump   ( addr length -- )
