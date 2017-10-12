@@ -377,7 +377,7 @@ variable hld
    do
       i 8 u.r ':' emit                  \ address
       i #16 bounds do                   \ bytes
-         i $7 and 0 = negate 1+ spaces
+         i $7 and 0= negate 1+ spaces
          i c@ .2
       loop
       ."   |"                           \ chars
