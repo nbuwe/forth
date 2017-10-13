@@ -925,7 +925,11 @@ predef~ var-does var_does
 : constant    create  , does>  @ ;
 : 2constant   create 2, does> 2@ ;
 
-: vocabulary   wordlist create ,  does>  @ (set-wid) ;
+: vocabulary
+   create  here [ 1 cells ] literal allot
+   wordlist swap !
+ does>
+   @ (set-wid) ;
 
 predef~ call-code call_code \ XXX
 

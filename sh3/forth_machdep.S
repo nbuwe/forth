@@ -135,7 +135,7 @@ ENTRY(start_forth)
 heap:
 
 #define CURRENT forth
-VOCABULARY("forth", forth)
+ROOT_VOCABULARY("forth", forth)
 
 
 /**

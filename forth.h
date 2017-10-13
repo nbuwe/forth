@@ -194,15 +194,38 @@
 #define DEFCODE_VOC(label)	DEFCODE_DOES(label, vocabulary, 1, _voc)
 #define DEFVOC(name, label)	DEFWORD(name, 0, DEFCODE_VOC, label)
 
+/*
+ * We create vocabulary word first and its wordlist after it so that
+ * when we FORGET the vocabulary it also g/c's the wordlist.  As a
+ * consequence the root vocabulary requires special treatment (see
+ * below).
+ */
 #define VOCABULARY(name, label)		  \
-  VOCCHECK(label) = 0 /* defined */	; \
 	.p2align 2, 0			; \
-  LASTNFA(label) = .			; \
-  WORDLIST(__CONCAT(label,_wid))	  \
-	.long	LATEST(label)		; \
   DEFVOC(name, label)			  \
-        .long	__CONCAT(label,_wid)
+        .long	__CONCAT(label,_wid)	; \
+					  \
+  VOCCHECK(label) = 0 /* defined */	; \
+  LASTNFA(label) = .			; \
+  __CONCAT(label,.wordlist):		  \
+  WORDLIST(__CONCAT(label,_wid))	  \
+	.long	LATEST(label)
 
+/*
+ * The root vocabulary needs a bit of help to get the links right.
+ *
+ * Unlike in other cases here the vocabulary word is in its own
+ * wordlist, so we need forward reference for its link field.
+ * Otherwise it will pick up LASTNFA definition from its own DEFWORD
+ * and create self-reference.
+ *
+ * Then we need the next word to link to the vocabulary word, not to
+ * the wordlist's head.
+ */
+#define ROOT_VOCABULARY(name, label)		  \
+  LASTNFA(CURRENT) = __CONCAT(label,.wordlist)	; \
+  VOCABULARY(name, label)			; \
+  LASTNFA(CURRENT) = NFA_LABEL(label)
 
 
 /*
