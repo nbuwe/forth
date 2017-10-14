@@ -675,7 +675,7 @@ predef~ var-does var_does
    dup c, string, align
    \ Link Field
    latest ,
-   r> current @ !
+   r> get-current !
    \ Code Field
    \ XXX: we should comma var-does here, but need to teach transpiler
    \ about asm symbols (see above); for now abuse POSTPONE
