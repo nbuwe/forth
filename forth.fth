@@ -915,8 +915,9 @@ predef~ var-does var_does
    latest ,
    r> current @ !
    \ Code Field
-   \ XXX: for now we need to protect next-code with compile
-   compile var-does ;
+   \ XXX: we should comma var-does here, but need to teach transpiler
+   \ about asm symbols (see above); for now abuse POSTPONE
+   postpone var-does ;
 
 : variable    create [ 1 cells ] literal allot ;
 : 2variable   create [ 2 cells ] literal allot ;
@@ -958,7 +959,8 @@ predef~ call-code call_code \ XXX
    align 0 ,
    \ Code Field
    here   \ xt we leave on the stack
-   compile call-code ] ;
+   \ XXX: we should comma call-code here (cf. CREATE)
+   postpone call-code ] ;
 
 \ XXX: doesn't work with :NONAME
 : recurse   latest name> compile, ; immediate
