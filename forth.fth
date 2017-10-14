@@ -627,12 +627,6 @@ $40 constant &sflag   \ smudged
 \ $20 is unused
 $1f constant #name    \ name length/mask
 
-: >body   cell+ ;
-: body>   cell- ;
-: >link   cell- ;
-: link>   cell+ ;
-
-: >wid-link   body> ;
 : latestwid   wid-list @ ;
 
 : wordlist   ( -- wid )
@@ -681,34 +675,6 @@ predef~ var-does var_does
    \ about asm symbols (see above); for now abuse POSTPONE
    postpone var-does ;
 
-
-\ ====================
-
-variable state
-: [   state off ; immediate
-: ]   state on ;
-
-: ?comp   \ interpreting a compile-only word
-   state @ 0= -14 and throw ;
-
-: compile,   , ;
-: compile
-   r> dup cell+ >r
-   @ compile, ;
-
-: literal    state @ if postpone lit , then ; immediate
-: 2literal   state @ if postpone 2lit , , then ; immediate
-: [char]     ?comp char postpone literal ; immediate
-
-
-: (c")   r> dup count + aligned >r ;
-: (s")   r> $count 2dup + aligned >r ;
-
-: (.")
-   r> $count 2dup + aligned >r   \ XXX: (S") - a copy b/c of R>
-   type ;
-
-
 : immediate  latest c@ [ &iflag ] literal or latest c! ;
 : smudge     latest c@ [ &sflag ] literal or latest c! ;
 : unsmudge   latest c@ [ &sflag invert ] literal and latest c! ;
@@ -719,6 +685,13 @@ variable state
 \ &sflag flag-test smudged?
 : immediate?   ( nfa -- flag )   c@ [ &iflag ] literal and ;
 : smudged?     ( nfa -- flag )   c@ [ &sflag ] literal and ;
+
+: >body   cell+ ;
+: body>   cell- ;
+: >link   cell- ;
+: link>   cell+ ;
+
+: >wid-link   body> ; \ wordlists abuse code field as a link to previous wid
 
 : name-count   count #name and ;
 
@@ -787,6 +760,35 @@ variable state
    parse-word ?parsed search-context ;
 
 : '   (')  0= ( undefined? ) -13 and throw ;
+
+
+\ ====================
+
+variable state
+: [   state off ; immediate
+: ]   state on ;
+
+: ?comp   \ interpreting a compile-only word
+   state @ 0= -14 and throw ;
+
+: compile,   , ;
+: compile
+   r> dup cell+ >r
+   @ compile, ;
+
+: literal    state @ if postpone lit , then ; immediate
+: 2literal   state @ if postpone 2lit , , then ; immediate
+: [char]     ?comp char postpone literal ; immediate
+
+
+: (c")   r> dup count + aligned >r ;
+: (s")   r> $count 2dup + aligned >r ;
+
+: (.")
+   r> $count 2dup + aligned >r   \ XXX: (S") - a copy b/c of R>
+   type ;
+
+
 : [']   ?comp ' postpone literal ; immediate
 
 : [compile]   ?comp ' compile, ; immediate
