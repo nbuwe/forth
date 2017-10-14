@@ -627,12 +627,21 @@ $40 constant &sflag   \ smudged
 \ $20 is unused
 $1f constant #name    \ name length/mask
 
+: >body   cell+ ;
+: body>   cell- ;
+: >link   cell- ;
+: link>   cell+ ;
+
+: >wid-link   body> ;
+: latestwid   wid-list @ ;
+
 : wordlist   ( -- wid )
    align here                   \ address of this stub header
    [ &sflag ] literal c,        \ Name Field: empty name, smudged
    align 0 ,                    \ Link Field: no link
-   0 ,                          \ Code Field: n/a
+   wid-list @ ,                 \ Code Field: abused for the wid list link
    here                         \ value of the wordlist - PFA
+   dup wid-list !
    swap , ;                     \ Parameters Field: latest word = this
 
 : context  osp @ ;
@@ -681,11 +690,6 @@ variable state
    r> $count 2dup + aligned >r   \ XXX: (S") - a copy b/c of R>
    type ;
 
-
-: >body   cell+ ;
-: body>   cell- ;
-: >link   cell- ;
-: link>   cell+ ;
 
 : immediate  latest c@ [ &iflag ] literal or latest c! ;
 : smudge     latest c@ [ &sflag ] literal or latest c! ;

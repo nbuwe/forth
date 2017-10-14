@@ -186,8 +186,9 @@
 	/* Link Field: terminate the LFA-linked wordlist */	  \
 	.p2align 2, 0						; \
 	.long	0						; \
-	/* Code Field: n/a */					  \
-	.long	0						; \
+	/* Code Field: ab/reuse for the wid list link */	  \
+	.long	.LASTWID					; \
+  .LASTWID = .							; \
 	/* Parameter Field: head of the wordlist */		  \
   label:
 
@@ -223,6 +224,7 @@
  * the wordlist's head.
  */
 #define ROOT_VOCABULARY(name, label)		  \
+  .LASTWID = 0					; \
   LASTNFA(CURRENT) = __CONCAT(label,.wordlist)	; \
   VOCABULARY(name, label)			; \
   LASTNFA(CURRENT) = NFA_LABEL(label)

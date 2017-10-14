@@ -388,6 +388,7 @@ variable tversion   0 tversion !
 
 : transpile-end
    ." IMMEDIATE = 0" cr
+   ." .LATESTWID = .LASTWID" cr
    svoc-head @ begin
       dup while
          dup svoc-sym
