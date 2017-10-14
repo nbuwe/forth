@@ -30,8 +30,12 @@
 : 1+!   ( a-addr -- )   dup @ 1+ swap ! ;
 
 : not   ( x -- flag)   0= ;
+
 : <=   ( n1 n2 -- flag )   > not ;
 : >=   ( n1 n2 -- flag )   < not ;
+
+: u<=   ( u1 u2 -- flag )   u> not ;
+: u>=   ( u1 u2 -- flag )   u< not ;
 
 : signum   ( n -- -1|0|1 )   dup 0< swap 0> - ;   \ "sign" is taken
 : <=>      ( n1 n2 -- -1|0|1 )   - signum ;       \ 3 way comparison
