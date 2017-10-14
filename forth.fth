@@ -663,6 +663,24 @@ $1f constant #name    \ name length/mask
 : latest   get-current @ ;
 : definitions   context @ set-current ;
 
+\ XXX: TODO: symbol var-does
+\ where symbol is like constant with asm symbol as value
+predef~ var-does var_does
+
+: create
+   parse-word ?parsed
+   dup #name > ( name too long ) -19 and throw
+   align here >r   \ save NFA
+   \ Name Field
+   dup c, string, align
+   \ Link Field
+   latest ,
+   r> current @ !
+   \ Code Field
+   \ XXX: we should comma var-does here, but need to teach transpiler
+   \ about asm symbols (see above); for now abuse POSTPONE
+   postpone var-does ;
+
 
 \ ====================
 
@@ -899,25 +917,6 @@ is throw
 
 
 \ ==================== defining words &co
-
-
-\ XXX: TODO: symbol var-does
-\ where symbol is like constant with asm symbol as value
-predef~ var-does var_does
-
-: create
-   parse-word ?parsed
-   dup #name > ( name too long ) -19 and throw
-   align here >r   \ save NFA
-   \ Name Field
-   dup c, string, align
-   \ Link Field
-   latest ,
-   r> current @ !
-   \ Code Field
-   \ XXX: we should comma var-does here, but need to teach transpiler
-   \ about asm symbols (see above); for now abuse POSTPONE
-   postpone var-does ;
 
 : variable    create [ 1 cells ] literal allot ;
 : 2variable   create [ 2 cells ] literal allot ;
