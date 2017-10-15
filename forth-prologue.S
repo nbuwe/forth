@@ -38,6 +38,9 @@ CWORD("type", type)
 CWORD("accept", accept_4th)	/* XXX: avoid name clash with accept(2) */
 	.long	_C_LABEL(accept_impl)
 
+VARIABLE("fence", fence)
+	.long	.FENCE
+
 VARIABLE("wid-list", wid_list)
 	.long	.LATESTWID
 

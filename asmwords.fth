@@ -106,6 +106,7 @@ predef~ accept accept_4th
 predef tib \ constant address
 predef dp 
 
+predef  fence
 predef~ wid-list wid_list
 predef current
 predef~ forth-wordlist forth_wordlist 
