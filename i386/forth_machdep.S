@@ -39,31 +39,6 @@
 #define SPILL_TOS	mov %TOS, -4(%PSP);  add $-4, %PSP
 #define FILL_TOS	mov (%PSP), %TOS;  add $4, %PSP
 
-### ====================================================================
-/**
- *
- * Forth stacks and buffers in the BSS section.
- *
- */
-
-	.section ".bss"
-	.balign	4096
-
-	.global stack_bottom
-
-stack_limit:
-	.space	4096
-stack_bottom:
-	.space	4096		# hole
-rstack_limit:
-	.space	4096
-rstack_bottom:
-
-terminal_input_buffer:
-	.space	4096
-	.type	terminal_input_buffer, @object
-	.size	terminal_input_buffer, 4096 # XXX, compute
-
 
 ### ====================================================================
 /**
@@ -108,6 +83,9 @@ ENTRY(start_forth)
  *				FORTH
  *
  */
+
+/* stacks and other static buffers */
+#include "forth-bss.S"
 
 	.data			# XXX: need writable+executable
 
