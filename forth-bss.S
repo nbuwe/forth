@@ -32,17 +32,26 @@
 	.section ".bss"
 	.balign	4096
 
-	.global stack_bottom
+#define SPACE(_sym, _size)	  \
+	.global	_sym		; \
+	_SPACE(_sym, _size)
 
-stack_limit:
-	.space	4096
-stack_bottom:
-	.space	4096		/* hole */
-rstack_limit:
-	.space	4096
-rstack_bottom:
+#define _SPACE(_sym, _size)	  \
+	.type	_sym, @object	; \
+	.size	_sym, (_size)	; \
+_sym:	.space	(_size)
 
-terminal_input_buffer:
-	.space	4096
-	.type	terminal_input_buffer, @object
-	.size	terminal_input_buffer, 4096 /* XXX, compute */
+
+SPACE(redzone_above, 4096)
+SPACE(stack_limit, 4096)
+SPACE(stack_bottom, 2048)
+SPACE(redzone_between, 2048)
+SPACE(rstack_limit, 4096)
+SPACE(rstack_bottom, 4096)
+SPACE(redzone_below, 0)
+
+SPACE(terminal_input_buffer, 4096)
+
+
+#undef SPACE
+#undef _SPACE

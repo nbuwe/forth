@@ -25,9 +25,22 @@
 
 #include "forth-c.h"
 
+#include <sys/types.h>
+#include <sys/mman.h>
+
+#include <signal.h>
 #include <stdio.h>
+#include <string.h>
+#include <ucontext.h>
+
+
+void stack_setup(void);
+void trapsegv(int sig, siginfo_t *info, void *ctx);
 
 extern void *start_forth(/* unchecked */);
+
+extern cell_t throw[];
+extern cell_t exit_4th_code[];
 
 
 int
@@ -36,6 +49,8 @@ main()
     int32_t *psp;
     int32_t *p;
     int32_t *bottom;
+
+    stack_setup();
 
     psp = start_forth();
 
@@ -53,4 +68,65 @@ main()
     }
     
     return 0;
+}
+
+
+void
+stack_setup(void)
+{
+    struct sigaction act;
+
+#define REDZONE(beg, end)				\
+    do {						\
+	mprotect(beg,					\
+		 (uintptr_t)(end) - (uintptr_t)(beg),	\
+		 PROT_NONE);				\
+    } while (0)
+
+    REDZONE(redzone_above, stack_limit);
+    REDZONE(stack_bottom, rstack_limit);
+    REDZONE(rstack_bottom, redzone_below);
+
+    memset(&act, 0, sizeof(act));
+    act.sa_sigaction = trapsegv;
+    act.sa_flags = SA_SIGINFO;
+    sigaction(SIGSEGV, &act, NULL);
+}
+
+
+void trapsegv(int sig, siginfo_t *si, void *ctx)
+{
+    ucontext_t *uc = ctx;
+    cell_t exception = 0;
+
+    fprintf(stderr, "signal %d error %d code %d addr %p\n",
+	    si->si_signo, si->si_errno, si->si_code, si->si_addr);
+
+#define BETWEEN(beg, end) \
+    ((void *)&(beg) <= si->si_addr && si->si_addr < (void *)&(end))
+
+    if (si->si_code == SEGV_MAPERR) {
+	if (BETWEEN(redzone_above, stack_limit))
+	    exception = -3;	/* stack overflow */
+	else if (BETWEEN(stack_bottom, redzone_between))
+	    exception = -4;	/* stack underflow */
+	else if (BETWEEN(redzone_between, rstack_limit))
+	    exception = -5;	/* return stack overflow */
+	else if (BETWEEN(rstack_bottom, redzone_below))
+	    exception = -6;	/* return stack underflow */
+    }
+
+    if (exception != 0)
+	fprintf(stderr, "exception %d\n", exception);
+
+    {
+	struct sigaction act;
+
+	memset(&act, 0, sizeof(act));
+	act.sa_handler = SIG_DFL;
+	sigaction(SIGSEGV, &act, NULL);
+
+	/* re-execute the instruction and crash */
+	return;
+    }
 }

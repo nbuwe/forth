@@ -33,8 +33,6 @@
 
 typedef uintptr_t cell_t;
 
-extern int32_t stack_bottom[];
-
 
 cell_t *emit_impl(cell_t *);
 cell_t *type_impl(cell_t *);
@@ -43,5 +41,14 @@ cell_t *accept_impl(cell_t *);
 cell_t *ms_slash_rem_impl(cell_t *); /* symmetric division */
 cell_t *mf_slash_mod_impl(cell_t *); /* floored */
 cell_t *mu_slash_mod_impl(cell_t *); /* unsigned */
+
+
+extern cell_t redzone_above[];
+extern cell_t stack_limit[];
+extern cell_t stack_bottom[];
+extern cell_t redzone_between;
+extern cell_t rstack_limit[];
+extern cell_t rstack_bottom[];
+extern cell_t redzone_below[];
 
 #endif /* _FORTH_C_H_ */
