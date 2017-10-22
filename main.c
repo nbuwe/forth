@@ -96,11 +96,14 @@ stack_setup(void)
 
 void trapsegv(int sig, siginfo_t *si, void *ctx)
 {
+    static struct xstack {
+	cell_t code[2];
+	cell_t stack[16];
+	cell_t rstack[16];
+    } xstack;
+
     ucontext_t *uc = ctx;
     cell_t exception = 0;
-
-    fprintf(stderr, "signal %d error %d code %d addr %p\n",
-	    si->si_signo, si->si_errno, si->si_code, si->si_addr);
 
 #define BETWEEN(beg, end) \
     ((void *)&(beg) <= si->si_addr && si->si_addr < (void *)&(end))
@@ -116,17 +119,34 @@ void trapsegv(int sig, siginfo_t *si, void *ctx)
 	    exception = -6;	/* return stack underflow */
     }
 
-    if (exception != 0)
-	fprintf(stderr, "exception %d\n", exception);
 
-    {
+    if (exception == 0) {   /* re-execute the instruction and crash */
 	struct sigaction act;
+
+	fprintf(stderr, "signal %d error %d code %d addr %p\n",
+		si->si_signo, si->si_errno, si->si_code, si->si_addr);
 
 	memset(&act, 0, sizeof(act));
 	act.sa_handler = SIG_DFL;
 	sigaction(SIGSEGV, &act, NULL);
-
-	/* re-execute the instruction and crash */
 	return;
     }
+
+
+    xstack.code[0] = (uintptr_t) throw;
+    xstack.code[1] = 0;
+
+    /* exception code for THROW */
+    uc->uc_mcontext.__gregs[_REG_TOS] = exception;
+    uc->uc_mcontext.__gregs[_REG_PSP] =
+	(uintptr_t) &xstack.stack[__arraycount(xstack.stack) - 1];
+
+    /* arrange to return to xstack.code[] */
+    _UC_MACHINE_SET_PC(uc, (uintptr_t) exit_4th_code);
+
+    xstack.rstack[__arraycount(xstack.rstack) - 1] = 0;
+    xstack.rstack[__arraycount(xstack.rstack) - 2] = (uintptr_t) &xstack.code;
+
+    uc->uc_mcontext.__gregs[_REG_RSP] =
+	(uintptr_t) &xstack.rstack[__arraycount(xstack.rstack) - 2];
 }

@@ -34,6 +34,27 @@
 typedef uintptr_t cell_t;
 
 
+/* this probably should be in a dedicated MD header */
+#if defined(__i386__)
+# define _REG_TOS	_REG_ECX
+# define _REG_PSP	_REG_EDI
+# define _REG_RSP	_REG_ESI
+# define _REG_IP	_REG_EBX
+#elif defined(__powerpc__)
+# define _REG_TOS	_REG_R26
+# define _REG_PSP	_REG_R27
+# define _REG_RSP	_REG_R28
+# define _REG_IP	_REG_R29
+#elif defined(__sh__)
+# define _REG_TOS	_REG_R8
+# define _REG_PSP	_REG_R9
+# define _REG_RSP	_REG_R10
+# define _REG_IP	_REG_R11
+#else
+# error Unsupported architecture
+#endif
+
+
 cell_t *emit_impl(cell_t *);
 cell_t *type_impl(cell_t *);
 cell_t *accept_impl(cell_t *);

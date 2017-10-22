@@ -25,6 +25,10 @@
 #ifndef _FORTH_H_
 #define _FORTH_H_
 
+#if !__ASSEMBLER__
+# error This file is for assembler only
+#endif
+
 #include <machine/asm.h>
 
 /* Don't depend on whether <machine/asm.h> has these or doesn't */
@@ -259,5 +263,9 @@
 #define THEN_THROW(code)			  \
 	/* .long */ OR_ELSE(0f), THROW(code)	; \
 0:
+
+
+.global exit_4th_code
+.global throw
 
 #endif /* _FORTH_H_ */
