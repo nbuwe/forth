@@ -479,6 +479,16 @@ ASMWORD("2swap", two_swap)
 	ASMEND(two_swap)
 
 
+### 2NIP - nonstandard
+###     ( x1 x2 x3 x4 -- x3 x4 )
+ASMWORD("2nip", two_nip)
+	lwz	%TMP, 0(%PSP)		# fetch x3
+	stw	%TMP, 8(%PSP)		# store x3
+	addi	%PSP, %PSP, 8
+	blr
+	ASMEND(two_nip)
+
+
 ### 2OVER - CORE 6.1.0400
 ###     ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )
 ASMWORD("2over", two_over)
