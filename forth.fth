@@ -673,9 +673,12 @@ $1f constant #name    \ name length/mask
    then ;
 
 : set-current   current ! ;
-: get-current   current @  dup 0= ( deleted ) -47 and throw ;
+: get-current   current @ ;
 
-: latest   get-current @ ;
+: ?current   ( wid -- flag )   0= ( deleted ) -47 and throw ;
+: check-current   ( -- )   get-current ?current ;
+
+: latest   get-current dup ?current @ ;
 : definitions   context @ set-current ;
 
 \ XXX: TODO: symbol var-does
@@ -683,6 +686,7 @@ $1f constant #name    \ name length/mask
 predef~ var-does var_does
 
 : create
+   check-current
    parse-word ?parsed
    dup #name > ( name too long ) -19 and throw
    align here >r   \ save NFA
