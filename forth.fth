@@ -655,6 +655,23 @@ $1f constant #name    \ name length/mask
 : also   context @  osp- (set-wid) ;
 : previous   osp+ ;
 
+: get-order   ( -- wid1 ... widn n )
+   0  context osp0 cell- do
+      1+  i @ swap
+   [ 1 cells negate ] literal +loop ;
+
+: set-order   ( wid1 ... widn n -- )
+   dup -1 = if
+      drop only
+   else
+      osp0 over cells -
+      dup order-stack u< ( overflow ) -49 and throw
+      osp !
+      0 ?do
+         osp @ i cells + !
+      loop
+   then ;
+
 : set-current   current ! ;
 : get-current   current @  dup 0= ( deleted ) -47 and throw ;
 
