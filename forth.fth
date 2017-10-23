@@ -1113,3 +1113,6 @@ predef~ call-code call_code \ XXX
 
 \ XXX: stub for now
 : environment?   2drop false ;
+
+
+include forget.fth
