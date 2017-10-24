@@ -39,8 +39,9 @@
 #define _SPACE(_sym, _size)	  \
 	.type	_sym, @object	; \
 	.size	_sym, (_size)	; \
-_sym:	.space	(_size)
-
+_sym:	.if	(_size)		; \
+	.space	(_size)		; \
+	.endif
 
 SPACE(redzone_above, 4096)
 SPACE(stack_limit, 4096)
