@@ -29,7 +29,7 @@
 : +!   ( n|u a-addr -- )   dup @ rot + swap ! ;
 : 1+!   ( a-addr -- )   dup @ 1+ swap ! ;
 
-: not   ( x -- flag)   0= ;
+: not   ( x -- flag )   0= ;
 
 : <=   ( n1 n2 -- flag )   > not ;
 : >=   ( n1 n2 -- flag )   < not ;
@@ -82,8 +82,8 @@
 
 
 : d>s   ( d -- n )   drop ;
-: d0=   ( xd -- flag)   or 0= ;
-: d0<   ( xd -- flag)   nip 0< ;
+: d0=   ( xd -- flag )   or 0= ;
+: d0<   ( xd -- flag )   nip 0< ;
 : d=    ( xd1 xd2 -- flag )   rot = if = else 2drop false then ;
 
 : dmax  ( d1 d2 -- d3 )   2over 2over d<     if 2swap then 2drop ;
@@ -511,14 +511,14 @@ variable >in
       drop
    then false ;
 
-: base-0   ( base -- '0' upper )   \ range of arabic digits; for "within"
+: base-0   ( base -- '0' upper )  \ range of arabic digits; for WITHIN
    dup #10 <= if
       '0' tuck +
    else
       drop '0' [ '9' 1+ ] literal
    then ;
 
-: base-a   ( base  -- 'a' upper)   \ range of alphabetic digits; for within
+: base-a   ( base  -- 'a' upper ) \ range of alphabetic digits; for WITHIN
    10 - 'a' tuck + ;
 
 : digit?   ( char base -- value true | false )
@@ -544,7 +544,7 @@ variable >in
    drop r> drop
    false ;
 
-: >number   ( ud1 s1 l1 -- ud2 s2 l2)
+: >number   ( ud1 s1 l1 -- ud2 s2 l2 )
    2dup >r >r    \ stash away initial string
    bounds ?do    \ pointer loop over s1
       i c@ base @ digit? if
@@ -723,7 +723,7 @@ predef~ var-does var_does
 : n>link   name-count + aligned ;
 : name>    n>link link> ;
 
-: >name   ( xt -- nfa)
+: >name   ( xt -- nfa )
    dup unaligned? if drop 0 exit then \ must be aligned
    >link        \ LFA is the aligned address after name
    dup          \ keep a copy for comparisons
