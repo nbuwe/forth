@@ -74,7 +74,7 @@
          2dup wid-trim
          >wid-link @
    repeat
-   2drop ;
+   drop dp! ;
 
 : (forget-search)   ( c-addr u -- xt )
    2dup search-current ?dup if
@@ -86,7 +86,7 @@
 : forget   ( "name" -- )
    parse-word ?parsed                   \ c-addr u --
    (forget-search)  0= ( undefined ) -13 and throw
-   >name dup (forget) dp! ;
+   >name (forget) ;
 
 : marker   ( "name" -- )
    : latest postpone literal postpone (forget) postpone ; ;
