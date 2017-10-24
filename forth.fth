@@ -765,7 +765,7 @@ predef~ var-does var_does
    until
    2drop false ;
 
-: search-context ( c-addr u -- 0 | xt 1 | xt -1 )
+: search-context   ( c-addr u -- 0 | xt 1 | xt -1 )
    osp0 context ?do
       2dup i @
       search-wordlist ?dup if
@@ -861,7 +861,7 @@ variable abort-message
 
 predef~ throw-msgtab throw_msgtab
 
-: throw-message ( code -- flag )
+: throw-message   ( code -- flag )
    dup 0< if                    \ reserved throw codes are negative
       negate
       dup throw-msgtab @ < if   \ at offset 0 is the number of messages
@@ -992,7 +992,7 @@ predef~ call-code call_code \ XXX
 : recurse   latest name> compile, ; immediate
 
 
-: defer ( "name" -- )
+: defer   ( "name" -- )
    create ['] abort ,
  does>
    @ execute ;
