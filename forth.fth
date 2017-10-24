@@ -765,6 +765,14 @@ predef~ var-does var_does
    until
    2drop false ;
 
+\ for FORGET and friends (CURRENT is not searched normally)
+: search-current   ( c-addr u -- 0 | xt 1 | xt -1 )
+   get-current if
+      get-current search-wordlist
+   else
+      2drop 0
+   then ;
+
 : search-context   ( c-addr u -- 0 | xt 1 | xt -1 )
    osp0 context ?do
       2dup i @

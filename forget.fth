@@ -76,20 +76,16 @@
    repeat
    2drop ;
 
-: forget   ( "word" -- )
-   parse-word ?parsed                   \ c-addr u --
-   2dup get-current
-   dup if
-      search-wordlist
-   else
-      nip nip
-   then
-   ?dup if
+: (forget-search)  ( c-addr u -- xt )
+   2dup search-current ?dup if
       2nip
    else
       search-context
-   then
-   0= ( undefined ) -13 and throw
+   then ;
+
+: forget   ( "word" -- )
+   parse-word ?parsed                   \ c-addr u --
+   (forget-search)  0= ( undefined ) -13 and throw
    >name dup (forget) dp! ;
 
 : marker   ( "name" -- )
