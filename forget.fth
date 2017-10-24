@@ -86,7 +86,7 @@
       search-context
    then
    0= ( undefined ) -13 and throw
-   >name (forget) ;
+   >name dup (forget) dp! ;
 
 : marker   ( "name" -- )
    : latest postpone literal postpone (forget) postpone ; ;
