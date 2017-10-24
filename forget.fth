@@ -90,3 +90,9 @@
 
 : marker   ( "name" -- )
    : latest postpone literal postpone (forget) postpone ; ;
+
+\ ANEW word - forget word if already defined and redefine it
+: anew   ( "name" -- )
+   >in @  parse-word ?parsed  rot >in !
+   (forget-search) if execute then
+   marker ;
