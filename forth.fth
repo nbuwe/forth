@@ -478,13 +478,13 @@ variable >in
 
 : .(   ')' parse type ; immediate
 
-: parse-word   ( "<spaces>name<space>" -- c-addr u )
+: parse-word   ( "name" -- c-addr u )
    bl skip-delim bl parse ;
 
 : ?parsed   \ attempt to use zero-length string as a name
    dup 0= -16 and throw ;
 
-: char   ( "<spaces>name" -- char )
+: char   ( "name" -- char )
    parse-word if c@ else drop 0 then ;
 
 : word   ( char "<chars>ccc<char>" -- c-addr )
@@ -781,7 +781,7 @@ predef~ var-does var_does
 
 
 \ helper for ' and the like that do the parse/search combo
-: (')   ( "<spaces>name" -- 0 | xt 1 | xt -1 )
+: (')   ( "name" -- 0 | xt 1 | xt -1 )
    parse-word ?parsed search-context ;
 
 : '   (')  0= ( undefined? ) -13 and throw ;
