@@ -769,7 +769,7 @@ predef~ var-does var_does
    osp0 context ?do
       2dup i @
       search-wordlist ?dup if
-         2swap 2drop
+         2nip
          unloop exit
       then
    [ 1 cells ] literal +loop
@@ -833,7 +833,7 @@ variable state
    begin
       parse-word ?dup 0= if drop exit then
       2dup search-context ?dup if
-         2swap 2drop
+         2nip
          1+ if
             execute
          else
@@ -842,7 +842,7 @@ variable state
       else
          2dup number? ?dup if
             2 = if
-               2swap 2drop
+               2nip
                postpone 2literal
             else
                -rot 2drop
