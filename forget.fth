@@ -61,8 +61,12 @@
    repeat
    rot !  drop ;
 
+: ?forgettable   ( nfa -- )
+   fence @ here within not
+   ( invalid forget ) -15 and throw ;
+
 : (forget)   ( nfa -- )
-   dup fence @ forget? ( invalid forget ) -15 and throw
+   dup ?forgettable
    dup gc-forgotten-order
    dup wid-list-trim
    latestwid begin                      \ nfa wid --
