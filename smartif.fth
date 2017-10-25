@@ -37,7 +37,7 @@ variable SMIF-DEPTH \ depth of nested conditionals
                 IF
                         postpone ;             \ stop compiling
                         smif-xt @ execute      \ execute conditional code
-                        smif-xt @ >code dp !   \ forget conditional code
+                        smif-xt @ >name dp!    \ forget conditional code
                         0 smif-xt !   \ clear so we don't mess up later
                 THEN
         THEN
