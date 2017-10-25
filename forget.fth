@@ -89,7 +89,15 @@
    >name (forget) ;
 
 : marker   ( "name" -- )
-   : latest postpone literal postpone (forget) postpone ; ;
+   : latest postpone literal postpone (forget)
+   \ -- technically, we will be executing "freed" (forgotten) code here
+   get-current postpone literal postpone set-current
+   get-order dup >r begin
+      ?dup while
+         dup roll postpone literal 1-
+   repeat
+   r> postpone literal postpone set-order
+   postpone ; ;
 
 \ ANEW word - forget word if already defined and redefine it
 : anew   ( "name" -- )
