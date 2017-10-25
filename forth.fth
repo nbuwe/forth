@@ -733,7 +733,7 @@ predef~ var-does var_does
       \ flag), since 8-bit characters are not allowed in a name.
       \ If the byte is less than 32, it's not a printable character
       \ and must be the name count byte.
-      i c@ [ &iflag #name or invert ] literal and 0= if
+      i c@ [ &iflag &sflag or #name or invert ] literal and 0= if
          \ looks like a count byte, but is the count right?
          dup i n>link = if
             drop i
