@@ -16,8 +16,6 @@
 \ warranties of merchantability and fitness for a particular
 \ purpose and their equivalents under the laws of any jurisdiction.
 
-anew task-smart_if.fth
-
 variable SMIF-XT    \ execution token for conditional code
 variable SMIF-DEPTH \ depth of nested conditionals
 
