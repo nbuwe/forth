@@ -45,6 +45,7 @@ variable SMIF-DEPTH \ depth of nested conditionals
 
 \ redefine conditionals to use smart mode
 : IF      smif{   postpone if     ; immediate
+: AHEAD   smif{   postpone ahead  ; immediate
 : DO      smif{   postpone do     ; immediate
 : ?DO     smif{   postpone ?do    ; immediate
 : BEGIN   smif{   postpone begin  ; immediate
