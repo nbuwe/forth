@@ -530,7 +530,7 @@ also meta definitions previous
 
 
 : immediate
-   immediate
+   immediate \ XXX: FIXME
    ." IMMEDIATE = IFLAG" cr ; \ see emitdef
 
 : literal
