@@ -237,7 +237,7 @@ create tforth
    dup svoc-target set-current
    cr
    ." #undef  CURRENT" cr
-   ." #define CURRENT " dup svoc-sym type-sym cr
+   ." #define CURRENT " svoc-sym type-sym cr
    /*current*/ ;
 
 
