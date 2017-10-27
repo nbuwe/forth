@@ -31,6 +31,10 @@ only forth also trans definitions
    then ;
 [then]
 
+[undefined] 1+! [if]
+: 1+!   ( a-addr -- )   dup @ 1+ swap ! ;
+[then]
+
 [undefined] cell- [if]
 : cell- [ 1 cells ] literal - ;
 [then]
@@ -242,10 +246,9 @@ create tforth
 
 
 variable tlatest    0 tlatest !
-variable tversion   0 tversion !
 
-: treveal   tversion @ tlatest @ ! ;
-: thide   tversion @ 1- tlatest @ ! ;
+: thide     -1 tlatest @ +! ;
+: treveal    1 tlatest @ +! ;
 
 : thidden?   ( xt -- )   >body @ -1 = ;
 
@@ -273,7 +276,7 @@ variable tversion   0 tversion !
 : noname-basename s" .Lnoname" ;
 
 : (tcreate)   ( "name" -- )
-   create  here tlatest !  0 dup , tversion !
+   create  here tlatest !  ( version ) 0 ,
  does>
    true abort" executing shadow target word" ;
 
@@ -292,9 +295,7 @@ variable tversion   0 tversion !
    here r@ - 1- r> c! ;
 
 : tcreate-version   ( xt -- )
-   >body tlatest !
-   tlatest @ @ 1+ tversion !
-   treveal ;
+   >body tlatest ! treveal ;
 
 : tcreate
    >in @ parse-word ?parsed
