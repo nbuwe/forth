@@ -120,7 +120,7 @@ char ~ xlat: tilde
 \    +---+---+---+---+
 \
 \ version is inited to -1 when the word is being defined for the first
-\ time and tsearch-word handles considers such a word still hidden.
+\ time and tsearch-word considers such a word still hidden.
 \ redefining a word just bumps its version so that we can generate a
 \ new unique asm symbol.
 
