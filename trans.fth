@@ -273,7 +273,9 @@ variable tversion   0 tversion !
 : noname-basename s" .Lnoname" ;
 
 : (tcreate)   ( "name" -- )
-   create here tlatest !  0 dup , tversion ! ;
+   create  here tlatest !  0 dup , tversion !
+ does>
+   true abort" executing shadow target word" ;
 
 : tcreate-new   ( "name" -- )
    >in @ (tcreate) >in !
