@@ -1124,3 +1124,4 @@ predef~ call-code call_code \ XXX
 
 
 include forget.fth
+include smartif.fth
