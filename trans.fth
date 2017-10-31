@@ -128,15 +128,18 @@ char ~ xlat: tilde
 \ redefining a word just bumps its version so that we can generate a
 \ new unique asm symbol.
 
+: >sym   ( body -- )   [ 1 cells ] literal + ;
+: get-sym   ( body -- caddr len )   >sym count ;
+
 : type-sym  ( body -- )
-   dup cell+ count type  \ basename
+   dup get-sym type      \ basename
    @ ?dup if             \ needs version suffix?
       [char] . emit
       0 .r
    then ;
 
 : sym-string,   ( body -- )
-   dup cell+ count string,   \ basename
+   dup get-sym string,       \ basename
    @ ?dup if                 \ needs version suffix?
       [char] . c,
       (u.) string,
@@ -285,8 +288,7 @@ variable tlatest    0 tlatest !
    \ make symbol name
    here >r 0 c,                     \ reserve and save count location 
    tget-current svoc-sym
-   dup cell+ count
-   s" forth" compare if
+   dup get-sym s" forth" compare if
       sym-string, [char] . c,           \ prefix with vocabulary name
    else      
       drop
