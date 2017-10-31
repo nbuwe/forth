@@ -118,7 +118,7 @@ char ~ xlat: tilde
 \ target vocabulary collects definitions with the following body:
 \
 \    +---+---+---+---+
-\    |    version    |
+\    |    version  |I|
 \    +---+---+---+---+
 \    |cnt| f | o | o |
 \    +---+---+---+---+
@@ -128,19 +128,22 @@ char ~ xlat: tilde
 \ redefining a word just bumps its version so that we can generate a
 \ new unique asm symbol.
 
+: get-version   ( body -- version )   @ 2/ ;
+: get-imm   ( body -- flag )   @ $1 and ;
+
 : >sym   ( body -- )   [ 1 cells ] literal + ;
 : get-sym   ( body -- caddr len )   >sym count ;
 
 : type-sym  ( body -- )
    dup get-sym type      \ basename
-   @ ?dup if             \ needs version suffix?
+   get-version ?dup if   \ needs version suffix?
       [char] . emit
       0 .r
    then ;
 
 : sym-string,   ( body -- )
    dup get-sym string,       \ basename
-   @ ?dup if                 \ needs version suffix?
+   get-version ?dup if       \ needs version suffix?
       [char] . c,
       (u.) string,
    then ;
@@ -250,10 +253,13 @@ create tforth
 
 variable tlatest    0 tlatest !
 
-: thide     -1 tlatest @ +! ;
-: treveal    1 tlatest @ +! ;
+: timmediate   ( ? -- )   tlatest @  dup @ $1 or  swap ! ;
 
-: thidden?   ( xt -- )   >body @ -1 = ;
+: thide     -2 tlatest @ +! ;   \ NB: doesn't affect immediate flag
+: treveal    2 tlatest @ +! ;
+
+: thidden?   ( xt -- )   >body @ 0< ;
+: >immediate ( xt -- 1 | -1 )   >body get-imm 2* 1- ;
 
 : tsearch-target   ( c-addr u -- 0 | xt 1 | xt -1 )
    tosp0 tcontext ?do
@@ -262,7 +268,9 @@ variable tlatest    0 tlatest !
          over thidden? if
             2drop
          else
-            2swap 2drop
+            drop   \ immediate flag from host
+            dup >immediate   \ target's immediate flag
+            2swap 2drop   \ name
             unloop exit
          then
       then
@@ -535,7 +543,7 @@ also meta definitions previous
 
 
 : immediate
-   immediate \ XXX: FIXME
+   timmediate
    ." IMMEDIATE = IFLAG" cr ; \ see emitdef
 
 : literal
