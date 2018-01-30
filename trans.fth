@@ -343,8 +343,8 @@ variable tlatest    0 tlatest !
 : tallot      tab ." .skip" tab 0 .r cr ;
 : t,          .long 0 .r cr ;
 
-: tliteral    .long ." lit, " 0 .r cr ;
-: t2literal   .long ." two_lit, " 0 .r ." , " 0 .r cr ;
+: tliteral    .long ." lit"     cr t, ;
+: t2literal   .long ." two_lit" cr t, t, ;
 : tcompile,   .long >body type-sym cr ;
 
 : t[']
