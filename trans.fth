@@ -47,6 +47,13 @@ only forth also trans definitions
 : (also-wid)   ( wid -- )   >r get-order nip r> swap set-order ;
 : .order   get-order 0 ?do . loop ;
 
+: (with-current)   ( xt wid -- )
+   get-current >r set-current
+   catch
+   ( XXX ) dup if ." CAUGHT " dup . cr then
+   r> set-current
+   throw ;
+
 
 vocabulary meta         \ defining words for the target
 ' meta >wid constant meta-wid
@@ -198,13 +205,6 @@ variable tcurrent
 
 : /*current*/
    ." /* current: " get-current . ." */" cr ;
-
-: (with-current)   ( xt wid -- )
-   get-current >r set-current
-   catch
-   ( XXX ) dup if ." CAUGHT " dup . cr then
-   r> set-current
-   throw ;
 
 : in-shadow   ( xt -- )
    tget-current svoc-shadow (with-current) ;   \ in host's shadow vocabulary
