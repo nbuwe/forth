@@ -223,10 +223,10 @@ variable tcurrent
  shadow-vocabulary-does! ;
 
 \ target's FORTH is shadowed by meta
-wordlist constant tforth-wordlist
+wordlist constant tforth-wid
 here 0 , word, forth   \ symbol
 create tforth
-   meta-wid , tforth-wordlist , ( symbol ) , 0 ,
+   meta-wid , tforth-wid , ( symbol ) , 0 ,
  shadow-vocabulary-does!
 
 ' tforth >body svoc-head !
