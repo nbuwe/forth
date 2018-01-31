@@ -233,15 +233,17 @@ create tforth
 
 ' tforth >body svoc-head !
 
-
-: tonly   tosp0 cell- tosp !  tforth ;
-
 : tosp-
    tcontext  dup torder-stack = ( overflow  ) -49 and throw
    cell- tosp ! ;
 : tosp+
    tcontext dup tosp0 = ( udnerflow ) -50 and throw
    cell+ tosp ! ;
+
+: tonly   tosp0 cell- tosp !  tforth ;
+: talso   tcontext @ tosp- (tset-wid) ;
+: tprevious   tosp+ ;
+
 
 : tdefinitions
    tcontext @
@@ -495,9 +497,9 @@ also meta definitions previous
 
 : forth   tforth ;
 
-: only   tonly ;
-: also   also tcontext @ tosp- (tset-wid) ;
-: previous   previous tosp+ ;
+: only   tonly ;   \ XXX: reset host's order too
+: also   also talso ;
+: previous   previous tprevious ;
 
 : definitions   tdefinitions ;
 
