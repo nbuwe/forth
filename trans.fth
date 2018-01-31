@@ -199,13 +199,15 @@ variable tcurrent
 : /*current*/
    ." /* current: " get-current . ." */" cr ;
 
-: in-meta   ( xt -- )
-   get-current >r
-   tget-current svoc-shadow set-current   \ in host's shadow vocabulary
+: (with-current)   ( xt wid -- )
+   get-current >r set-current
    catch
    ( XXX ) dup if ." CAUGHT " dup . cr then
-   r> set-current                         \ back to target's vocabulary
+   r> set-current
    throw ;
+
+: in-meta   ( xt -- )
+   tget-current svoc-shadow (with-current) ;   \ in host's shadow vocabulary
 
 
 : shadow-vocabulary-does!
