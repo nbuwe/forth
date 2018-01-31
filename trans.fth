@@ -350,12 +350,7 @@ variable tlatest    0 tlatest !
 : tcompile,   .long >body type-sym cr ;
 
 : t[']
-   t(') if
-      .long ." lit" cr
-      tcompile,
-   else
-      -13 throw   \ undefined word
-   then ;
+   t'  .long ." lit" cr  tcompile, ;
 
 
 \ "compiling" - use target's words, except for immediates
