@@ -206,7 +206,7 @@ variable tcurrent
    r> set-current
    throw ;
 
-: in-meta   ( xt -- )
+: in-shadow   ( xt -- )
    tget-current svoc-shadow (with-current) ;   \ in host's shadow vocabulary
 
 
@@ -488,14 +488,14 @@ also meta definitions previous
 
 : constant
    s" CONSTANT" +emitdef dup t,
-   ['] constant in-meta ;
+   ['] constant in-shadow ;
 : 2constant
    s" TWO_CONSTANT" +emitdef 2dup t, t,
-   ['] 2constant in-meta ;
+   ['] 2constant in-shadow ;
 
 : vocabulary
    s" VOCABULARY" +emitdef
-   tlatest @ ['] shadow-vocabulary in-meta ;
+   tlatest @ ['] shadow-vocabulary in-shadow ;
 
 : forth   tforth ;
 
