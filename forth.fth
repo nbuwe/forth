@@ -655,12 +655,12 @@ $1f constant #name    \ name length/mask
 : also   context @  osp- (set-wid) ;
 : previous   osp+ ;
 
-: get-order   ( -- wid1 ... widn n )
+: get-order   ( -- widn ... wid1 n )
    0  context osp0 cell- do
       1+  i @ swap
    [ 1 cells negate ] literal +loop ;
 
-: set-order   ( wid1 ... widn n -- )
+: set-order   ( widn ... wid1 n -- )
    dup -1 = if
       drop only
    else
