@@ -685,6 +685,9 @@ $1f constant #name    \ name length/mask
 \ where symbol is like constant with asm symbol as value
 predef~ var-does var_does
 
+variable latest-cfa
+: latestxt   latest-cfa @ ;
+
 : create
    check-current
    parse-word ?parsed
@@ -696,6 +699,7 @@ predef~ var-does var_does
    latest ,
    r> get-current !
    \ Code Field
+   here latest-cfa !
    \ XXX: we should comma var-does here, but need to teach transpiler
    \ about asm symbols (see above); for now abuse POSTPONE
    postpone var-does ;
@@ -957,8 +961,8 @@ is throw
 : buffer:     create allot ;
 
 \ set CFA of the latest word to ...
-: (;code)   r>   latest name> ! ; \ the asm code after this word
-: (;alit)   r> @ latest name> ! ; \ the address compiled after this word
+: (;code)   r>   latest-cfa @ ! ; \ the asm code after this word
+: (;alit)   r> @ latest-cfa @ ! ; \ the address compiled after this word
 
 : constant    create  , does>  @ ;
 : 2constant   create 2, does> 2@ ;
@@ -992,11 +996,11 @@ predef~ call-code call_code \ XXX
    align 0 ,
    \ Code Field
    here   \ xt we leave on the stack
+   dup latest-cfa !
    \ XXX: we should comma call-code here (cf. CREATE)
    postpone call-code ] ;
 
-\ XXX: doesn't work with :NONAME
-: recurse   latest name> compile, ; immediate
+: recurse   latestxt compile, ; immediate
 
 
 : defer   ( "name" -- )
