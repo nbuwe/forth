@@ -44,7 +44,7 @@ only forth also trans definitions
 [then]
 
 : >wid   ( voc-xt -- voc-wid )   also execute  context @  previous ;
-: (also-wid)   ( wid -- )   >r get-order nip r> swap set-order ;
+: (set-wid)   ( wid -- )   >r get-order nip r> swap set-order ;
 : .order   get-order 0 ?do . loop ;
 
 : (with-current)   ( xt wid -- )
@@ -212,7 +212,7 @@ variable tcurrent
 
 : shadow-vocabulary-does!
  does>
-   dup svoc-shadow (also-wid)   \ add host's shadow to host's search order
+   dup svoc-shadow (set-wid)    \ add host's shadow to host's search order
    (tset-wid)                   \ add this svoc to target's search order
    /*order*/ ;
 
