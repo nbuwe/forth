@@ -946,8 +946,7 @@ is throw
    save-input n>r
    (source) 2!  (source-id) on  >in off
    ['] interpret catch
-   nr> restore-input
-   if abort ( " RESTORE-INPUT failed" ) then   \ XXX: add ABORT" to transpiler
+   nr> restore-input abort" RESTORE-INPUT failed"
    throw ;
 
 

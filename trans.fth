@@ -575,6 +575,11 @@ also meta definitions previous
    [char] " parse
    .long ." SQ(" "type" ." )" cr ; immediate
 
+: abort"
+   ?comp
+   [char] " parse
+   .long ." ABORTQ(" "type" ." )" cr ; immediate
+
 : ahead  ?comp          (ahead) 1 ; immediate
 : if     ?comp          (if) 1 ; immediate
 : else   ?comp 1 ?pairs (ahead) swap (then) 1 ; immediate
