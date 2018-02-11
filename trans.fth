@@ -68,7 +68,7 @@ vocabulary meta         \ defining words for the target
    here swap dup allot move ;
 
 : word,   ( "name" -- )   \ compile as counted string
-   parse-word ?parsed ?counted   \ c-addr u --
+   parse-name ?parsed ?counted   \ c-addr u --
    dup c, string, ;
 
 
@@ -102,7 +102,7 @@ char { xlat: lbrace     char | xlat: bar        char } xlat: rbrace
 char ~ xlat: tilde
 
 : (word-xlat,)
-   parse-word ?parsed    ( c-addr u -- )
+   parse-name ?parsed    ( c-addr u -- )
    over c@ [char] 0 [ char 9 1+ ] literal within if
       [char] _ c,
    then
@@ -282,7 +282,7 @@ variable tlatest    0 tlatest !
    2drop false ;
 
 : t(')   ( "name" -- 0 | xt 1 | xt -1 )
-   parse-word ?parsed tsearch-target ;
+   parse-name ?parsed tsearch-target ;
 
 : t'   ( "name" -- xt )
    t(') 0= if ( undefined word ) -13 throw then ;
@@ -312,7 +312,7 @@ variable tlatest    0 tlatest !
    >body tlatest ! treveal ;
 
 : tcreate
-   >in @ parse-word ?parsed
+   >in @ parse-name ?parsed
    tsearch-target if
       nip   \ consume input word
       tcreate-version
@@ -367,7 +367,7 @@ variable tlatest    0 tlatest !
 
 : transpile
    ] begin
-      parse-word ?dup if  ( c-addr u -- )
+      parse-name ?dup if  ( c-addr u -- )
          2dup tsearch-word ?dup if
             \ found a word
             2nip  \ word's c-addr u string
@@ -389,7 +389,7 @@ variable tlatest    0 tlatest !
          state @  \ continue if still compiling
       else
          \ end of input
-         drop  \ leftover c-addr from the unsuccessful parse-word
+         drop  \ leftover c-addr from the unsuccessful parse-name
          refill  \ continue if there's still input
       then
    0= until ;
@@ -414,7 +414,7 @@ variable tlatest    0 tlatest !
 \ takes the name of the CPP macro to use (e.g. WORD or VARIABLE) to
 \ define the forth name in the generated output
 : emitdef ( c-addr u "name" -- )
-   >in @ tcreate >in !  \ restore input for parse-word below
+   >in @ tcreate >in !  \ restore input for parse-name below
    \ the defining macro will use the not yet defined .Limm_name as the
    \ immediate flag.  if "immediate" follows this definition, it will
    \ set the flag.  IMMEDIATE = 0 before the next definition will
@@ -426,7 +426,7 @@ variable tlatest    0 tlatest !
    ." #define IMMEDIATE .Limm_" tlatest-sym cr
    type                 \ macro name
    [char] ( emit
-   parse-word "type"    \ forth name
+   parse-name "type"    \ forth name
    [char] , emit space
    tlatest-sym          \ xlated name
    [char] ) emit
@@ -564,7 +564,7 @@ also meta definitions previous
    then ; immediate
 
 : [char] ?comp
-   parse-word if c@ else drop 0 then tliteral ; immediate
+   parse-name if c@ else drop 0 then tliteral ; immediate
 
 : ." ?comp
    [char] " parse

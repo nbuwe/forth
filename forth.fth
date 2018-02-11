@@ -478,14 +478,14 @@ variable >in
 
 : .(   ')' parse type ; immediate
 
-: parse-word   ( "name" -- c-addr u )
+: parse-name   ( "name" -- c-addr u )
    bl skip-delim bl parse ;
 
 : ?parsed   \ attempt to use zero-length string as a name
    dup 0= -16 and throw ;
 
 : char   ( "name" -- char )
-   parse-word if c@ else drop 0 then ;
+   parse-name if c@ else drop 0 then ;
 
 : word   ( char "<chars>ccc<char>" -- c-addr )
    dup skip-delim parse   \ str len --
@@ -690,7 +690,7 @@ variable latest-cfa
 
 : create
    check-current
-   parse-word ?parsed
+   parse-name ?parsed
    dup #name > ( name too long ) -19 and throw
    align here >r   \ save NFA
    \ Name Field
@@ -794,7 +794,7 @@ variable latest-cfa
 
 \ helper for ' and the like that do the parse/search combo
 : (')   ( "name" -- 0 | xt 1 | xt -1 )
-   parse-word ?parsed search-context ;
+   parse-name ?parsed search-context ;
 
 : '   (')  0= ( undefined? ) -13 and throw ;
 
@@ -843,7 +843,7 @@ variable state
 
 : interpret
    begin
-      parse-word ?dup 0= if drop exit then
+      parse-name ?dup 0= if drop exit then
       2dup search-context ?dup if
          2nip
          1+ if

@@ -84,7 +84,7 @@
    then ;
 
 : forget   ( "name" -- )
-   parse-word ?parsed                   \ c-addr u --
+   parse-name ?parsed                   \ c-addr u --
    (forget-search)  0= ( undefined ) -13 and throw
    >name (forget) ;
 
@@ -101,6 +101,6 @@
 
 \ ANEW word - forget word if already defined and redefine it
 : anew   ( "name" -- )
-   >in @  parse-word ?parsed  rot >in !
+   >in @  parse-name ?parsed  rot >in !
    (forget-search) if execute then
    marker ;
