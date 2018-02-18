@@ -27,12 +27,14 @@
 
 #ifdef _KERNEL
 #include <sys/stdint.h>
+#include <machine/limits.h>
 #else
 #include <stdint.h>
+#include <limits.h>
 #endif
 
 typedef uintptr_t cell_t;
-
+#define CELL_MAX UINTPTR_MAX
 
 /* this probably should be in a dedicated MD header */
 #if defined(__i386__)
