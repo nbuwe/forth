@@ -407,10 +407,13 @@ variable (source-id)
 variable #tib
 variable >in
 
-: default-input
-   tib 0 (source) 2!
-   (source-id) off
-   >in off ;
+: terminal-input
+   tib 0 (source) 2!  (source-id) off  >in off ;
+
+: string-input   ( c-addr u -- )
+   (source) 2!  (source-id) on  >in off ;
+
+: default-input   terminal-input ;
 
 4 constant #save-input
 : save-input   ( -- xn ... x1 n )
@@ -946,12 +949,15 @@ is throw
 : abort   -1 throw ;
 
 
-: evaluate   ( ... c-addr u -- ... )
+: interpret-input  ( xt -- )
    save-input n>r
-   (source) 2!  (source-id) on  >in off
+   execute   \ set up new input
    ['] interpret catch
    nr> restore-input abort" RESTORE-INPUT failed"
    throw ;
+
+: evaluate   ( c-addr u -- )
+   ['] string-input interpret-input ;
 
 
 \ ==================== defining words &co
