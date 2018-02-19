@@ -11,13 +11,14 @@ CPPFLAGS += -I. -I${.CURDIR} -I${.CURDIR}/${MACHINE_CPU}
 SRCS = main.c forth_machdep.S
 SRCS += math.c
 SRCS += io-stdio.c
+SRCS += file.c
 GDBINIT = ${.CURDIR}/${MACHINE_CPU}/forth.gdb
 
 # when porting to a new cpu - see test.S
 # CPPFLAGS += -DTESTING
 
 CLEANDIRFILES += forth.S
-forth.S: forth.fth forget.fth smartif.fth asmwords.fth trans.fth
+forth.S: forth.fth file.fth forget.fth smartif.fth asmwords.fth trans.fth
 	gforth ${.CURDIR}/trans.fth -e bye > forth.S
 
 # XXX: there must be a more sane way to do this, but my make-fu is weak...

@@ -104,6 +104,11 @@ predef~ emit emit
 predef~ type type
 predef~ accept accept_4th
 
+predef~ open-file open_file
+predef~ create-file create_file
+predef~ close-file close_file
+predef~ read-line read_line
+
 predef tib \ constant address
 predef dp 
 

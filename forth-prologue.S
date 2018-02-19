@@ -38,6 +38,17 @@ CWORD("type", type)
 CWORD("accept", accept_4th)	/* XXX: avoid name clash with accept(2) */
 	.long	_C_LABEL(accept_impl)
 
+#ifndef _KERNEL
+CWORD("open-file", open_file)
+	.long	_C_LABEL(open_file_impl)
+CWORD("create-file", create_file)
+	.long	_C_LABEL(create_file_impl)
+CWORD("close-file", close_file)
+	.long	_C_LABEL(close_file_impl)
+CWORD("read-line", read_line)
+	.long	_C_LABEL(read_line_impl)
+#endif /* _KERNEL */
+
 VARIABLE("fence", fence)
 	.long	.FENCE
 
