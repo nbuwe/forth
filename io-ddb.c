@@ -29,7 +29,7 @@
 #include "forth-c.h"
 
 /*
- * ( x -- )
+ * EMIT ( x -- )
  */
 cell_t *
 emit_impl(cell_t *stack)
@@ -45,7 +45,7 @@ emit_impl(cell_t *stack)
 
 
 /*
- * ( c-addr u -- )
+ * TYPE ( c-addr u -- )
  */
 cell_t *
 type_impl(cell_t *stack)
@@ -62,7 +62,7 @@ type_impl(cell_t *stack)
 
 
 /*
- * ( c-addr +n1 -- +n2 )
+ * ACCEPT ( c-addr +n1 -- +n2 )
  */
 cell_t *
 accept_impl(cell_t *stack)
