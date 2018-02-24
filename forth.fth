@@ -697,6 +697,11 @@ $1f constant #name    \ name length/mask
 : latest   get-current dup ?current @ ;
 : definitions   context @ set-current ;
 
+: order   ( -- )   \ XXX: TODO: try to identify vocabularies
+   get-order 0 ?do . loop
+   5 spaces get-current . ;
+
+
 \ XXX: TODO: symbol var-does
 \ where symbol is like constant with asm symbol as value
 predef~ var-does var_does
