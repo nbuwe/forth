@@ -395,7 +395,8 @@ variable tlatest    0 tlatest !
    0= until ;
 
 : transpile-begin
-   .\" #include \"forth-prologue.S\"" cr
+   \ .\" #include \"forth-prologue.S\"" cr
+   ." #include "  '"' emit  ." forth-prologue.S"  '"' emit cr
    ." #undef  IMMEDIATE" cr
    ." #define IMMEDIATE .Limm0" cr ;
 
