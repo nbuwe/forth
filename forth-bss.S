@@ -51,7 +51,7 @@ SPACE(rstack_limit, 4096)
 SPACE(rstack_bottom, 4096)
 SPACE(redzone_below, 0)
 
-SPACE(terminal_input_buffer, 4096)
+SPACE(input_buffer_start, 4096)
 
 
 #undef SPACE

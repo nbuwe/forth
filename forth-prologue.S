@@ -21,8 +21,8 @@
 VARIABLE("dp", dp)
 	.long	.L_DATA_SPACE
 
-CONSTANT("tib", tib)
-	.long	terminal_input_buffer
+CONSTANT("ib0", ib0)
+	.long	input_buffer_start
 
 CWORD("ms/rem", ms_slash_rem)
 	.long	ms_slash_rem_impl

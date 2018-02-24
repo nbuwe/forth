@@ -394,52 +394,65 @@ variable hld
    r> base ! ;                          \ restore base
 
 
-\ cword~ accept accept_impl
-
 \ TODO: use VALUE
 variable (source-id)
 2variable (source)
+variable >in
 
 : source-id   ( -- -1 | 0 | fileid )   (source-id) @ ;
 : source   ( -- c-addr u )   (source) 2@ ;
 
-\ ... constant tib
-variable #tib
-variable >in
+\ ... constant ib0
+#4096 constant #ib-size
+2variable (input)   \ same as (SOURCE) most of the time, except during EVALUATE
+
+: reset-input-buffer   ib0 0 (input) 2! ;
+: input-buffer   ( -- c-addr u )
+   (input) 2@ drop  dup ib0 -  #ib-size swap - ;
 
 : terminal-input
-   tib 0 (source) 2!  (source-id) off  >in off ;
+   reset-input-buffer  (input) 2@ (source) 2!
+   (source-id) off  >in off ;
 
 : string-input   ( c-addr u -- )
    (source) 2!  (source-id) on  >in off ;
 
 : default-input   terminal-input ;
 
-4 constant #save-input
+6 constant #save-input
 : save-input   ( -- xn ... x1 n )
-   >in @  (source) 2@  (source-id) @  #save-input ;
+   (input) 2@  >in @  (source) 2@  (source-id) @  #save-input ;
 
 : restore-input   ( xn ... x1 n -- flag )
    #save-input - ?dup if
       #save-input + 0 ?do drop loop
       true
    else
-      (source-id) !  (source) 2!  >in !
+      (source-id) !  (source) 2!  >in !  (input) 2!
       false
    then ;
 
 : refill
-   source-id ?dup if   \ string (-1) or file
-      false            \ strings can't be refilled, files not yet supported
-   else   \ stdin
-      tib 4096 accept
-      dup 0< if
-         drop false
-      else
-         dup #tib !  (source) !  >in off  true
+   source-id invert if
+      input-buffer
+      source-id if   \ file
+         2 - source-id read-line   \ nread flag ior --
+         0<> ( READ-LINE exception ) -71 and throw
+         not             \ nread eof --
+      else   \ terminal
+         accept dup 0<   \ nread eof -- 
       then
+      if
+         drop false   \ eof
+      else   \ nread --
+         input-buffer drop swap
+         2dup (input) 2! (source) 2!
+         >in off true
+      then
+   else
+      \ source-id -1 - string input, can't be refilled
+      drop false
    then ;
-
 
 : skip-delim   ( char -- )
    >r   \ stash away the delimiter
@@ -902,6 +915,11 @@ predef~ throw-msgtab throw_msgtab
       then
    then ;
 
+: interpret-loop
+   begin
+      refill while
+         interpret
+   repeat ;
 
 : quit
    (quit)
@@ -949,16 +967,12 @@ is throw
 : abort   -1 throw ;
 
 
-: interpret-input  ( xt -- )
+: evaluate   ( i*x c-addr u -- j*x )
    save-input n>r
-   execute   \ set up new input
+   string-input
    ['] interpret catch
    nr> restore-input abort" RESTORE-INPUT failed"
    throw ;
-
-: evaluate   ( c-addr u -- )
-   ['] string-input interpret-input ;
-
 
 \ ==================== defining words &co
 
@@ -1131,6 +1145,6 @@ predef~ call-code call_code \ XXX
 \ XXX: stub for now
 : environment?   2drop false ;
 
-
+include file.fth
 include forget.fth
 include smartif.fth

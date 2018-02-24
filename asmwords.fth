@@ -109,7 +109,7 @@ predef~ create-file create_file
 predef~ close-file close_file
 predef~ read-line read_line
 
-predef tib \ constant address
+predef ib0
 predef dp 
 
 predef  fence

@@ -31,9 +31,13 @@
 : bin   ( nothing to do ) ;
 
 : include-file   ( i*x fileid -- j*x )
-   \ XXX: TODO
-   close-file
-   0<> ( close-file exception ) -62 and throw ;
+   save-input n>r
+   (source-id) !
+   (input) 2@ + 0 (input) 2!
+   ['] interpret-loop catch
+   source-id close-file drop
+   nr> restore-input abort" RESTORE-INPUT failed"
+   throw ;
 
 : included   ( i*x c-addr u -- j*x )
    r/o open-file
