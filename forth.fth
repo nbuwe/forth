@@ -681,10 +681,6 @@ $1f constant #name    \ name length/mask
 : latest   get-current dup ?current @ ;
 : definitions   context @ set-current ;
 
-: order   ( -- )   \ XXX: TODO: try to identify vocabularies
-   get-order 0 ?do . loop
-   5 spaces get-current . ;
-
 
 \ XXX: TODO: symbol var-does
 \ where symbol is like constant with asm symbol as value
@@ -981,6 +977,21 @@ is throw
    wordlist swap !
  does>
    @ (set-wid) ;
+
+: .wid   ( wid -- )   \ try to print wid by its vocabulary name
+   dup body> >name                      \ wid wid-header --
+   cell- @ over = if                    \ right after VOCABULARY body
+      body> >name                       \ wid-header
+      cell- body> >name                 \ vocabulary's nfa
+      name-count type space
+   else
+      .
+   then ;
+
+: order   ( -- )   \ XXX: TODO: try to identify vocabularies
+   get-order 0 ?do .wid loop
+   5 spaces get-current .wid ;
+
 
 predef~ call-code call_code \ XXX
 
