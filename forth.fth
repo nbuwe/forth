@@ -472,15 +472,11 @@ variable >in
    (>in-addr) swap   \ stash result address (at current >IN)
    0                 \ init result length
    \ source-in delimiter len --
-   (unparsed) 2dup u> if
-      do
-         >in 1+!
-         over i c@ = if leave then   \ delimiter?
-         1+     \ increment result length
-      loop
-   else
-      2drop   \ (unparsed)
-   then
+   (unparsed) ?do
+      >in 1+!
+      over i c@ = if leave then   \ delimiter?
+      1+     \ increment result length
+   loop
    nip ;   \ delimiter
 
 : \   $0a parse 2drop ; immediate
