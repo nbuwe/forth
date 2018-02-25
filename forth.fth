@@ -458,15 +458,9 @@ variable >in
    then ;
 
 : skip-delim   ( char -- )
-   >r   \ stash away the delimiter
-   source swap begin   \ buflen buf --
-      over >in @ >  dup if drop      \ range check ... and
-         dup >in @ + c@ r@ =  then   \ check for delimiter
-   while
-         >in 1+!
-   repeat
-   2drop
-   r> drop ;
+   (unparsed) ?do
+      dup i c@ = if >in 1+! else leave then
+   loop drop ;
 
 : parse   ( char "ccc<char>" -- c-addr u )
    (>in-addr) swap   \ stash result address (at current >IN)
