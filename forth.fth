@@ -402,6 +402,9 @@ variable >in
 : source-id   ( -- -1 | 0 | fileid )   (source-id) @ ;
 : source   ( -- c-addr u )   (source) 2@ ;
 
+: (>in-addr)   ( -- source-in )   source drop >in @ + ;
+: (unparsed)   ( -- source-end source-in )   source +  (>in-addr) ;
+
 \ ... constant ib0
 #4096 constant #ib-size
 2variable (input)   \ same as (SOURCE) most of the time, except during EVALUATE
@@ -465,29 +468,20 @@ variable >in
    2drop
    r> drop ;
 
-\ XXX: TODO: loop with pointer not index?
 : parse   ( char "ccc<char>" -- c-addr u )
-   source nip >in @   \ parse area limits
-   2dup <= if
-      \ parse area exhausted, return empty word at the end
-      2drop drop   \ limits and delimiter
-      source drop >in @ +   \ result address
-      0                     \ result length
-      exit
+   (>in-addr) swap   \ stash result address (at current >IN)
+   0                 \ init result length
+   \ source-in delimiter len --
+   (unparsed) 2dup u> if
+      do
+         >in 1+!
+         over i c@ = if leave then   \ delimiter?
+         1+     \ increment result length
+      loop
+   else
+      2drop   \ (unparsed)
    then
-   \ delim buflen pos --
-   dup >r   \ stash away current >in
-   0 -rot   \ init result length
-   \ delim 0 buflen pos --
-   do
-      >in 1+!
-      over   \ delimiter
-      source drop i + c@ = if leave then
-      1+     \ increment result length
-   loop
-   nip               \ delimiter
-   source drop r> +  \ result address (at old >in)
-   swap ;            \ result length
+   nip ;   \ delimiter
 
 : \   $0a parse 2drop ; immediate
 : (   ')' parse 2drop ; immediate
