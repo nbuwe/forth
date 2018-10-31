@@ -285,7 +285,7 @@ variable tlatest    0 tlatest !
    parse-name ?parsed tsearch-target ;
 
 : t'   ( "name" -- xt )
-   t(') 0= if ( undefined word ) -13 throw then ;
+   t(') 0= ( undefined word ) -13 and throw ;
 
 
 : noname-basename s" .Lnoname" ;
@@ -437,8 +437,8 @@ variable tlatest    0 tlatest !
    >in @ >r  emitdef  r> >in ! ;
 
 
-: ?comp   state @ 0= if  -14 throw then ; \ interpreting a compile-only word
-: ?pairs   - 0<> if  ." oops" .s -22 throw then ; \ control structure mismatch
+: ?comp   state @ 0= ( interpreting a compile-only word ) -14 and throw ;
+: ?pairs   <> ( control structure mismatch ) -22 and throw ;
 
 variable lblcnt   0 lblcnt !
 : reset-labels   100 lblcnt @  over / 1+ *  lblcnt ! ;
