@@ -835,10 +835,11 @@ variable state
 
 : postpone
    ?comp
-   (') 0< if
-      compile compile ,
-   else
+   (') dup ?defined
+   1+ if   \ immediate
       compile,
+   else
+      compile compile ,
    then ; immediate
 
 

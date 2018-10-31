@@ -555,15 +555,12 @@ also meta definitions previous
 : [']   t['] ; immediate
 
 : postpone
-   t(') ?dup if
-      1+ if   \ immediate
-         tcompile,
-      else
-         .long ." compile" cr
-         tcompile,
-      then
+   t(') dup ?defined
+   1+ if   \ immediate
+      tcompile,
    else
-      \ ... undefined word
+      .long ." compile" cr
+      tcompile,
    then ; immediate
 
 : [char] ?comp
