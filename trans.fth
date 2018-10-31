@@ -284,8 +284,10 @@ variable tlatest    0 tlatest !
 : t(')   ( "name" -- 0 | xt 1 | xt -1 )
    parse-name ?parsed tsearch-target ;
 
+: ?defined   0= ( undefined word ) -13 and throw ;
+
 : t'   ( "name" -- xt )
-   t(') 0= ( undefined word ) -13 and throw ;
+   t(') ?defined ;
 
 
 : noname-basename s" .Lnoname" ;
@@ -380,7 +382,7 @@ variable tlatest    0 tlatest !
             \ not a word, may be a number?
             2dup number? ?dup 0= if
                ." undefined word: " type cr
-               -13 throw  \ undefined word
+               false ?defined
             then
             \ yes, a number
             2 = if  t2literal else  tliteral then
