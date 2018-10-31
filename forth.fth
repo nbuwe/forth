@@ -797,7 +797,9 @@ variable latest-cfa
 : (')   ( "name" -- 0 | xt 1 | xt -1 )
    parse-name ?parsed search-context ;
 
-: '   (')  0= ( undefined? ) -13 and throw ;
+: ?defined   0= ( undefined word ) -13 and throw ;
+
+: '   (') ?defined ;
 
 
 \ ====================
@@ -862,7 +864,7 @@ variable state
                postpone literal
             then
          else
-            type ."  ?" cr  -13 throw
+            type ."  ?" cr  false ?defined
          then
       then
    again ;
