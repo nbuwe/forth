@@ -519,7 +519,7 @@ variable >in
    then ;
 
 : base-a   ( base  -- 'a' upper ) \ range of alphabetic digits; for WITHIN
-   10 - 'a' tuck + ;
+   #10 - 'a' tuck + ;
 
 : digit?   ( char base -- value true | false )
    swap >r   \ stash away the char
@@ -531,7 +531,7 @@ variable >in
       true exit
    then
    \ does base use alpha digits?
-   dup 10 > if
+   dup #10 > if
       \ alpha digit?
       dup base-a
       r> $20 or dup >r   \ downcase char
