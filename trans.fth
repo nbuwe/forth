@@ -555,6 +555,7 @@ also meta definitions previous
 : [']   t['] ; immediate
 
 : postpone
+   ?comp
    t(') dup ?defined
    1+ if   \ immediate
       tcompile,
