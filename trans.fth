@@ -351,11 +351,19 @@ variable tlatest    0 tlatest !
 
 : tcompile,   .long >body type-sym cr ;
 
-: tliteral    .long ." lit"     cr t, ;
-: t2literal   .long ." two_lit" cr t, t, ;
+\ forward references
+: tpostpone-lit   .long ." lit" cr ;
+: tpostpone-2lit   .long ." two_lit" cr ;
+: tpostpone-compile   .long ." compile" cr ;
+: tpostpone-branch   .long ." branch" cr ;
+: tpostpone-?branch   .long ." question_branch" cr ;
+: tpostpone-(;code)   .long ." _lparen_semicoloncode_rparen" cr ;
+: tpostpone-defer!   .long ." defer_exclam" cr ;
 
-: t[']
-   t'  .long ." lit" cr  tcompile, ;
+: tliteral    tpostpone-lit t, ;
+: t2literal   tpostpone-2lit t, t, ;
+
+: t[']   t' tpostpone-lit tcompile, ;
 
 
 \ "compiling" - use target's words, except for immediates
@@ -457,13 +465,13 @@ variable lblcnt   0 lblcnt !
 : <mark   new-label dup label ;
 : <resolve   label-ref ;
 
-: (ahead)   .long ." branch"          cr >mark ;
-: (if)      .long ." question_branch" cr >mark ;
+: (ahead)   tpostpone-branch >mark ;
+: (if)      tpostpone-?branch >mark ;
 : (then)    >resolve ;
 
 : (begin)   <mark ;
-: (again)   .long ." branch"          cr <resolve ;
-: (until)   .long ." question_branch" cr <resolve ;
+: (again)   tpostpone-branch <resolve ;
+: (until)   tpostpone-?branch <resolve ;
 
 : (do)   ?comp .long type cr >mark <mark 4 ;
 : (loop) ?comp rot 4 ?pairs .long type cr <resolve >resolve ;
@@ -521,7 +529,7 @@ also meta definitions previous
 
 \ NB: DEFCODE_DOES() macro depends on "_does" suffix used here
 : does> ?comp
-   .long ." _lparen_semicoloncode_rparen"  cr
+   tpostpone-(;code)
    ." DOES_4TH(" treveal tlatest-sym thide ." _does)" cr ; immediate
 
 : recurse   treveal tlatest @ body> tcompile, thide ; immediate
@@ -538,7 +546,7 @@ also meta definitions previous
 : is
    state @ if
       \ postpone ['] postpone defer!
-      t['] .long ." defer_exclam" cr
+      t['] tpostpone-defer!
    else
       t' ." .L" >body type-sym ." _xt = "
       >body type-sym cr
@@ -560,8 +568,7 @@ also meta definitions previous
    1+ if   \ immediate
       tcompile,
    else
-      .long ." compile" cr
-      tcompile,
+      tpostpone-compile tcompile,
    then ; immediate
 
 : [char] ?comp
