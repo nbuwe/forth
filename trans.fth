@@ -352,17 +352,19 @@ variable tlatest    0 tlatest !
 : tcompile,   .long >body type-sym cr ;
 
 \ forward references
-: tpostpone-lit   .long ." lit" cr ;
-: tpostpone-2lit   .long ." two_lit" cr ;
-: tpostpone-compile   .long ." compile" cr ;
-: tpostpone-branch   .long ." branch" cr ;
-: tpostpone-?branch   .long ." question_branch" cr ;
-: tpostpone-(;code)   .long ." _lparen_semicoloncode_rparen" cr ;
-: tpostpone-defer!   .long ." defer_exclam" cr ;
-: tpostpone-(do)   .long ." _lparendo_rparen" cr ;
-: tpostpone-(?do)   .long ." _lparen_questiondo_rparen" cr ;
-: tpostpone-(loop)   .long ." _lparenloop_rparen" cr ;
-: tpostpone-(+loop)   .long ." _lparen_plusloop_rparen" cr ;
+: (tcompile-name)   .long type cr ;
+: tpostpone-lit       s" lit"                          (tcompile-name) ;
+: tpostpone-2lit      s" two_lit"                      (tcompile-name) ;
+: tpostpone-compile   s" compile"                      (tcompile-name) ;
+: tpostpone-branch    s" branch"                       (tcompile-name) ;
+: tpostpone-?branch   s" question_branch"              (tcompile-name) ;
+: tpostpone-(;code)   s" _lparen_semicoloncode_rparen" (tcompile-name) ;
+: tpostpone-defer!    s" defer_exclam"                 (tcompile-name) ;
+: tpostpone-(do)      s" _lparendo_rparen"             (tcompile-name) ;
+: tpostpone-(?do)     s" _lparen_questiondo_rparen"    (tcompile-name) ;
+: tpostpone-(loop)    s" _lparenloop_rparen"           (tcompile-name) ;
+: tpostpone-(+loop)   s" _lparen_plusloop_rparen"      (tcompile-name) ;
+
 
 : tliteral    tpostpone-lit t, ;
 : t2literal   tpostpone-2lit t, t, ;
