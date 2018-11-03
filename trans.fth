@@ -359,6 +359,10 @@ variable tlatest    0 tlatest !
 : tpostpone-?branch   .long ." question_branch" cr ;
 : tpostpone-(;code)   .long ." _lparen_semicoloncode_rparen" cr ;
 : tpostpone-defer!   .long ." defer_exclam" cr ;
+: tpostpone-(do)   .long ." _lparendo_rparen" cr ;
+: tpostpone-(?do)   .long ." _lparen_questiondo_rparen" cr ;
+: tpostpone-(loop)   .long ." _lparenloop_rparen" cr ;
+: tpostpone-(+loop)   .long ." _lparen_plusloop_rparen" cr ;
 
 : tliteral    tpostpone-lit t, ;
 : t2literal   tpostpone-2lit t, t, ;
@@ -472,9 +476,6 @@ variable lblcnt   0 lblcnt !
 : (begin)   <mark ;
 : (again)   tpostpone-branch <resolve ;
 : (until)   tpostpone-?branch <resolve ;
-
-: (do)   ?comp .long type cr >mark <mark 4 ;
-: (loop) ?comp rot 4 ?pairs .long type cr <resolve >resolve ;
 
 4 constant cell
 
@@ -600,10 +601,31 @@ also meta definitions previous
 : while  ?comp 2 ?pairs (if) 3 ; immediate
 : repeat ?comp 3 ?pairs swap (again) (then) ; immediate
 
-: do    s" _lparendo_rparen"          (do) ; immediate
-: ?do   s" _lparen_questiondo_rparen" (do) ; immediate
-: loop  s" _lparenloop_rparen"      (loop) ; immediate
-: +loop s" _lparen_plusloop_rparen" (loop) ; immediate
+: do
+   ?comp
+   tpostpone-(do)
+   >mark \ leave address
+   <mark \ address to loop back to
+   4 ; immediate
+
+: ?do
+   ?comp
+   tpostpone-(?do)
+   >mark \ leave address
+   <mark \ address to loop back to
+   4 ; immediate
+
+: loop
+   ?comp 4 ?pairs
+   tpostpone-(loop)
+   <resolve     \ jump to the beginning of the loop
+   >resolve ; immediate \ leave address after the loop
+
+: +loop
+   ?comp 4 ?pairs
+   tpostpone-(+loop)
+   <resolve     \ jump to the beginning of the loop
+   >resolve ; immediate \ leave address after the loop
 
 
 \ print wordlists for FORTH a-la SHADOW-VOCABULARY
