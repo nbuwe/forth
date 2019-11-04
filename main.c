@@ -46,9 +46,9 @@ extern cell_t exit_4th_code[];
 int
 main()
 {
-    int32_t *psp;
-    int32_t *p;
-    int32_t *bottom;
+    cell_t *psp;
+    cell_t *p;
+    cell_t *bottom;
 
     stack_setup();
 
