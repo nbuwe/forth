@@ -37,7 +37,7 @@
 	_SPACE(_sym, _size)
 
 #define _SPACE(_sym, _size)	  \
-	.type	_sym, @object	; \
+	.type	_sym, STT_OBJECT; \
 	.size	_sym, (_size)	; \
 _sym:	.if	(_size)		; \
 	.space	(_size)		; \

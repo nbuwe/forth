@@ -52,7 +52,7 @@
 
 #define NAMED_CELLS(n, label)	  \
 	.p2align 2		; \
-	.type	label, @object	; \
+	.type	label, STT_OBJECT ; \
 	.size	label, (n) * 4	; \
   label:			;
 
@@ -65,7 +65,7 @@
   NAMED_CELL(label)				; \
 	.long	__CONCAT(label,_code)		; \
 	/* Parameter Field */			  \
-	.type	__CONCAT(label,_code),@function	; \
+	.type	__CONCAT(label,_code), STT_FUNC	; \
   __CONCAT(label,_code):
 
 #define ASMEND(label) \
