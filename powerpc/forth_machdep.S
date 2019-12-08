@@ -132,7 +132,7 @@ ENTRY(start_forth)
 	mtlr	%r0
 	blr
 
-#if 1
+#ifdef PPC_FORCE_RELOCS
 .LD_BUG_WORKAROUND: # https://sourceware.org/bugzilla/show_bug.cgi?id=25179
 	.long	memmove, memset
 #endif

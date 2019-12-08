@@ -8,6 +8,10 @@ NOCTF=
 DBG = -g
 CPPFLAGS += -I. -I${.CURDIR} -I${.CURDIR}/${MACHINE_CPU}
 
+# Enable this workaround if you get this error on older NetBSD/powerpc
+# "Unsupported relocation type 6 in non-PLT relocations"
+# CPPFLAGS.forth_machdep.S += -DPPC_FORCE_RELOCS
+
 SRCS = main.c forth_machdep.S
 SRCS += math.c
 SRCS += io-stdio.c
