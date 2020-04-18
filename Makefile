@@ -32,4 +32,3 @@ forth_machdep.d: ${MACHINE_CPU}/forth_machdep.S forth.S
 
 OBJMACHINE=yes
 .include <bsd.prog.mk>
-
