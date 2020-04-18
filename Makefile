@@ -1,9 +1,9 @@
 PROG = forth
 PAXCTL_FLAGS = +m
 
-NOPIE=
-NOMAN=
 NOCTF=
+NOMAN=
+NOPIE=
 
 .include <bsd.own.mk>
 
