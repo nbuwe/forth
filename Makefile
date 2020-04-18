@@ -1,4 +1,6 @@
-PROG=	forth
+PROG = forth
+PAXCTL_FLAGS = +m
+
 NOPIE=
 NOMAN=
 NOCTF=
