@@ -399,6 +399,17 @@ ASMWORD(">", greater_than)
 	ASMEND(greater_than)
 
 
+/// U> - CORE-EXT 6.2.2350
+///     ( u1 u2 -- flag )
+ASMWORD("u>", u_greater_than)
+	ldr	r0, [PSP], #4
+	cmp	r0, TOS
+	movls	TOS, #0
+	mvnhi	TOS, #0
+	mov	pc, NEXT
+	ASMEND(u_greater_than)
+
+
 
 /**
  * Arithmetic and bit-wise operations
