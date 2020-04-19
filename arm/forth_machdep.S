@@ -257,6 +257,14 @@ ASMWORD("-rot", minus_rot)
 	ASMEND(minus_rot)
 
 
+/// PICK - CORE EXT 6.2.2030
+///     ( xu ... x1 x0 u -- xu ... x1 x0 xu )
+ASMWORD("pick", pick)
+	ldr     TOS, [PSP, TOS, lsl #2]
+	mov	pc, NEXT
+	ASMEND(pick)
+
+
 
 /**
  * Arithmetic and bit-wise operations
