@@ -327,6 +327,16 @@ ASMWORD("0=", zero_equals)
 	ASMEND(zero_equals)
 
 
+/// 0<> - CORE-EXT 6.2.0260
+///     ( x -- flag )
+ASMWORD("0<>", zero_not_equals)
+        adds    TOS, TOS, #0
+        movne   TOS, #1
+        rsb     TOS, TOS, #0
+	mov	pc, NEXT
+	ASMEND(zero_not_equals)
+
+
 
 /**
  * Arithmetic and bit-wise operations
