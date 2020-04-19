@@ -348,6 +348,14 @@ ASMWORD("0>", zero_greater)
 	ASMEND(zero_greater)
 
 
+/// 0< - CORE 6.1.0250
+///     ( x -- flag )
+ASMWORD("0<", zero_less)
+	asr	TOS, TOS, #31
+	mov	pc, NEXT
+	ASMEND(zero_less)
+
+
 
 /**
  * Arithmetic and bit-wise operations
