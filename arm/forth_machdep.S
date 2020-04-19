@@ -506,6 +506,33 @@ ASMWORD("or", or)
 	ASMEND(or)
 
 
+/// XOR - CORE 6.1.2490
+///     ( x1 x2 -- x3 )
+ASMWORD("xor", xor)
+	ldr	r0, [PSP], #4
+	eor	TOS, r0, TOS
+	mov	pc, NEXT
+	ASMEND(xor)
+
+
+/// LSHIFT - CORE 6.1.1805
+///     ( x1 u -- x2 )
+ASMWORD("lshift", lshift)
+	ldr	r0, [PSP], #4
+	lsl	TOS, r0, TOS
+	mov	pc, NEXT
+	ASMEND(lshift)
+
+
+/// RSHIFT - CORE 6.1.2162
+///     ( x1 u -- x2 )
+ASMWORD("rshift", rshift)
+	ldr	r0, [PSP], #4
+	lsr	TOS, r0, TOS
+	mov	pc, NEXT
+	ASMEND(rshift)
+
+
 
 /**
  * Control structure helpers
