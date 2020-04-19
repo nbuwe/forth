@@ -367,6 +367,16 @@ ASMWORD("=", equals)
 	ASMEND(equals)
 
 
+/// <> - CORE-EXT 6.2.0500
+///     ( x1 x2 -- flag )
+ASMWORD("<>", not_equals)
+	ldr	r0, [PSP], #4
+	subs	TOS, r0, TOS
+	mvnne	TOS, #0
+	mov	pc, NEXT
+	ASMEND(not_equals)
+
+
 
 /**
  * Arithmetic and bit-wise operations
