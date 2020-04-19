@@ -195,6 +195,26 @@ ASMWORD("dup", dup)
 	ASMEND(dup)
 
 
+/// SWAP - CORE 6.1.2260
+///     ( x1 x2 -- x2 x1 )
+ASMWORD("swap", swap)
+	ldr	r0, [PSP]
+	str	TOS, [PSP]
+	mov	TOS, r0
+	mov	pc, NEXT
+	ASMEND(swap)
+
+
+/// OVER - CORE 6.1.1990
+///     ( x1 x2 -- x1 x2 x1 )
+ASMWORD("over", over)
+	ldr	r0, [PSP]
+	SPILL_TOS
+	mov	TOS, r0
+	mov	pc, NEXT
+	ASMEND(over)
+
+
 
 /**
  * Arithmetic and bit-wise operations
