@@ -480,6 +480,22 @@ ASMWORD("-", minus)
 	ASMEND(minus)
 
 
+/// 1+ - CORE 6.1.0290
+///     ( n1|u1 -- n2|u2 )
+ASMWORD("1+", one_plus)
+	add	TOS, TOS, #1
+	mov	pc, NEXT
+	ASMEND(one_plus)
+
+
+/// 1- - CORE 6.1.0300
+///     ( n1|u1 -- n2|u2 )
+ASMWORD("1-", one_minus)
+	sub	TOS, TOS, #1
+	mov	pc, NEXT
+	ASMEND(one_minus)
+
+
 /// INVERT - CORE 6.1.1720
 ///     ( x1 -- x2 )
 ASMWORD("invert", invert)
