@@ -557,6 +557,15 @@ ASMWORD("1-", one_minus)
 	ASMEND(one_minus)
 
 
+/// * - CORE 6.1.0090
+///     ( n1|u1 n2|u2 -- n3|u3 )
+ASMWORD("*", star)
+	ldr	r0, [PSP], #4
+	mul	TOS, r0, TOS
+	mov	pc, NEXT
+	ASMEND(star)
+
+
 /// INVERT - CORE 6.1.1720
 ///     ( x1 -- x2 )
 ASMWORD("invert", invert)
