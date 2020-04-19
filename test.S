@@ -12,8 +12,9 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, 3, lit, 2, lit, 1, lit, 0
-	.long	lit, 3, pick
+	.long	lit, 4, lit, 3, lit, 2, lit, 1, lit, 0
+	.long	lit, 3, roll
+	.long	lit, 0, roll	// no-op
 	.long	bye_parens	/* return from forth */
 
 

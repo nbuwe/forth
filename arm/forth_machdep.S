@@ -265,6 +265,26 @@ ASMWORD("pick", pick)
 	ASMEND(pick)
 
 
+/// ROLL - CORE EXT 6.2.2150
+///     ( xu xu-1 ... x0 u -- xu-1 ... x0 xu )
+ASMWORD("roll", roll)
+	cmp	TOS, #0
+	bne	0f
+	FILL_TOS
+	mov	pc, NEXT
+0:
+	ldr	r3, [PSP, TOS, lsl #2] @ x[u]
+	add	r2, PSP, TOS, lsl #2   @ its address
+1:
+	ldr	r0, [r2, #-4]
+	str	r0, [r2], #-4
+	cmp	r2, PSP
+	bne	1b
+	add	PSP, PSP, #4
+	mov	pc, NEXT
+	ASMEND(roll)
+
+
 
 /**
  * Arithmetic and bit-wise operations
