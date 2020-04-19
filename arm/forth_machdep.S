@@ -377,6 +377,17 @@ ASMWORD("<>", not_equals)
 	ASMEND(not_equals)
 
 
+/// < - CORE 6.1.0480
+///     ( n1 n2 -- flag )
+ASMWORD("<", less_than)
+	ldr	r0, [PSP], #4
+	cmp	r0, TOS
+	movge	TOS, #0
+	mvnlt	TOS, #0
+	mov	pc, NEXT
+	ASMEND(less_than)
+
+
 
 /**
  * Arithmetic and bit-wise operations
