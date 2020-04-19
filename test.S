@@ -12,8 +12,8 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	true, invert, false, invert
-	// ( ... -- 0 -1 )
+	.long	lit, 0xa5a5a5a5, lit, 0x5a5a5a5a, or, lit, 0xffff00, and
+	// ( ... -- 0x00ffff00 )
 	.long	bye_parens	/* return from forth */
 
 

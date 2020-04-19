@@ -488,6 +488,24 @@ ASMWORD("invert", invert)
 	ASMEND(invert)
 
 
+/// AND - CORE 6.1.0720
+///     ( x1 x2 -- x3 )
+ASMWORD("and", and)
+	ldr	r0, [PSP], #4
+	and	TOS, r0, TOS
+	mov	pc, NEXT
+	ASMEND(and)
+
+
+/// OR - CORE 6.1.1980
+///     ( x1 x2 -- x3 )
+ASMWORD("or", or)
+	ldr	r0, [PSP], #4
+	orr	TOS, r0, TOS
+	mov	pc, NEXT
+	ASMEND(or)
+
+
 
 /**
  * Control structure helpers
