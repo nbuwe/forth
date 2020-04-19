@@ -215,6 +215,24 @@ ASMWORD("over", over)
 	ASMEND(over)
 
 
+/// NIP - CORE EXT 6.2.1930
+///     ( x1 x2 -- x2 )
+ASMWORD("nip", nip)
+	add	PSP, PSP, 4
+	mov	pc, NEXT
+	ASMEND(nip)
+
+
+/// TUCK - CORE EXT 6.2.2300
+///     ( x1 x2 -- x2 x1 x2 )
+ASMWORD("tuck", tuck)
+	ldr	r0, [PSP]
+	str	TOS, [PSP]
+	str     r0, [PSP, #-4]!
+	mov	pc, NEXT
+	ASMEND(tuck)
+
+
 
 /**
  * Arithmetic and bit-wise operations
