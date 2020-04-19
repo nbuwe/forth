@@ -158,10 +158,41 @@ ASMWORD("(abort)", abort_parens)
 	ASMEND(abort_parens)
 
 
+/// Reset parameter stack
+/// OFW word, not in ANSI
+ASMWORD("clear", clear)
+	ldr	PSP, sp0_const	@ reset parameter stack
+	mov	TOS, #0		@ clear TOS just in case
+	mov	pc, NEXT
+	ASMEND(clear)
+
+
 /// Where the stacks are.  (ABORT) and (QUIT) just above use these
 /// directly in assembler as literals.
 CONSTANT("sp0", sp0)	.long	stack_bottom
 CONSTANT("rp0", rp0)	.long	rstack_bottom
+
+
+
+/**
+ * Stack manipualtion
+ */
+
+
+/// DROP - CORE 6.1.1260
+///     ( x -- )
+ASMWORD("drop", drop)
+	FILL_TOS
+	mov	pc, NEXT
+	ASMEND(drop)
+
+
+/// DUP - CORE 6.1.1290
+///     ( x -- x x )
+ASMWORD("dup", dup)
+	SPILL_TOS
+	mov	pc, NEXT
+	ASMEND(dup)
 
 
 
