@@ -294,6 +294,15 @@ ASMWORD("roll", roll)
 	ASMEND(roll)
 
 
+/// 2DROP - CORE 6.1.0370
+///     ( x1 x2 -- )
+ASMWORD("2drop", two_drop)
+	ldr	TOS, [PSP, #4]
+	add	PSP, PSP, #8
+	mov	pc, NEXT
+	ASMEND(two_drop)
+
+
 /// 2DUP - CORE 6.1.0380
 ///     ( x1 x2 -- x1 x2 x1 x2 )
 ASMWORD("2dup", two_dup)
@@ -302,6 +311,18 @@ ASMWORD("2dup", two_dup)
 	str	r0, [PSP, #-8]!		@ store x1, advance PSP
 	mov	pc, NEXT
 	ASMEND(two_dup)
+
+
+/// 2SWAP - CORE 6.1.0430
+///     ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
+ASMWORD("2swap", two_swap)
+	ldm	PSP, {r0, r1, r2}
+	str	TOS, [PSP, #4]		@ store x4
+	str	r0, [PSP, #8]		@ store x3
+	str	r2, [PSP]		@ store x1
+	mov	TOS, r1			@ x2
+	mov	pc, NEXT
+	ASMEND(two_swap)
 
 
 /// SP@ - Current stack pointer.
