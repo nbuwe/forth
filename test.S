@@ -12,8 +12,8 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, 0, question_dup, one_plus, question_dup
-	// ( ... -- 1 1 )
+	.long	two_lit, 1, 2, two_dup
+	// ( ... -- 2 1 2 1 )
 	.long	bye_parens	/* return from forth */
 
 

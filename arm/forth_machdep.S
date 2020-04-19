@@ -294,6 +294,16 @@ ASMWORD("roll", roll)
 	ASMEND(roll)
 
 
+/// 2DUP - CORE 6.1.0380
+///     ( x1 x2 -- x1 x2 x1 x2 )
+ASMWORD("2dup", two_dup)
+	ldr	r0, [PSP]		@ fetch x1
+	str     TOS, [PSP, #-4]		@ store x2
+	str	r0, [PSP, #-8]!		@ store x1, advance PSP
+	mov	pc, NEXT
+	ASMEND(two_dup)
+
+
 /// SP@ - Current stack pointer.
 ///     ( -- sp )
 ///
@@ -571,6 +581,17 @@ ASMWORD("lit", lit)
 	ldr	TOS, [IP], #4	@ get the operand and skip over it
 	mov	pc, NEXT
 	ASMEND(lit)
+
+
+/// 2LIT - auxiliary for 2LITERAL (DOUBLE 8.6.1.0390)
+ASMWORD("2lit", two_lit)
+	ldr	r0, [IP, #4]	@ upper address contains LSW
+	SPILL_TOS
+	ldr	TOS, [IP]	@ lower address contains MSW
+	add	IP, IP, #8	@ skip the value in the code stream
+	str     r0, [PSP, #-4]!	@ LSW goes to the upper address
+	mov	pc, NEXT
+	ASMEND(two_lit)
 
 
 /* Random test code. */
