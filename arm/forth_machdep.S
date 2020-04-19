@@ -233,6 +233,18 @@ ASMWORD("tuck", tuck)
 	ASMEND(tuck)
 
 
+/// ROT - CORE 6.1.2160
+///     ( x1 x2 x3 -- x2 x3 x1 )
+ASMWORD("rot", rot)
+	ldr	r0, [PSP]	@ x2
+	ldr	r1, [PSP, #4]	@ x1
+	str	TOS, [PSP]	@ x3
+	str	r0, [PSP, #4]
+	mov	TOS, r1
+	mov	pc, NEXT
+	ASMEND(rot)
+
+
 
 /**
  * Arithmetic and bit-wise operations
