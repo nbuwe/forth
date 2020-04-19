@@ -285,6 +285,32 @@ ASMWORD("roll", roll)
 	ASMEND(roll)
 
 
+/// SP@ - Current stack pointer.
+///     ( -- sp )
+///
+/// XXX: Both SP@ and SP0 don't try to hide the fact that we keep TOS
+/// in a register.  This has implications in MI forth code, e.g. in .S
+/// or DEPTH.
+///
+/// The cell just after SP0 is not part of stack - it's a place to
+/// spill invalid TOS register when we push the first value onto the
+/// stack.  The TOS is in a register, so to spill it into memory, DUP
+/// it.
+ASMWORD("sp@", sp_fetch)
+	mov	r0, PSP		@ before the spill
+	SPILL_TOS
+	mov	TOS, r0
+	mov	pc, NEXT
+	ASMEND(sp_fetch)
+
+
+/// SP!
+ASMWORD("sp!", sp_store)
+	mov	PSP, TOS
+	mov	pc, NEXT
+	ASMEND(sp_fetch)
+
+
 
 /**
  * Arithmetic and bit-wise operations
