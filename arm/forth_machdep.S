@@ -318,38 +318,38 @@ ASMWORD("sp!", sp_store)
 
 
 /// 0= - CORE 6.1.0270
-///     ( x -- flag )
+///	( x -- flag )
 ASMWORD("0=", zero_equals)
-        clz     TOS, TOS
-        lsr     TOS, TOS, #5
-        rsb     TOS, TOS, #0
+	clz	TOS, TOS
+	lsr	TOS, TOS, #5
+	rsb	TOS, TOS, #0
 	mov	pc, NEXT
 	ASMEND(zero_equals)
 
 
 /// 0<> - CORE-EXT 6.2.0260
-///     ( x -- flag )
+///	( x -- flag )
 ASMWORD("0<>", zero_not_equals)
-        adds    TOS, TOS, #0
-        movne   TOS, #1
-        rsb     TOS, TOS, #0
+	adds	TOS, TOS, #0
+	movne	TOS, #1
+	rsb	TOS, TOS, #0
 	mov	pc, NEXT
 	ASMEND(zero_not_equals)
 
 
 /// 0> - CORE-EXT 6.2.0280
-///     ( x -- flag )
+///	( x -- flag )
 ASMWORD("0>", zero_greater)
-        cmp     TOS, #0
-        movle   TOS, #0
-        movgt   TOS, #1
-        rsb     TOS, TOS, #0
+	cmp	TOS, #0
+	movle	TOS, #0
+	movgt	TOS, #1
+	rsb	TOS, TOS, #0
 	mov	pc, NEXT
 	ASMEND(zero_greater)
 
 
 /// 0< - CORE 6.1.0250
-///     ( x -- flag )
+///	( x -- flag )
 ASMWORD("0<", zero_less)
 	asr	TOS, TOS, #31
 	mov	pc, NEXT
@@ -363,7 +363,7 @@ ASMWORD("0<", zero_less)
 
 
 /// + - CORE 6.1.0120
-///     ( n1|u1 n2|u2 -- n3|u3 )
+///	( n1|u1 n2|u2 -- n3|u3 )
 ASMWORD("+", plus)
 	ldr	r0, [PSP], #4
 	add	TOS, TOS, r0
@@ -372,7 +372,7 @@ ASMWORD("+", plus)
 
 
 /// - - CORE 6.1.0160
-///     ( n1|u1 n2|u2 -- n3|u3 )
+///	( n1|u1 n2|u2 -- n3|u3 )
 ASMWORD("-", minus)
 	ldr	r0, [PSP], #4
 	sub	TOS, r0, TOS
