@@ -427,6 +427,23 @@ ASMWORD("u>", u_greater_than)
  */
 
 
+/// NEGATE - CORE 6.1.1910
+///     ( n1 -- n2 )
+ASMWORD("negate", negate)
+	rsb	TOS, TOS, #0
+	mov	pc, NEXT
+	ASMEND(negate)
+
+
+/// ABS - CORE 6.1.0690
+///     ( n -- u )
+ASMWORD("abs", abs)
+	cmp	TOS, #0
+	rsblt	TOS, TOS, #0
+	mov	pc, NEXT
+	ASMEND(abs)
+
+
 /// + - CORE 6.1.0120
 ///	( n1|u1 n2|u2 -- n3|u3 )
 ASMWORD("+", plus)
