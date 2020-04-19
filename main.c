@@ -50,7 +50,9 @@ main()
     cell_t *p;
     cell_t *bottom;
 
+#if 0 // XXX: not yet
     stack_setup();
+#endif
 
     psp = start_forth();
 
@@ -71,6 +73,7 @@ main()
 }
 
 
+#if 0 // XXX: not yet
 void
 stack_setup(void)
 {
@@ -150,3 +153,4 @@ void trapsegv(int sig, siginfo_t *si, void *ctx)
     uc->uc_mcontext.__gregs[_REG_RSP] =
 	(uintptr_t) &xstack.rstack[__arraycount(xstack.rstack) - 2];
 }
+#endif
