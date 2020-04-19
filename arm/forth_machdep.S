@@ -356,6 +356,17 @@ ASMWORD("0<", zero_less)
 	ASMEND(zero_less)
 
 
+/// = - CORE 6.1.0530
+///     ( x1 x2 -- flag )
+ASMWORD("=", equals)
+	ldr	r0, [PSP], #4
+	cmp	TOS, r0
+	movne	TOS, #0
+	mvneq	TOS, #0
+	mov	pc, NEXT
+	ASMEND(equals)
+
+
 
 /**
  * Arithmetic and bit-wise operations
