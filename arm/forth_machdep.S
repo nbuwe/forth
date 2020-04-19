@@ -195,6 +195,15 @@ ASMWORD("dup", dup)
 	ASMEND(dup)
 
 
+/// ?DUP - CORE 6.1.0630
+///     ( x -- 0 | x x )
+ASMWORD("?dup", question_dup)
+	cmp	TOS, #0
+	strne	TOS, [PSP, #-4]!	@ SPILL_TOS
+	mov	pc, NEXT
+	ASMEND(question_dup)
+
+
 /// SWAP - CORE 6.1.2260
 ///     ( x1 x2 -- x2 x1 )
 ASMWORD("swap", swap)
