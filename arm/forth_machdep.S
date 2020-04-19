@@ -245,6 +245,18 @@ ASMWORD("rot", rot)
 	ASMEND(rot)
 
 
+/// -ROT - non-standard, inverse of ROT
+///     ( x1 x2 x3 -- x3 x1 x2 )
+ASMWORD("-rot", minus_rot)
+	ldr	r0, [PSP]	@ x2
+	ldr	r1, [PSP, #4]	@ x1
+	str	TOS, [PSP, #4]	@ x3
+	str	r1, [PSP]
+	mov	TOS, r0
+	mov	pc, NEXT
+	ASMEND(minus_rot)
+
+
 
 /**
  * Arithmetic and bit-wise operations
