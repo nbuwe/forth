@@ -164,6 +164,45 @@ CONSTANT("sp0", sp0)	.long	stack_bottom
 CONSTANT("rp0", rp0)	.long	rstack_bottom
 
 
+
+/**
+ * Arithmetic and bit-wise operations
+ */
+
+
+/// + - CORE 6.1.0120
+///     ( n1|u1 n2|u2 -- n3|u3 )
+ASMWORD("+", plus)
+	ldr	r0, [PSP], #4
+	add	TOS, TOS, r0
+	mov	pc, NEXT
+	ASMEND(plus)
+
+
+/// - - CORE 6.1.0160
+///     ( n1|u1 n2|u2 -- n3|u3 )
+ASMWORD("-", minus)
+	ldr	r0, [PSP], #4
+	sub	TOS, r0, TOS
+	mov	pc, NEXT
+	ASMEND(minus)
+
+
+
+/**
+ * Control structure helpers
+ */
+
+/// LIT - auxiliary for LITERAL (CORE 6.1.1780)
+///   Forth version may be used, but then CELL+ must be in asm.
+///   See forth definition.
+ASMWORD("lit", lit)
+	SPILL_TOS
+	ldr	TOS, [IP], #4	@ get the operand and skip over it
+	mov	pc, NEXT
+	ASMEND(lit)
+
+
 /* Random test code. */
 #define TESTING
 #include "test.S"
