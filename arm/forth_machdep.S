@@ -427,6 +427,24 @@ ASMWORD("u>", u_greater_than)
  */
 
 
+/// FALSE - CORE-EXT 6.2.1485
+///     ( -- false )
+ASMWORD("false", false)
+	SPILL_TOS
+	mov	TOS, #0
+	mov	pc, NEXT
+	ASMEND(false)
+
+
+/// TRUE - CORE-EXT 6.2.2298
+///     ( -- true )
+ASMWORD("true", true)
+	SPILL_TOS
+	mvn	TOS, #0
+	mov	pc, NEXT
+	ASMEND(true)
+
+
 /// NEGATE - CORE 6.1.1910
 ///     ( n1 -- n2 )
 ASMWORD("negate", negate)
@@ -460,6 +478,14 @@ ASMWORD("-", minus)
 	sub	TOS, r0, TOS
 	mov	pc, NEXT
 	ASMEND(minus)
+
+
+/// INVERT - CORE 6.1.1720
+///     ( x1 -- x2 )
+ASMWORD("invert", invert)
+	mvn	TOS, TOS
+	mov	pc, NEXT
+	ASMEND(invert)
 
 
 
