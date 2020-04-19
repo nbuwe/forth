@@ -325,6 +325,27 @@ ASMWORD("2swap", two_swap)
 	ASMEND(two_swap)
 
 
+/// 2NIP - nonstandard
+///     ( x1 x2 x3 x4 -- x3 x4 )
+ASMWORD("2nip", two_nip)
+	ldr	r0, [PSP]
+	str	r0, [PSP, #8]!
+	mov	pc, NEXT
+	ASMEND(two_nip)
+
+
+/// 2OVER - CORE 6.1.0400
+///     ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )
+ASMWORD("2over", two_over)
+	ldr	r0, [PSP, #8]		@ fetch x1
+	ldr	r1, [PSP, #4]		@ fetch x2
+	str	TOS, [PSP, #-4]		@ store x4
+	str	r0, [PSP, #-8]!		@ store x1
+	mov	TOS, r1			@ x2
+	mov	pc, NEXT
+	ASMEND(two_over)
+
+
 /// SP@ - Current stack pointer.
 ///     ( -- sp )
 ///
