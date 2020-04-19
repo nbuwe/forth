@@ -313,6 +313,22 @@ ASMWORD("sp!", sp_store)
 
 
 /**
+ * Comparison
+ */
+
+
+/// 0= - CORE 6.1.0270
+///     ( x -- flag )
+ASMWORD("0=", zero_equals)
+        clz     TOS, TOS
+        lsr     TOS, TOS, #5
+        rsb     TOS, TOS, #0
+	mov	pc, NEXT
+	ASMEND(zero_equals)
+
+
+
+/**
  * Arithmetic and bit-wise operations
  */
 

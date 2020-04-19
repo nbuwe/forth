@@ -12,11 +12,8 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, 4, lit, 3, lit, 2, lit, 1, lit, 0
-	.long	dup		// spill TOS to memory
-	.long	sp_fetch, nip   // save sp, get rid of that DUP copy
-	.long	lit, 31415, lit, 271828 // pile some garbage
-	.long	rot, sp_store, drop	// restore PSP, drop bogus TOS
+	.long	lit, 4, zero_equals
+	.long	lit, 0, zero_equals
 	.long	bye_parens	/* return from forth */
 
 
