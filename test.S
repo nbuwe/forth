@@ -12,19 +12,10 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, 0xcafebabe, lit, 0xdeadbeef
-	.long	callee
-	// ( -- 0xcafebabe )
+	.long	lit, 0x2, lit, 0xffffffff, m_star
+	.long	lit, 0x2, lit, 0xffffffff, um_star
+	// ( -- -2 -1 -2 1 )
 	.long	bye_parens	/* return from forth */
-
-WORD("callee", callee)
-	.long	two_to_r, callee2
-	EXIT_4TH
-
-WORD("callee2", callee2)
-	.long r_from, two_r_from, rot, to_r
-	.long breakpoint
-	EXIT_4TH
 
 /* For your CONSTANT() definitions */
 DOES_4TH(constant_does)

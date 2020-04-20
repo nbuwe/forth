@@ -826,6 +826,26 @@ ASMWORD("move", move)
 	ASMEND(move)
 
 
+/// M* - CORE 6.1.1810
+///     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
+ASMWORD("m*", m_star)
+	ldr	r0, [PSP]
+	smull	r1, TOS, r0, TOS
+	str	r1, [PSP]
+	mov	pc, NEXT
+	ASMEND(m_star)
+
+
+/// UM* - CORE 6.1.2360
+///     ( n1 n2 -- d ) unsigned mixed multiplication (32x32 -> 64)
+ASMWORD("um*", um_star)
+	ldr	r0, [PSP]
+	umull	r1, TOS, r0, TOS
+	str	r1, [PSP]
+	mov	pc, NEXT
+	ASMEND(um_star)
+
+
 
 /**
  * Control structure helpers
