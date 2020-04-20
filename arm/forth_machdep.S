@@ -898,6 +898,18 @@ ASMWORD("d2*", d_two_star)
 	ASMEND(d_two_star)
 
 
+/// D2/ - DOUBLE 8.6.1.1100
+///     ( xd1 -- xd2 )
+ASMWORD("d2/", d_two_slash)
+	ldr	r0, [PSP]
+	lsr	r0, r0, #1
+	orr	r0, r0, TOS, lsl #31
+	asr	TOS, TOS, #1
+	str	r0, [PSP]
+	mov	pc, NEXT
+	ASMEND(d_two_slash)
+
+
 /// M* - CORE 6.1.1810
 ///     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
 ASMWORD("m*", m_star)
