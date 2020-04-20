@@ -12,10 +12,13 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, 0xcafebabe
-	.long	lit, 0xdeadbeaf, lit, 0x1337, sync_icache
-	// ( -- 0xcafebabe )
+	.long	lit, 'h', emit
+	.long	lit, 'i', emit
+	.long	lit, '\n', emit
 	.long	bye_parens	/* return from forth */
+
+CWORD("emit", emit)
+	.long	_C_LABEL(emit_impl)
 
 
 /* For your CONSTANT() definitions */

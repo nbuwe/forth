@@ -137,6 +137,19 @@ ASMWORD("(goto)", goto_parens)
 	ASMEND(goto_parens)
 
 
+/// Code field of C words points here.  The body contains the C
+/// function address.  Call it as PSP = (*PFA)(PSP);
+CODE(c_does)
+	ldr	W, [W]		@ function pointer from word's body
+	SPILL_TOS		@ for the function to see it
+	mov	r0, PSP		@ pass PSP as argument
+	blx	W
+	mov	PSP, r0		@ return value is the new PSP
+	FILL_TOS
+	mov	pc, NEXT
+	.size c_does, .-c_does
+
+
 /// This thunk is compiled by DOES> in the defining word before the
 /// threaded code for the DOES> part.  Defined word gets thunk's
 /// address as its code.
