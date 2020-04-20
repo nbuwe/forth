@@ -840,6 +840,18 @@ ASMWORD("s>d", s2d)
 	ASMEND(s2d)
 
 
+/// D< - DOUBLE 8.6.1.1110
+///     ( d1 d2 -- flag )
+ASMWORD("d<", d_less_than)
+	ldm	PSP!, {r0, r1, r2}	@ D2lo D1hi D1lo
+	cmp	r2, r0
+	sbcs	TOS, r1, TOS
+	mvnlt	TOS, #0
+	movge	TOS, #0
+	mov	pc, NEXT
+	ASMEND(d_less_than)
+
+
 /// DNEGATE - DOUBLE 8.6.1.1230
 ///     ( d1 -- d2 )
 ASMWORD("dnegate", dnegate)
