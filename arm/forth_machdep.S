@@ -625,6 +625,19 @@ ASMWORD("+", plus)
 	ASMEND(plus)
 
 
+/// +? - nonstandard: add with overflow check
+///	used by LOOP to efficiently detect loop terminataion
+///	( n1|u1 n2|u2 -- n3|u3 flag )
+ASMWORD("+?", plus_question)
+	ldr	r0, [PSP]
+	adds	r0, TOS, r0
+	mvnvs	TOS, #0
+	movvc	TOS, #0
+	str	r0, [PSP]
+	mov	pc, NEXT
+	ASMEND(plus_question)
+
+
 /// - - CORE 6.1.0160
 ///	( n1|u1 n2|u2 -- n3|u3 )
 ASMWORD("-", minus)
