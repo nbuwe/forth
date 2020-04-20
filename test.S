@@ -12,11 +12,17 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, .Lbuf+4, lit, .Lbuf, lit, 4, move
-	.long	lit, .Lbuf, fetch
+	.long	callee
 	// ( -- 0xcafebabe )
 	.long	bye_parens	/* return from forth */
-.Lbuf:	.long	0xdeadbeef, 0xcafebabe
+
+WORD("callee", callee)
+	.long	rp_fetch, callee2, lit, 0xdeadbeef
+	EXIT_4TH
+
+WORD("callee2", callee2)
+	.long rp_store, lit, 0xcafebabe
+	EXIT_4TH
 
 /* For your CONSTANT() definitions */
 DOES_4TH(constant_does)
