@@ -13,12 +13,17 @@ WORD("abort", abort)
 	 * Your test code here ...
 	 */
 	.long	callee
-.Lret:	.long	lit, .Lret, equals
+.Lret:	.long	lit, .Lret2, equals @ callee2 at the top of the return stack
+	.long	swap, lit, .Lret, equals, and	@ callee below it
 	// ( -- true )
 	.long	bye_parens	/* return from forth */
 
 WORD("callee", callee)
-	.long	r_fetch
+	.long	callee2
+.Lret2:	EXIT_4TH
+
+WORD("callee2", callee2)
+	.long	two_r_fetch
 	EXIT_4TH
 
 

@@ -398,6 +398,17 @@ ASMWORD("r@", r_fetch)
 	ASMEND(r_fetch)
 
 
+/// 2R@ - CORE EXT 6.2.0415
+///     ( -- x1 x2 ) ( R: x1 x2 -- x1 x2 )
+ASMWORD("2r@", two_r_fetch)
+	ldr	r0, [RSP, #4]
+	SPILL_TOS
+	ldr	TOS, [RSP]
+	str	r0, [PSP, #-4]!
+	mov	pc, NEXT
+	ASMEND(two_r_fetch)
+
+
 
 /**
  * Comparison
