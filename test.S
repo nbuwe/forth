@@ -12,14 +12,32 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	branch_wrapper, 0f
-	.long	lit, 0xdeadbeef
-0:
-	// ( -- 0xcafebabe )
+	.long	lit, 3, lit, 0, do_parens, .Leave
+.Loop:	.long	i_4th, loop_parens, .Loop
+.Leave:	// ( -- 0 1 2 )
 	.long	bye_parens	/* return from forth */
 
-WORD("branch-wrapper", branch_wrapper)
-	.long	lit, 0xcafebabe, goto_parens, branch
+// manually "compiled" from forth.fth
+WORD("(do)", do_parens)
+	// ( limit first -- R: leave-addr limit current )
+	.long	r_from, dup, fetch, to_r, rot
+	.long	lit, 0x80000000, swap, minus, to_r
+	.long	swap, r_fetch, plus, to_r
+	.long	lit, 4, plus, to_r
+	EXIT_4TH
+
+WORD("(+loop)", plus_loop_parens)
+	// ( increment -- )
+	.long	r_from, swap, r_from, plus_question
+	.long   question_branch, 0f
+	.long	drop, two_r_from, two_drop, lit, 4, plus, to_r
+	.long	branch, 9f
+0:	.long	to_r, to_r, goto_parens, branch
+9:	EXIT_4TH
+
+WORD("(loop)", loop_parens)
+	.long	lit, 1, goto_parens, plus_loop_parens
+	.long	0
 
 /* For your CONSTANT() definitions */
 DOES_4TH(constant_does)

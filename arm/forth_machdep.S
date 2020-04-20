@@ -1012,6 +1012,16 @@ ASMWORD("?branch", question_branch)
 	ASMEND(question_branch)
 
 
+/// I - CORE 6.1.1680
+///	see (DO) in forth.fth for details
+ASMWORD("i", i_4th)
+	SPILL_TOS
+	ldm	RSP, {r0, r1}	@ adjusted current, adjustment
+	sub	TOS, r0, r1	@ normalize current
+	mov	pc, NEXT
+	ASMEND(i_4th)
+
+
 /* Random test code. */
 #define TESTING
 #include "test.S"
