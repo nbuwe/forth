@@ -770,6 +770,16 @@ ASMWORD("branch", branch)
 	ASMEND(branch)
 
 
+/// ?BRANCH - auxiliary for IF &co
+ASMWORD("?branch", question_branch)
+	cmp	TOS, #0
+	FILL_TOS
+	ldreq	IP, [IP]	@ NB: taken when TOS is false
+	addne	IP, IP, #4	@ not taken, skip over target address
+	mov	pc, NEXT
+	ASMEND(question_branch)
+
+
 /* Random test code. */
 #define TESTING
 #include "test.S"

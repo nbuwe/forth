@@ -12,10 +12,18 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	true, branch, 0f
-	.long	drop, false
-0:
-	// ( -- true )
+	.long	true, /* if */ question_branch, 0f
+	.long	lit, 0xcafebabe, branch, 1f
+0:	// else
+	.long	lit, 0xdeadbeef
+1:	// then
+
+	.long	false, /* if */ question_branch, 0f
+	.long	lit, 0xdeadbeef, branch, 1f
+0:	// else
+	.long	lit, 0xcafebabe
+1:	// then
+	// ( -- 0xcafebabe 0xcafebabe )
 	.long	bye_parens	/* return from forth */
 
 
