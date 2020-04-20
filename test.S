@@ -12,10 +12,10 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit,  0, s2d, dnegate
-	.long	lit,  2, s2d, dnegate
-	.long	lit, -2, s2d, dnegate
-	// ( -- 0 0 -2 -1 2 0 )
+	.long	lit,  0, s2d, dabs
+	.long	lit,  2, s2d, dabs
+	.long	lit, -2, s2d, dabs
+	// ( -- 0 0 2 0 2 0 )
 	.long	bye_parens	/* return from forth */
 
 /* For your CONSTANT() definitions */

@@ -851,6 +851,20 @@ ASMWORD("dnegate", dnegate)
 	ASMEND(dnegate)
 
 
+/// DABS - DOUBLE 8.6.1.1160
+///     ( d1 -- d2 )
+ASMWORD("dabs", dabs)
+	ldr	r0, [PSP]		@ LSW
+	asr	r2, TOS, #31		@ sign
+	eor	r0, r0, r2		@ LSW
+	subs	r0, r0, r2
+	eor	TOS, TOS, r2		@ MSW
+	sbc	TOS, TOS, r2
+	str	r0, [PSP]
+	mov	pc, NEXT
+	ASMEND(dabs)
+
+
 /// M* - CORE 6.1.1810
 ///     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
 ASMWORD("m*", m_star)
