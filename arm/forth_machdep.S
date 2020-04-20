@@ -189,6 +189,14 @@ ASMWORD("(abort)", abort_parens)
 	ASMEND(abort_parens)
 
 
+/// Asm part of QUIT that resets return stack.
+/// Must be the first word called by QUIT.
+ASMWORD("(quit)", quit_parens)
+	ldr	RSP, rp0_const	@ reset return stack
+	mov	pc, NEXT
+	ASMEND(quit_parens)
+
+
 /// Reset parameter stack
 /// OFW word, not in ANSI
 ASMWORD("clear", clear)

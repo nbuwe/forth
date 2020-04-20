@@ -12,37 +12,20 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, 3, lit, 0, do_parens, .Leave
-.Loop:
-	.long	lit, 2, lit, 0, do_parens, .Leave_nested
-.Loop_nested:
-	.long	j_4th, loop_parens, .Loop_nested
-.Leave_nested:
-	.long	loop_parens, .Loop
-.Leave:	// ( -- 0 0 1 1 2 2 )
+	.long	callee, lit, 0xdeadbeef
+.Longjmp:
+	.long	lit, 0xcafebabe
+	// ( -- 0xcafebabe )
 	.long	bye_parens	/* return from forth */
 
-// manually "compiled" from forth.fth
-WORD("(do)", do_parens)
-	// ( limit first -- R: leave-addr limit current )
-	.long	r_from, dup, fetch, to_r, rot
-	.long	lit, 0x80000000, swap, minus, to_r
-	.long	swap, r_fetch, plus, to_r
-	.long	lit, 4, plus, to_r
+WORD("callee", callee)
+	.long	callee2, lit, 0xbea717
 	EXIT_4TH
 
-WORD("(+loop)", plus_loop_parens)
-	// ( increment -- )
-	.long	r_from, swap, r_from, plus_question
-	.long   question_branch, 0f
-	.long	drop, two_r_from, two_drop, lit, 4, plus, to_r
-	.long	branch, 9f
-0:	.long	to_r, to_r, goto_parens, branch
-9:	EXIT_4TH
+WORD("callee2", callee2)
+	.long	quit_parens, lit, .Longjmp, to_r
+	EXIT_4TH
 
-WORD("(loop)", loop_parens)
-	.long	lit, 1, goto_parens, plus_loop_parens
-	.long	0
 
 /* For your CONSTANT() definitions */
 DOES_4TH(constant_does)
