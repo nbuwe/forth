@@ -12,16 +12,17 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
+	.long	lit, 0xcafebabe
 	.long	callee
 	// ( -- 0xcafebabe )
 	.long	bye_parens	/* return from forth */
 
 WORD("callee", callee)
-	.long	rp_fetch, callee2, lit, 0xdeadbeef
+	.long	to_r, callee2
 	EXIT_4TH
 
 WORD("callee2", callee2)
-	.long rp_store, lit, 0xcafebabe
+	.long r_from, r_from, swap, to_r
 	EXIT_4TH
 
 /* For your CONSTANT() definitions */

@@ -405,6 +405,24 @@ ASMWORD("rp!", rp_store)
 	ASMEND(rp_fetch)
 
 
+/// >R - CORE 6.1.0580
+///     ( x -- ) ( R: -- x )
+ASMWORD(">r", to_r)
+	str	TOS, [RSP, #-4]!
+	FILL_TOS
+	mov	pc, NEXT
+	ASMEND(to_r)
+
+
+/// R> - CORE 6.1.2060
+///     ( -- x ) ( R: x -- )
+ASMWORD("r>", r_from)
+	SPILL_TOS
+	ldr	TOS, [RSP], #4
+	mov	pc, NEXT
+	ASMEND(r_from)
+
+
 /// R@ - CORE 6.1.2070
 ///     ( -- x ) ( R: x -- x )
 ASMWORD("r@", r_fetch)
