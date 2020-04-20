@@ -12,20 +12,11 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	true, /* if */ question_branch, 0f
-	.long	lit, 0xcafebabe, branch, 1f
-0:	// else
-	.long	lit, 0xdeadbeef
-1:	// then
-
-	.long	false, /* if */ question_branch, 0f
-	.long	lit, 0xdeadbeef, branch, 1f
-0:	// else
-	.long	lit, 0xcafebabe
-1:	// then
-	// ( -- 0xcafebabe 0xcafebabe )
+	.long	lit, .Lbuf+1, lit, 2, lit, 0xa5, fill
+	.long	lit, .Lbuf, fetch, lit, .Lbuf+4, fetch
+	// ( -- 0x00a5a500 0xcafebabe )
 	.long	bye_parens	/* return from forth */
-
+.Lbuf:	.long	0, 0xcafebabe
 
 /* For your CONSTANT() definitions */
 DOES_4TH(constant_does)

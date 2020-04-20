@@ -739,6 +739,25 @@ ASMWORD("2!", two_store)
 
 
 /**
+ * Strings
+ */
+
+/// FILL - CORE 6.1.1540
+///     ( c-addr u char -- )
+ASMWORD("fill", fill)
+	// cheat, use memset(3)
+	ldr	r0, [PSP, #4]	@ dst
+	mov	r1, TOS		@ char
+	ldrb	r2, [PSP]	@ len
+	ldr	TOS, [PSP, #8]	@ FILL_TOS
+	add	PSP, PSP, #12
+	bl	memset
+	mov	pc, NEXT
+	ASMEND(fill)
+
+
+
+/**
  * Control structure helpers
  */
 
