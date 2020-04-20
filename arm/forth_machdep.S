@@ -1022,6 +1022,18 @@ ASMWORD("i", i_4th)
 	ASMEND(i_4th)
 
 
+/// J - CORE 6.1.1730
+///	like I, but one loop level deeper (3 cells)
+ASMWORD("j", j_4th)
+	SPILL_TOS
+	ldr	TOS, [RSP, #12]		@ adjusted current
+	ldr	r1, [RSP, #16]		@ adjustment
+	sub	TOS, TOS, r1		@ normalize current
+	mov	pc, NEXT
+	ASMEND(j_4th)
+
+
+
 /* Random test code. */
 #define TESTING
 #include "test.S"

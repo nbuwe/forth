@@ -13,8 +13,13 @@ WORD("abort", abort)
 	 * Your test code here ...
 	 */
 	.long	lit, 3, lit, 0, do_parens, .Leave
-.Loop:	.long	i_4th, loop_parens, .Loop
-.Leave:	// ( -- 0 1 2 )
+.Loop:
+	.long	lit, 2, lit, 0, do_parens, .Leave_nested
+.Loop_nested:
+	.long	j_4th, loop_parens, .Loop_nested
+.Leave_nested:
+	.long	loop_parens, .Loop
+.Leave:	// ( -- 0 0 1 1 2 2 )
 	.long	bye_parens	/* return from forth */
 
 // manually "compiled" from forth.fth
