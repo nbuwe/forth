@@ -12,7 +12,7 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, 2, square
+	.long	lit, 2, lit, square, execute
 	.long	bye_parens	/* return from forth */
 
 WORD("square", square)

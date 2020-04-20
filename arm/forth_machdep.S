@@ -132,6 +132,17 @@ next_code:
   1:	/* threaded code follows */
 
 
+/// EXECUTE - CORE 6.1.1370
+///     ( i*x xt -- j*x )
+ASMWORD("execute", execute)
+	ldr	r0, [TOS] 	@ fetch word's code address from its CFA
+	add	W, TOS, #4	@ advance to word's PFA
+	FILL_TOS
+	mov	pc, r0		@ execute word's code
+	ASMEND(execute)
+
+
+
 /**
  * Start-up and termination.
  */
