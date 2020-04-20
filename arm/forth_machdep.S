@@ -123,6 +123,20 @@ next_code:
 	ASMEND(exit_4th)
 
 
+/// tail-call - note that the difference from EXIT is the order of
+/// CFA := @IP and IP := @RSP+
+///
+/// This makes it possible to add a wrapper around words that examine
+/// the cell after them, like LIT, BRANCH, etc.  Just make the tail
+/// call to such word at the end of the wrapper and it will work.
+ASMWORD("(goto)", goto_parens)
+	ldr	W, [IP]		@ W = CFA of the next word to execute
+	ldr	r0, [W], #4	@ fetch code address and advance W to PFA
+	ldr	IP, [RSP], #4	@ pretend the call was made by our caller
+	mov	pc, r0		@ execute word's code
+	ASMEND(goto_parens)
+
+
 /// This thunk is compiled by DOES> in the defining word before the
 /// threaded code for the DOES> part.  Defined word gets thunk's
 /// address as its code.

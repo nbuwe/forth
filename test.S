@@ -12,10 +12,14 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, 1, lit, 2, plus_question
-	.long	lit, 1, lit, 0x7fffffff, plus_question
-	// ( -- 3 0 0x80000000 -1 )
+	.long	branch_wrapper, 0f
+	.long	lit, 0xdeadbeef
+0:
+	// ( -- 0xcafebabe )
 	.long	bye_parens	/* return from forth */
+
+WORD("branch-wrapper", branch_wrapper)
+	.long	lit, 0xcafebabe, goto_parens, branch
 
 /* For your CONSTANT() definitions */
 DOES_4TH(constant_does)
