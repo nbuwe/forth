@@ -729,6 +729,19 @@ ASMWORD("*", star)
 	ASMEND(star)
 
 
+/// / - CORE 6.1.0230
+///     NB: symmetric division
+///     ( n1 n2 -- n3 )
+ASMWORD("/", slash)
+	// use runtime's int __aeabi_idiv(int numerator, int denominator);
+	ldr	r0, [PSP], #4	@ numerator
+	mov	r1, TOS		@ denominator
+	bl	__aeabi_idiv
+	mov	TOS, r0
+	mov	pc, NEXT
+	ASMEND(slash)
+
+
 /// 2* - CORE 6.1.0320
 ///     ( x1 -- x2 )
 ASMWORD("2*", two_star)

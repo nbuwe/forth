@@ -12,12 +12,12 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	ccc
-	// ( -- 42 )
+	.long	lit,  11, lit, 3, slash
+	.long	lit, -11, lit,-3, slash
+	.long	lit, -11, lit, 3, slash
+	.long	lit,  11, lit, -3, slash
+	// ( -- 3 3 -3 -3 )
 	.long	bye_parens	/* return from forth */
-
-CONSTANT("ccc", ccc)
-	.long	42
 
 
 /* For your CONSTANT() definitions */
