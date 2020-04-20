@@ -432,6 +432,28 @@ ASMWORD("r@", r_fetch)
 	ASMEND(r_fetch)
 
 
+/// 2>R CORE EXT 6.2.0340
+///     ( x1 x2 -- ) ( R: -- x1 x2 )
+ASMWORD("2>r", two_to_r)
+	ldm	PSP!, {r1, r2}
+	mov	r0, TOS
+	stmdb	RSP!, {r0, r1}
+	mov	TOS, r2
+	mov	pc, NEXT
+	ASMEND(two_to_r)
+
+
+/// 2R> - CORE EXT 6.2.0410
+///     ( -- x1 x2 ) ( R: x1 x2 -- )
+ASMWORD("2r>", two_r_from)
+	ldm	RSP!, {r0, r1}
+	str	TOS, [PSP, #-4]
+	str	r1, [PSP, #-8]!
+	mov	TOS, r0
+	mov	pc, NEXT
+	ASMEND(two_r_from)
+
+
 /// 2R@ - CORE EXT 6.2.0415
 ///     ( -- x1 x2 ) ( R: x1 x2 -- x1 x2 )
 ASMWORD("2r@", two_r_fetch)
