@@ -677,6 +677,29 @@ ASMWORD("c!", c_store)
 	ASMEND(c_store)
 
 
+/// 2@ - CORE 6.1.0350
+///     ( a-addr -- x1 x2 )
+ASMWORD("2@", two_fetch)
+	ldr	r0, [TOS, #4]		@ upper address contains LSW
+	ldr	TOS, [TOS]		@ lower address contains MSW
+	str	r0, [PSP, #-4]!		@ LSW goes to the upper address
+	mov	pc, NEXT
+	ASMEND(two_fetch)
+
+
+/// 2! - CORE 6.1.0310
+///     ( x1 x2 a-addr -- )
+ASMWORD("2!", two_store)
+	ldr	r0, [PSP]		@ lower address contains MSW
+	ldr	r1, [PSP, #4]		@ upper address contains LSW
+	str	r0, [TOS]		@ MSW goes to the lower address
+	str	r1, [TOS, #4]		@ LSW goes to the upper address
+	ldr	TOS, [PSP, #8]		@ FILL_TOS
+	add	PSP, PSP, #12
+	mov	pc, NEXT
+	ASMEND(two_store)
+
+
 
 /**
  * Control structure helpers
