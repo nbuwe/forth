@@ -12,9 +12,9 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	two_lit, 0, 0
-	.long	lit,  2, s2d, d_minus
-	// ( -- -2 -1 )
+	.long	two_lit, 0x80000002, 2, d_two_star
+	.long	two_lit, 1, 0x80000001, d_two_star
+	// ( -- 4 4 2 3 )
 	.long	bye_parens	/* return from forth */
 
 /* For your CONSTANT() definitions */
