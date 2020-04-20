@@ -148,6 +148,12 @@ ASMWORD("(bye)", bye_parens)
 	ASMEND(bye_parens)
 
 
+/// nop to use as a gdb breakpoint
+ASMWORD("breakpoint", breakpoint)
+	mov	pc, NEXT
+	ASMEND(breakpoint)
+
+
 /// Asm part of ABORT that resets parameter and return stacks
 /// Must be the first word called by ABORT.
 ASMWORD("(abort)", abort_parens)

@@ -12,12 +12,13 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, .L2, two_fetch
-	.long	true, false, lit, .L2, two_store
-	.long	lit, .L2+4, fetch, lit, .L2, fetch
-	// ( ... -- 0xdeadbeef 0xcafebabe -1 0 )
+	.long	lit, 2, square
 	.long	bye_parens	/* return from forth */
-.L2:	.long	0xcafebabe, 0xdeadbeef
+
+WORD("square", square)
+	.long	breakpoint, dup, star
+	EXIT_4TH
+
 
 /* For your CONSTANT() definitions */
 DOES_4TH(constant_does)
