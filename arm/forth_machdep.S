@@ -162,10 +162,23 @@ CODE(var_does)
 /// This thunk is compiled by DOES> in the defining word before the
 /// threaded code for the DOES> part.  Defined word gets thunk's
 /// address as its code.
-#define DOES_4TH(label)		  \
-  CODE(label)			; \
-	/* XXX: TODO */		  \
+#define DOES_4TH(label)			  \
+  CODE(label)				; \
+	str	IP, [RSP, #-4]!		; \
+	add	IP, pc, #(1f - (.+8))	; \
+	SPILL_TOS			; \
+	mov	TOS, W			; \
+	mov	pc, NEXT		; \
   1:	/* threaded code follows */
+
+
+/// Generate an instance of DOES> thunk to decouple MD asm from MI
+/// forth code.  DOES> can just copy this instance.
+CONSTANT("does-thunk", does_thunk)
+	.long	0f
+0:	.long	9f - does_thunk_code
+	DOES_4TH(does_thunk_code)
+9:	.size	does_thunk_code, .-does_thunk_code
 
 
 /// EXECUTE - CORE 6.1.1370

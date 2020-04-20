@@ -12,19 +12,17 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	v, fetch
+	.long	ccc
 	// ( -- 42 )
 	.long	bye_parens	/* return from forth */
 
-VARIABLE("v", v)
+CONSTANT("ccc", ccc)
 	.long	42
 
 
 /* For your CONSTANT() definitions */
 DOES_4TH(constant_does)
-#if 0 // XXX: disable until we implement FETCH
 	.long	fetch
-#endif
 	EXIT_4TH
 
 /*
