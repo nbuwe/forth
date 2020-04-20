@@ -12,11 +12,18 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, 1, two_star
-	.long	lit, 0x80000000, two_slash
-	// ( ... -- 2 0xc0000000 )
+	.long	lit, 0x01234567, lit, .Lcell, store
+	.long	lit, .Lcell, fetch
+	.long	lit, .Lbyte, c_fetch
+	.long	lit, 0xa5, lit, .Lcell, c_store
+	.long	lit, 0x5a, lit, .Lcell+1, c_store
+	.long	lit, 0x5a, lit, .Lcell+2, c_store
+	.long	lit, 0xa5, lit, .Lcell+3, c_store
+	.long	lit, .Lcell, fetch
+	// ( ... -- 0x01234567 255 0xa55aa55a )
 	.long	bye_parens	/* return from forth */
-
+.Lcell:	.long	0xdeadbeef
+.Lbyte:	.byte	0xff
 
 /* For your CONSTANT() definitions */
 DOES_4TH(constant_does)

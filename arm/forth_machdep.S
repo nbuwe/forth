@@ -638,6 +638,47 @@ ASMWORD("rshift", rshift)
 
 
 /**
+ * Fetch and store
+ */
+
+/// @ - CORE 6.1.0650
+///     ( a-addr -- x )
+ASMWORD("@", fetch)
+	ldr	TOS, [TOS]
+	mov	pc, NEXT
+	ASMEND(fetch)
+
+
+/// ! - CORE 6.1.0010
+///     ( x a-addr -- )
+ASMWORD("!", store)
+	ldr	r0, [PSP], #4
+	str	r0, [TOS]
+	FILL_TOS
+	mov	pc, NEXT
+	ASMEND(fetch)
+
+
+/// C@ - CORE 6.1.0870
+///     ( c-addr -- char )
+ASMWORD("c@", c_fetch)
+	ldrb	TOS, [TOS]
+	mov	pc, NEXT
+	ASMEND(c_fetch)
+
+
+/// C! - CORE 6.1.0850
+///     ( char c-addr -- )
+ASMWORD("c!", c_store)
+	ldr	r0, [PSP], #4
+	strb	r0, [TOS]
+	FILL_TOS
+	mov	pc, NEXT
+	ASMEND(c_store)
+
+
+
+/**
  * Control structure helpers
  */
 
