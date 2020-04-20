@@ -33,7 +33,7 @@
 #define W	r8	/* "work" register */
 #define NEXT	r10	/* "next" address to avoid memory loads */
 
-#define SPILL_TOS	str     TOS, [PSP, #-4]!
+#define SPILL_TOS	str	TOS, [PSP, #-4]!
 #define FILL_TOS	ldr	TOS, [PSP], #4
 
 
@@ -184,7 +184,7 @@ CONSTANT("does-thunk", does_thunk)
 /// EXECUTE - CORE 6.1.1370
 ///     ( i*x xt -- j*x )
 ASMWORD("execute", execute)
-	ldr	r0, [TOS] 	@ fetch word's code address from its CFA
+	ldr	r0, [TOS]	@ fetch word's code address from its CFA
 	add	W, TOS, #4	@ advance to word's PFA
 	FILL_TOS
 	mov	pc, r0		@ execute word's code
@@ -311,7 +311,7 @@ ASMWORD("nip", nip)
 ASMWORD("tuck", tuck)
 	ldr	r0, [PSP]
 	str	TOS, [PSP]
-	str     r0, [PSP, #-4]!
+	str	r0, [PSP, #-4]!
 	mov	pc, NEXT
 	ASMEND(tuck)
 
@@ -343,7 +343,7 @@ ASMWORD("-rot", minus_rot)
 /// PICK - CORE EXT 6.2.2030
 ///     ( xu ... x1 x0 u -- xu ... x1 x0 xu )
 ASMWORD("pick", pick)
-	ldr     TOS, [PSP, TOS, lsl #2]
+	ldr	TOS, [PSP, TOS, lsl #2]
 	mov	pc, NEXT
 	ASMEND(pick)
 
@@ -381,7 +381,7 @@ ASMWORD("2drop", two_drop)
 ///     ( x1 x2 -- x1 x2 x1 x2 )
 ASMWORD("2dup", two_dup)
 	ldr	r0, [PSP]		@ fetch x1
-	str     TOS, [PSP, #-4]		@ store x2
+	str	TOS, [PSP, #-4]		@ store x2
 	str	r0, [PSP, #-8]!		@ store x1, advance PSP
 	mov	pc, NEXT
 	ASMEND(two_dup)
@@ -1058,7 +1058,7 @@ ASMWORD("2lit", two_lit)
 	SPILL_TOS
 	ldr	TOS, [IP]	@ lower address contains MSW
 	add	IP, IP, #8	@ skip the value in the code stream
-	str     r0, [PSP, #-4]!	@ LSW goes to the upper address
+	str	r0, [PSP, #-4]!	@ LSW goes to the upper address
 	mov	pc, NEXT
 	ASMEND(two_lit)
 
