@@ -756,6 +756,20 @@ ASMWORD("fill", fill)
 	ASMEND(fill)
 
 
+/// MOVE - CORE 6.1.1900
+///     ( src dst len -- )
+ASMWORD("move", move)
+	// cheat, use memmove(3)
+	ldr	r0, [PSP]	@ dst
+	ldr	r1, [PSP, #4]	@ src
+	mov	r2, TOS		@ len
+	ldr	TOS, [PSP, #8]	@ FILL_TOS
+	add	PSP, PSP, #12
+	bl	memmove
+	mov	pc, NEXT
+	ASMEND(move)
+
+
 
 /**
  * Control structure helpers
