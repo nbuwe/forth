@@ -12,13 +12,12 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, 'h', emit
-	.long	lit, 'i', emit
-	.long	lit, '\n', emit
+	.long	v, fetch
+	// ( -- 42 )
 	.long	bye_parens	/* return from forth */
 
-CWORD("emit", emit)
-	.long	_C_LABEL(emit_impl)
+VARIABLE("v", v)
+	.long	42
 
 
 /* For your CONSTANT() definitions */

@@ -150,6 +150,15 @@ CODE(c_does)
 	.size c_does, .-c_does
 
 
+/// Default code field of CREATE'd words: push PFA
+/// This is equivalent to DOES> ( nothing ) ;
+CODE(var_does)
+	SPILL_TOS
+	mov	TOS, W		@ push PFA
+	mov	pc, NEXT
+	.size var_does, .-var_does
+
+
 /// This thunk is compiled by DOES> in the defining word before the
 /// threaded code for the DOES> part.  Defined word gets thunk's
 /// address as its code.
