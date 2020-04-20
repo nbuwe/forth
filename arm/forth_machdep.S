@@ -765,7 +765,6 @@ ASMWORD("2*", two_star)
 /// 2/ - CORE 6.1.0330
 ///     ( x1 -- x2 )
 ASMWORD("2/", two_slash)
-	add	TOS, TOS, TOS, lsr #31
 	asr	TOS, TOS, #1
 	mov	pc, NEXT
 	ASMEND(two_slash)
