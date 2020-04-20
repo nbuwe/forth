@@ -1041,6 +1041,16 @@ ASMWORD("j", j_4th)
 	ASMEND(j_4th)
 
 
+/// SYNC-I$   ( c-addr u -- )
+ASMWORD("sync-i$", sync_icache)
+	@@ XXX: not yet, for now just 2DROP the args.
+	@@ TODO: use arm_sync_icache(2) syscall - this will only
+	@@ become relevant with interactive defining words with DOES>
+	ldr	TOS, [PSP, #4]
+	add	PSP, PSP, #8
+	mov	pc, NEXT
+	ASMEND(sync_icache)
+
 
 /* Random test code. */
 #define TESTING

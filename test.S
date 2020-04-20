@@ -12,19 +12,10 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	callee, lit, 0xdeadbeef
-.Longjmp:
 	.long	lit, 0xcafebabe
+	.long	lit, 0xdeadbeaf, lit, 0x1337, sync_icache
 	// ( -- 0xcafebabe )
 	.long	bye_parens	/* return from forth */
-
-WORD("callee", callee)
-	.long	callee2, lit, 0xbea717
-	EXIT_4TH
-
-WORD("callee2", callee2)
-	.long	quit_parens, lit, .Longjmp, to_r
-	EXIT_4TH
 
 
 /* For your CONSTANT() definitions */
