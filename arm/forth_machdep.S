@@ -763,6 +763,13 @@ ASMWORD("2lit", two_lit)
 	ASMEND(two_lit)
 
 
+/// BRANCH - auxiliary for ELSE &co
+ASMWORD("branch", branch)
+	ldr	IP, [IP]
+	mov	pc, NEXT
+	ASMEND(branch)
+
+
 /* Random test code. */
 #define TESTING
 #include "test.S"
