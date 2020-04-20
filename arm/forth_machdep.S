@@ -742,6 +742,18 @@ ASMWORD("/", slash)
 	ASMEND(slash)
 
 
+/// U/ - nonstandard unsigned division
+///     ( u1 u2 -- u3 )
+ASMWORD("u/", u_slash)
+	// use runtime's int __aeabi_uidiv(int numerator, int denominator);
+	ldr	r0, [PSP], #4	@ numerator
+	mov	r1, TOS		@ denominator
+	bl	__aeabi_uidiv
+	mov	TOS, r0
+	mov	pc, NEXT
+	ASMEND(u_slash)
+
+
 /// 2* - CORE 6.1.0320
 ///     ( x1 -- x2 )
 ASMWORD("2*", two_star)
