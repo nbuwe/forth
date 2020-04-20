@@ -12,15 +12,14 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit,  11, lit, 3, u_slash
-	.long	lit, -11, lit, 3, u_slash
-	// ( -- 3 0x55555551 )
 	.long	bye_parens	/* return from forth */
 
 
 /* For your CONSTANT() definitions */
 DOES_4TH(constant_does)
+#if 0 // XXX: disable until we implement FETCH
 	.long	fetch
+#endif
 	EXIT_4TH
 
 /*

@@ -1112,8 +1112,10 @@ ASMWORD("sync-i$", sync_icache)
 	ASMEND(sync_icache)
 
 
+/* Machine-independent words in threaded code. */
+#include "forth.S"
+
 /* Random test code. */
-#define TESTING
 #include "test.S"
 
 	.section ".forth"
