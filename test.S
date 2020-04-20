@@ -12,11 +12,13 @@ WORD("abort", abort)
 	/*
 	 * Your test code here ...
 	 */
-	.long	lit, 2, lit, square, execute
+	.long	callee
+.Lret:	.long	lit, .Lret, equals
+	// ( -- true )
 	.long	bye_parens	/* return from forth */
 
-WORD("square", square)
-	.long	breakpoint, dup, star
+WORD("callee", callee)
+	.long	r_fetch
 	EXIT_4TH
 
 

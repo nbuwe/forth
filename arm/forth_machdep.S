@@ -389,6 +389,15 @@ ASMWORD("sp!", sp_store)
 	ASMEND(sp_fetch)
 
 
+/// R@ - CORE 6.1.2070
+///     ( -- x ) ( R: x -- x )
+ASMWORD("r@", r_fetch)
+	SPILL_TOS
+	ldr	TOS, [RSP]
+	mov	pc, NEXT
+	ASMEND(r_fetch)
+
+
 
 /**
  * Comparison
