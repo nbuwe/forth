@@ -826,6 +826,31 @@ ASMWORD("move", move)
 	ASMEND(move)
 
 
+
+/*
+ * Double-cell numbers
+ */
+
+/// S>D - CORE 6.1.2170
+///     ( n -- d )
+ASMWORD("s>d", s2d)
+	SPILL_TOS		@ LSW goes to the upper address
+	asr	TOS, TOS, #31	@ sign extend
+	mov	pc, NEXT
+	ASMEND(s2d)
+
+
+/// DNEGATE - DOUBLE 8.6.1.1230
+///     ( d1 -- d2 )
+ASMWORD("dnegate", dnegate)
+	ldr	r0, [PSP]
+	rsbs	r0, r0, #0
+	rsc	TOS, TOS, #0
+	str	r0, [PSP]
+	mov	pc, NEXT
+	ASMEND(dnegate)
+
+
 /// M* - CORE 6.1.1810
 ///     ( n1 n2 -- d ) signed mixed multiplication (32x32 -> 64)
 ASMWORD("m*", m_star)
