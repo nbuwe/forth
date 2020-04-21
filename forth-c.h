@@ -37,7 +37,12 @@ typedef uintptr_t cell_t;
 #define CELL_MAX UINTPTR_MAX
 
 /* this probably should be in a dedicated MD header */
-#if defined(__i386__)
+#if defined(__arm__)
+# define _REG_TOS	_REG_R4
+# define _REG_PSP	_REG_R5
+# define _REG_RSP	_REG_R6
+# define _REG_IP	_REG_R7
+#elif defined(__i386__)
 # define _REG_TOS	_REG_ECX
 # define _REG_PSP	_REG_EDI
 # define _REG_RSP	_REG_ESI
