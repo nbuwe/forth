@@ -364,6 +364,7 @@ ASMWORD("roll", roll)
 	cmp	r2, PSP
 	bne	1b
 	add	PSP, PSP, #4
+	mov	TOS, r3
 	mov	pc, NEXT
 	ASMEND(roll)
 
