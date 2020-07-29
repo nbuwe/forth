@@ -66,7 +66,7 @@ main()
     else {
 	printf("-- STACK: <empty>\n");
     }
-    
+
     return 0;
 }
 
