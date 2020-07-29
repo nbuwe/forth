@@ -111,8 +111,8 @@ ENTRY(forth_eval)
 	mov.l	.Le_rp0, RSP	! reset return stack
 	mov.l	.Le_sp0, PSP	! reset parameter stack
 	add	#-4, PSP	! "spill" invalid TOS
-	mov.l	r5, @-PSP	! u = len
-	mov	r4, TOS		! c-addr = str
+	mov.l	r4, @-PSP	! u = len
+	mov	r5, TOS		! c-addr = str
 
 	!! call forth word EVAL1
 	mov.l	.Le_eval1_body, IP
