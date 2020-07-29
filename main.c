@@ -38,6 +38,7 @@ void stack_setup(void);
 void trapsegv(int sig, siginfo_t *info, void *ctx);
 
 extern void *start_forth(/* unchecked */);
+extern void *forth_eval(const char *s, size_t l);
 
 extern cell_t throw[];
 extern cell_t exit_4th_code[];
@@ -52,7 +53,13 @@ main()
 
     stack_setup();
 
+#if 1
     psp = start_forth();
+#else
+    /* testing */
+    const char expr[] = "2 3 + dup . cr";
+    psp = forth_eval(expr, strlen(expr));
+#endif
 
     /* skip placeholder for invalid TOS of an empty stack */
     bottom = stack_bottom - 1;

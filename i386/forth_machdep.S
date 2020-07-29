@@ -76,6 +76,29 @@ ENTRY(start_forth)
 	ret
 
 
+// cell_t *forth_eval(char *str, size_t len)
+ENTRY(forth_eval)
+	push	%ebp
+	mov	%esp, %ebp
+	push	%edi
+	push	%esi
+	push	%ebx
+	## end prologue
+
+	lea	rstack_bottom, %RSP	# reset return stack
+	lea	stack_bottom-4, %PSP	# reset parameter stack, "spill" invalid TOS
+	movl	8(%ebp), %TOS		# push string length
+	SPILL_TOS
+	movl	12(%ebp), %TOS		# push string
+
+	lea	eval1_body, %IP
+	jmp	next_code
+
+	// EVAL1 calls BYE that returns to the epilogue above.  In a
+	// sense BYE *is* the epilogue, we just happened to write that
+	// epilogue in start_forth.
+
+
 
 ### ====================================================================
 /**

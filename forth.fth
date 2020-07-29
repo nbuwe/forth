@@ -966,6 +966,18 @@ is throw
    nr> restore-input abort" RESTORE-INPUT failed"
    throw ;
 
+\ top-level non-interactive evaluate+bye
+: eval1   ( i*x c-addr u -- j*x \ input stack set up by the caller trampoline )
+   (quit)   \ reset return stack
+   decimal
+   postpone [
+   \ ." EVAL: " 2dup type cr
+   ['] evaluate catch ?dup if
+      report-exception clear
+   then
+   bye ;
+
+
 \ ==================== defining words &co
 
 : variable    create [ 1 cells ] literal allot ;
