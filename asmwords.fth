@@ -6,6 +6,7 @@ predef rp0
 
 predef~ (abort) abort_parens
 predef~ (quit) quit_parens
+predef  clear
 predef~ sp@ sp_fetch
 predef~ sp! sp_store
 predef~ rp@ rp_fetch
