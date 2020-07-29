@@ -132,6 +132,70 @@ ENTRY(start_forth)
 	mtlr	%r0
 	blr
 
+
+// cell_t *forth_eval(char *str, size_t len)
+ENTRY(forth_eval)
+	mflr	%r0
+	stw	%r0, 4(%sp)		# save LR in caller's frame
+
+	stwu	%sp, -128(%sp)
+
+	## 0(%sp) - back chain
+	## 4(%sp) - callee's LR save slot
+	## 8(%sp) to 36(%sp) - 8 words of parameter list area
+	## 40(%sp) to 48(%sp) - pad to 16 byte alignment/local variable space
+
+	mfcr	%r0
+	stw	%r0,   52(%sp)
+
+	stw	%r14,  56(%sp)
+	stw	%r15,  60(%sp)
+	stw	%r16,  64(%sp)
+	stw	%r17,  68(%sp)
+	stw	%r18,  72(%sp)
+	stw	%r19,  76(%sp)
+	stw	%r20,  80(%sp)
+	stw	%r21,  84(%sp)
+	stw	%r22,  88(%sp)
+	stw	%r23,  92(%sp)
+	stw	%r24,  96(%sp)
+	stw	%r25, 100(%sp)
+	stw	%r26, 104(%sp)
+	stw	%r27, 108(%sp)
+	stw	%r28, 112(%sp)
+	stw	%r29, 116(%sp)
+	stw	%r30, 120(%sp)
+	stw	%r31, 124(%sp)
+	## end prologue
+
+	## LR is fixed with next_code so that we can always get there
+        ## with just "blr".  BYE knows its return address statically
+        ## (see below), so we don't need LR to record it.
+	lis	%NEXT, next_code@ha
+	la	%NEXT, next_code@l(%NEXT)
+	mtlr	%NEXT
+
+	lis	%DOES, does_code@ha
+	la	%DOES, does_code@l(%DOES)
+
+	lis	%RSP, rstack_bottom@ha		# reset return stack
+	la	%RSP, rstack_bottom@l(%PSP)
+
+	lis	%PSP, stack_bottom@ha		# reset parameter stack
+	la	%PSP, stack_bottom@l(%PSP)
+
+	stwu	%r3, -8(%PSP)	// c-addr = str
+	mr	%TOS, %r4	// u = len
+
+	lis	%IP, eval1_body@ha
+	la	%IP, eval1_body@l(%IP)
+	blr	# NEXT
+
+	// EVAL1 calls BYE that returns to the epilogue above.  In a
+	// sense BYE *is* the epilogue, we just happened to write that
+	// epilogue in start_forth.
+
+
 #ifdef PPC_FORCE_RELOCS
 .LD_BUG_WORKAROUND: # https://sourceware.org/bugzilla/show_bug.cgi?id=25179
 	.long	memmove, memset
