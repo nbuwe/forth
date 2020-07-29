@@ -1212,6 +1212,7 @@ ASMWORD("j", j_4th)
 	ASMEND(j_4th)
 
 
+#ifndef _KERNEL
 !!! SYNC-I$   ( c-addr u -- )
 !!!     XXX: This is not actually implemented yet (port-sh3/52260).
 !!!     I have a local change in my kernel, not yet in committable shape.
@@ -1233,6 +1234,19 @@ ASMWORD("sync-i$", sync_icache)
 	.long	sysarch
 	ASMEND(sync_icache)
 
+#else	/* _KERNEL */
+!!! In the kernel we need to call MD C function but this is not in
+!!! place yet, so for now just provide a stub that 2DROPs the args.
+#if 0	/* XXX: not yet */
+CWORD("sync-i$", sync_icache)
+	.long	_C_LABEL(sync_icache_impl)
+#else
+ASMWORD("sync-i$", sync_icache)
+	add	#4, PSP
+	jmp	@NEXT
+	 FILL_TOS
+#endif
+#endif	/* _KERNEL */
 
 /* Machine-independent words in threaded code. */
 #include "forth.S"
