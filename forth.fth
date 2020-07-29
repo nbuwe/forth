@@ -439,9 +439,13 @@ variable >in
    source-id invert if
       input-buffer
       source-id if   \ file
-         2 - source-id read-line   \ nread flag ior --
-         0<> ( READ-LINE exception ) -71 and throw
-         not             \ nread eof --
+         [ have-file [if] ]
+            2 - source-id read-line   \ nread flag ior --
+            0<> ( READ-LINE exception ) -71 and throw
+            not             \ nread eof --
+         [ [else] ]
+            -71 throw   \ always throw READ-LINE exception
+         [ [then] ]
       else   \ terminal
          accept dup 0<   \ nread eof -- 
       then
@@ -1148,6 +1152,8 @@ predef~ call-code call_code \ XXX
 \ XXX: stub for now
 : environment?   2drop false ;
 
-include file.fth
+\ file operations are not available when embedded in the kernel
+have-file [if] include file.fth [then]
+
 include forget.fth
 include smartif.fth
