@@ -111,12 +111,12 @@ predef~ close-file close_file
 predef~ read-line read_line
 
 predef ib0
-predef dp 
+predef dp
 
 predef  fence
 predef~ wid-list wid_list
 predef current
-predef~ forth-wordlist forth_wordlist 
+predef~ forth-wordlist forth_wordlist
 
 predef~ order-stack order_stack
 predef osp0
