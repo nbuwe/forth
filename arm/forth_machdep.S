@@ -72,6 +72,38 @@ ENTRY(start_forth)
 .L_abort_body:	.long	abort_body
 
 
+/*
+ * cell_t *forth_eval(char *str, size_t len)
+ */
+ENTRY(forth_eval)
+	mov	ip, sp
+	push	{r4, r5, r6, r7, r8, r9, r10, fp, ip, lr}
+	@@ end prologue
+
+	@@ address of "next" lives in a dedicated global register
+	ldr	NEXT, .Le_next
+
+	ldr	RSP, .Le_rp0	@ reset return stack
+	ldr	PSP, .Le_sp0	@ reset parameter stack
+	add	PSP, PSP, #-4	@ "spill" invalid TOS
+	str	r0, [PSP, #-4]!	@ u = len
+	mov	TOS, r1		@ c-addr = str
+
+	@@ call forth word EVAL1
+	ldr	IP, .Le_eval1_body
+	mov	pc, NEXT
+
+.Le_next:	.long	next_code
+.Le_rp0:	.long	rstack_bottom
+.Le_sp0:	.long	stack_bottom
+.Le_eval1_body:	.long	eval1_body
+	END(forth_eval)
+
+	// EVAL1 calls BYE that returns to the epilogue above.  In a
+	// sense BYE *is* the epilogue, we just happened to write that
+	// epilogue in start_forth.
+
+
 
 /// ====================================================================
 /**
