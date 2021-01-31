@@ -115,9 +115,11 @@
 : on     true swap ! ;
 : off   false swap ! ;
 
+: bounds   ( start len -- start+len start )
+   over + swap ;
+
 
 defer throw
-
 
 \ LEAVE and UNLOOP are needed pretty early in the parsing code, but
 \ they and the rest of the DO loop machinery are rather low level with
@@ -163,9 +165,6 @@ defer throw
    then ;
 
 : (loop)   1 (goto) (+loop) ;
-
-: bounds   ( start len -- start+len start )
-   over + swap ;
 
 
 variable handler \ handler off
@@ -403,7 +402,7 @@ variable >in
 : source   ( -- c-addr u )   (source) 2@ ;
 
 : (>in-addr)   ( -- source-in )   source drop >in @ + ;
-: (unparsed)   ( -- source-end source-in )   source +  (>in-addr) ;
+: (unparsed)   ( -- source-in len )   source >in @ /string ;
 
 \ ... constant ib0
 #4096 constant #ib-size
@@ -462,7 +461,7 @@ variable >in
    then ;
 
 : skip-delim   ( char -- )
-   (unparsed) ?do
+   (unparsed) bounds ?do
       dup i c@ = if >in 1+! else leave then
    loop drop ;
 
@@ -470,7 +469,7 @@ variable >in
    (>in-addr) swap   \ stash result address (at current >IN)
    0                 \ init result length
    \ source-in delimiter len --
-   (unparsed) ?do
+   (unparsed) bounds ?do
       >in 1+!
       over i c@ = if leave then   \ delimiter?
       1+     \ increment result length
