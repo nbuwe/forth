@@ -446,7 +446,7 @@ variable >in
             -71 throw   \ always throw READ-LINE exception
          [ [then] ]
       else   \ terminal
-         accept dup 0<   \ nread eof -- 
+         accept dup 0<   \ nread eof --
       then
       if
          drop false   \ eof
