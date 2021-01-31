@@ -276,12 +276,11 @@ variable handler \ handler off
    1+ 0 ?do   \ c-addr1 u1 c-addr2 u2
       3 pick i + over 2over   \ c-addr1 u1 c-addr2 u2 c-addr1+i u2
       compare 0= if
-         2drop i /string
-         unloop
-         true exit
+         2drop i /string true
+         unloop exit
       then
    loop
-   2drop 0 ;
+   2drop false ;
 
 
 \ cword~ emit emit_impl
