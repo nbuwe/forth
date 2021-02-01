@@ -287,6 +287,18 @@ variable handler \ handler off
    loop
    2drop false ;
 
+\ like SEARCH but for single character
+: search-char ( c-addr1 u1 char -- c-addr2 u2 flag )
+   over 0= if
+      drop false exit then
+   over 0 do
+      2 pick i + c@ over = if
+	 drop i /string true
+	 unloop exit
+      then
+   loop
+   drop false ;
+
 
 \ cword~ emit emit_impl
 \ cword~ type type_impl
