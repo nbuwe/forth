@@ -212,6 +212,11 @@ variable handler \ handler off
 : count    ( c-addr1 -- c-addr2 u )   dup 1+    swap c@ ;
 : $count   ( c-addr1 -- c-addr2 u )   dup cell+ swap  @ ;
 
+\ store as counted (packed) string (from OpenBoot)
+: pack   ( c-addr u pstr -- )
+   over $ff u> ( result out of range ) -11 and throw
+   over over c!   1+ swap move ;
+
 : /string   ( c-addr1 u1 n -- c-addr2 u2 )   rot over +   -rot - ;
 
 : cmove   ( src dst len -- )   \ left-to-right char-by-char
