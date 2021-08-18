@@ -1007,6 +1007,8 @@ is throw
 : 2constant   create 2, does> 2@ ;
 
 : vocabulary
+   \ NB: WORDLIST allots, so can't just use  CREATE WORDLIST ,
+   \ see also .WID below for the name heuristic
    create  here [ 1 cells ] literal allot
    wordlist swap !
  does>
